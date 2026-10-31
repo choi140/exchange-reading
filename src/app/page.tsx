@@ -1,69 +1,75 @@
-import Image from "next/image";
+import Link from "next/link";
+import { Logo } from "@/components/Logo";
+import { BookShelf } from "@/components/BookShelf";
+import { NewDiaryButton } from "@/components/NewDiaryButton";
+import { books } from "@/data/books";
+import { sampleDiaries } from "@/data/diaries";
 
+// 1-7 홈: 책 목록, 내 책, 내 일기장 (PRD #4.3)
 export default function Home() {
   return (
-    <div className="flex flex-col flex-1 items-center justify-center bg-zinc-50 font-sans dark:bg-black">
-      <main className="flex flex-1 w-full max-w-3xl flex-col items-center justify-between py-32 px-16 bg-white dark:bg-black sm:items-start">
-        <Image
-          className="dark:invert h-5 w-[100px]"
-          src="/next.svg"
-          alt="Next.js logo"
-          width={100}
-          height={20}
-          priority
-        />
-        <div className="flex flex-col items-center gap-6 text-center sm:items-start sm:text-left">
-          <h1 className="max-w-xs text-3xl font-semibold leading-10 tracking-tight text-black dark:text-zinc-50">
-            To get started, edit the{" "}
-            <code className="rounded bg-black/[.06] px-1.5 py-0.5 font-mono text-[0.9em] dark:bg-white/[.08]">
-              page.tsx
-            </code>{" "}
-            file.
-          </h1>
-          <p className="max-w-md text-lg leading-8 text-zinc-600 dark:text-zinc-400">
-            Looking for a starting point or more instructions? Head over to{" "}
-            <a
-              href="https://vercel.com/templates?framework=next.js&utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-              className="font-medium text-zinc-950 dark:text-zinc-50"
-            >
-              Templates
-            </a>{" "}
-            or the{" "}
-            <a
-              href="https://nextjs.org/learn?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-              className="font-medium text-zinc-950 dark:text-zinc-50"
-            >
-              Learning
-            </a>{" "}
-            center.
-          </p>
+    <main className="mx-auto w-full max-w-[640px] px-5 pb-20 pt-12 sm:px-8">
+      <header>
+        <h1>
+          <Logo />
+        </h1>
+        <p className="mt-8 max-w-[30em] text-[16px] leading-relaxed text-pencil">
+          모르는 사람과 책 한 권, 일기장 한 권을 천천히 주고받는 곳.
+          로그인 없이 바로 시작해요.
+        </p>
+      </header>
+
+      <section aria-labelledby="shelf" className="mt-14">
+        <h2 id="shelf" className="font-serif text-[22px] text-ink">
+          책장
+        </h2>
+        <p className="mt-1 text-[14px] text-pencil">
+          혼자 읽거나, 낯선 사람 둘과 같은 책에 메모를 나눠요.
+        </p>
+        <div className="mt-4">
+          <BookShelf books={books} />
         </div>
-        <div className="flex flex-col gap-4 text-base font-medium sm:flex-row">
-          <a
-            className="flex h-12 w-full items-center justify-center gap-2 rounded-full bg-foreground px-5 text-background transition-colors hover:bg-[#383838] dark:hover:bg-[#ccc] md:w-[158px]"
-            href="https://vercel.com/new?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            <Image
-              className="dark:invert h-[14px] w-4"
-              src="/vercel.svg"
-              alt="Vercel logomark"
-              width={16}
-              height={14}
-            />
-            Deploy Now
-          </a>
-          <a
-            className="flex h-12 w-full items-center justify-center rounded-full border border-solid border-black/[.08] px-5 transition-colors hover:border-transparent hover:bg-black/[.04] dark:border-white/[.145] dark:hover:bg-[#1a1a1a] md:w-[158px]"
-            href="https://nextjs.org/docs?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            Documentation
-          </a>
+      </section>
+
+      <section aria-labelledby="my-books" className="mt-10">
+        <h2 id="my-books" className="font-serif text-[22px] text-ink">
+          내 책
+        </h2>
+        <p className="mt-3 border-y border-rule py-6 text-[15px] leading-relaxed text-pencil">
+          아직 읽고 있는 책이 없어요. 책장에서 한 권 골라 읽기를 시작해 보세요.
+        </p>
+      </section>
+
+      <section aria-labelledby="my-diaries" className="mt-10">
+        <div className="flex items-center justify-between gap-4">
+          <h2 id="my-diaries" className="font-serif text-[22px] text-ink">
+            내 일기장
+          </h2>
+          <NewDiaryButton />
         </div>
-      </main>
-    </div>
+        <ul className="mt-3 border-t border-rule">
+          {sampleDiaries.map((d) => (
+            <li key={d.id} className="border-b border-rule">
+              <Link
+                href={`/diary/${d.id}`}
+                className="flex items-baseline justify-between gap-4 py-4"
+              >
+                <span>
+                  <span className="block font-serif text-[18px] text-ink">
+                    {d.title}
+                  </span>
+                  <span className="mt-0.5 block text-[14px] text-pencil">
+                    {d.entries.length}편
+                  </span>
+                </span>
+                <span className="shrink-0 text-[13px] text-pencil">
+                  예시
+                </span>
+              </Link>
+            </li>
+          ))}
+        </ul>
+      </section>
+    </main>
   );
 }
