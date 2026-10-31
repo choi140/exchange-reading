@@ -1,10 +1,10 @@
-import Link from "next/link";
 import { Suspense } from "react";
 import { Logo } from "@/components/Logo";
 import { BookShelf } from "@/components/BookShelf";
 import { NewDiaryButton } from "@/components/NewDiaryButton";
 import { listBooks } from "@/data/books";
-import { sampleDiaries } from "@/data/diaries";
+import { MyShelf } from "@/components/MyShelf";
+import { MyDiaries } from "@/components/MyDiaries";
 
 // 1-7 홈: 책 목록, 내 책, 내 일기장 (PRD #4.3)
 export default function Home() {
@@ -38,9 +38,7 @@ export default function Home() {
         <h2 id="my-books" className="font-serif text-[22px] text-ink">
           내 책
         </h2>
-        <p className="mt-3 border-y border-rule py-6 text-[15px] leading-relaxed text-pencil">
-          아직 읽고 있는 책이 없어요. 책장에서 한 권 골라 읽기를 시작해 보세요.
-        </p>
+        <MyShelf />
       </section>
 
       <section aria-labelledby="my-diaries" className="mt-10">
@@ -50,28 +48,7 @@ export default function Home() {
           </h2>
           <NewDiaryButton />
         </div>
-        <ul className="mt-3 border-t border-rule">
-          {sampleDiaries.map((d) => (
-            <li key={d.id} className="border-b border-rule">
-              <Link
-                href={`/diary/${d.id}`}
-                className="flex items-baseline justify-between gap-4 py-4"
-              >
-                <span>
-                  <span className="block font-serif text-[18px] text-ink">
-                    {d.title}
-                  </span>
-                  <span className="mt-0.5 block text-[14px] text-pencil">
-                    {d.entries.length}편
-                  </span>
-                </span>
-                <span className="shrink-0 text-[13px] text-pencil">
-                  예시
-                </span>
-              </Link>
-            </li>
-          ))}
-        </ul>
+        <MyDiaries />
       </section>
     </main>
   );
