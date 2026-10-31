@@ -21,6 +21,29 @@
 
 _(5-13에서 기능 설명, 화면 스크린샷, 배포 주소를 완성합니다.)_
 
+### 로컬에서 실행하기
+
+1. **Supabase 프로젝트 준비**
+   - [supabase.com](https://supabase.com)에서 새 프로젝트를 만든다.
+   - Authentication → Sign In / Providers에서 **Allow anonymous sign-ins**를 켠다.
+   - SQL Editor에서 아래 파일을 **순서대로** 실행한다.
+     1. `supabase/01_tables.sql` — 테이블 8개
+     2. `supabase/02_rls.sql` — 권한(RLS) 정책
+     3. `supabase/03_books.sql` — 책 3편
+2. **환경변수** — `.env.example`을 `.env.local`로 복사하고, Project Settings → API의 값으로 채운다.
+   ```
+   NEXT_PUBLIC_SUPABASE_URL=https://YOUR-PROJECT.supabase.co
+   NEXT_PUBLIC_SUPABASE_ANON_KEY=your-anon-or-publishable-key
+   ```
+3. **실행**
+   ```bash
+   npm install
+   npm run dev
+   ```
+   브라우저에서 http://localhost:3000 을 연다. 일반 창·시크릿 창·다른 브라우저는 각각 다른 익명 사용자가 된다.
+
+책 본문을 바꾸려면 `src/data/books.json`을 고친 뒤 `node scripts/gen-books-sql.mjs`로 `supabase/03_books.sql`을 다시 만들어 실행한다.
+
 ## 2. PRD와 Todo 리스트
 
 - [PRD 전문](docs/PRD.md)
