@@ -29,6 +29,10 @@ export function NewDiaryButton() {
       setPicked(`일기장을 만들지 못했어요. 다시 눌러 주세요. (${error?.message ?? "응답 없음"})`);
       return;
     }
+    dialogRef.current?.close();
+    setOpen(false);
+    setBusy(false);
+    setPicked(null);
     router.push(`/diary/${data}`);
   }
 
@@ -37,6 +41,11 @@ export function NewDiaryButton() {
     if (!d) return;
     if (open && !d.open) d.showModal();
     if (!open && d.open) d.close();
+    // 다른 화면으로 넘어가면 Next.js가 이 화면을 지우지 않고 숨겨 두기 때문에,
+    // 모달이 열린 채로 남으면 다음 화면 전체가 눌리지 않는다. 숨겨질 때 반드시 닫는다.
+    return () => {
+      if (d.open) d.close();
+    };
   }, [open]);
 
   return (
