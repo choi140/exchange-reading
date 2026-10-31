@@ -4,8 +4,10 @@ import Link from "next/link";
 import { useState } from "react";
 import type { Book } from "@/data/books";
 
+type ShelfBook = Omit<Book, "paragraphs">;
+
 // 1-7 책 목록 + 1-8 "혼자 읽기"·"함께 읽기" 버튼 (기능은 3·4단계에서 연결)
-export function BookShelf({ books }: { books: Book[] }) {
+export function BookShelf({ books }: { books: ShelfBook[] }) {
   const [notice, setNotice] = useState<string | null>(null);
 
   return (
@@ -21,7 +23,8 @@ export function BookShelf({ books }: { books: Book[] }) {
                 {book.title}
               </span>
               <span className="mt-1 block text-[14px] text-pencil">
-                {book.author}, {book.year}년
+                {book.author}
+                {book.year ? `, ${book.year}년` : ""}
               </span>
             </Link>
             <div className="mt-4 flex gap-2">

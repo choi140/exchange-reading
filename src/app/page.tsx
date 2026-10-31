@@ -1,8 +1,9 @@
 import Link from "next/link";
+import { Suspense } from "react";
 import { Logo } from "@/components/Logo";
 import { BookShelf } from "@/components/BookShelf";
 import { NewDiaryButton } from "@/components/NewDiaryButton";
-import { books } from "@/data/books";
+import { listBooks } from "@/data/books";
 import { sampleDiaries } from "@/data/diaries";
 
 // 1-7 홈: 책 목록, 내 책, 내 일기장 (PRD #4.3)
@@ -27,7 +28,9 @@ export default function Home() {
           혼자 읽거나, 낯선 사람 둘과 같은 책에 메모를 나눠요.
         </p>
         <div className="mt-4">
-          <BookShelf books={books} />
+          <Suspense fallback={<ShelfLoading />}>
+            <Shelf />
+          </Suspense>
         </div>
       </section>
 
@@ -71,5 +74,40 @@ export default function Home() {
         </ul>
       </section>
     </main>
+  );
+}
+
+// 2-9 책 목록을 DB에서 읽는다 (요청마다 새로 읽어서, DB에서 제목을 바꾸면 바로 반영)
+async function Shelf() {
+  const res = await listBooks();
+  if (res.error !== null) {
+    return (
+      <p role="alert" className="border-y border-rule py-6 text-[15px] leading-relaxed text-pen-orange">
+        책장을 불러오지 못했어요. 잠시 뒤 새로고침해 주세요. ({res.error})
+      </p>
+    );
+  }
+  const books = res.data;
+  if (books.length === 0) {
+    return (
+      <p className="border-y border-rule py-6 text-[15px] text-pencil">
+        책장이 비어 있어요. supabase/03_books.sql을 실행하면 책 3권이 들어와요.
+      </p>
+    );
+  }
+  return <BookShelf books={books} />;
+}
+
+function ShelfLoading() {
+  return (
+    <ul aria-label="책장을 불러오는 중" className="border-t border-rule">
+      {[0, 1, 2].map((i) => (
+        <li key={i} className="border-b border-rule py-5">
+          <div className="h-6 w-40 rounded-sm bg-rule/60" />
+          <div className="mt-2 h-4 w-24 rounded-sm bg-rule/40" />
+          <div className="mt-4 h-11 rounded-full bg-rule/30" />
+        </li>
+      ))}
+    </ul>
   );
 }
