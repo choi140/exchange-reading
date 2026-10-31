@@ -1,5 +1,6 @@
 import type { Metadata, Viewport } from "next";
 import "./globals.css";
+import { AnonymousSession } from "@/components/AnonymousSession";
 
 export const metadata: Metadata = {
   title: "낯선 밑줄",
@@ -15,7 +16,9 @@ export const viewport: Viewport = {
 export default function RootLayout({ children }: LayoutProps<"/">) {
   return (
     <html lang="ko" className="h-full antialiased">
-      <body className="min-h-full">{children}</body>
+      <body className="min-h-full">
+        <AnonymousSession>{children}</AnonymousSession>
+      </body>
     </html>
   );
 }
