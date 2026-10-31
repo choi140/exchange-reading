@@ -51,6 +51,7 @@ body {
     #c9d3e3 2rem
   );
   background-attachment: local;
+  background-position: 0 0.35rem;
   line-height: 2rem;
 }
 
