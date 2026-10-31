@@ -1,26 +1,64 @@
+@import "@fontsource/gowun-batang/400.css";
+@import "@fontsource/gowun-batang/700.css";
+@import "@fontsource/gowun-dodum/400.css";
+@import "@fontsource/nanum-pen-script/400.css";
 @import "tailwindcss";
 
-:root {
-  --background: #ffffff;
-  --foreground: #171717;
+/* 디자인 방향: docs/DESIGN.md */
+@theme {
+  --color-paper: #eef0ea;
+  --color-page: #fafbf7;
+  --color-ink: #232838;
+  --color-pencil: #6b7064;
+  --color-rule: #d3d6cc;
+  --color-margin: #d9a3a0;
+
+  --color-pen-black: #232838;
+  --color-pen-blue: #2b55c8;
+  --color-pen-green: #1d7a50;
+  --color-pen-orange: #d2691e;
+
+  --font-serif: "Gowun Batang", "Noto Serif KR", serif;
+  --font-sans: "Gowun Dodum", "Apple SD Gothic Neo", "Malgun Gothic", sans-serif;
+  --font-hand: "Nanum Pen Script", cursive;
 }
 
-@theme inline {
-  --color-background: var(--background);
-  --color-foreground: var(--foreground);
-  --font-sans: var(--font-geist-sans);
-  --font-mono: var(--font-geist-mono);
-}
-
-@media (prefers-color-scheme: dark) {
-  :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
-  }
+html {
+  background: var(--color-paper);
+  color: var(--color-ink);
+  -webkit-text-size-adjust: 100%;
 }
 
 body {
-  background: var(--background);
-  color: var(--foreground);
-  font-family: Arial, Helvetica, sans-serif;
+  font-family: var(--font-sans);
+  word-break: keep-all;
+  overflow-wrap: anywhere;
+}
+
+:focus-visible {
+  outline: 2px solid var(--color-pen-blue);
+  outline-offset: 2px;
+}
+
+/* 공책 줄: 쓰기 칸 배경 */
+.notebook-lines {
+  background-color: var(--color-page);
+  background-image: repeating-linear-gradient(
+    to bottom,
+    transparent 0,
+    transparent calc(2rem - 1px),
+    #c9d3e3 calc(2rem - 1px),
+    #c9d3e3 2rem
+  );
+  background-attachment: local;
+  line-height: 2rem;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    transition-duration: 0.01ms !important;
+  }
 }
