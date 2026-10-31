@@ -1,36 +1,59 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# 낯선 밑줄
 
-## Getting Started
+모르는 사람과 전자책 한 권, 일기장 한 권을 천천히 주고받는 익명 교환독서·교환일기 웹앱.
 
-First, run the development server:
+> 배포 주소: _(1-14 배포 후 추가)_
 
-```bash
-npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
-```
+## 1. 제작한 것 소개
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+**낯선 밑줄**은 친구끼리 하던 교환독서를 낯선 사람과의 경험으로 바꾼 익명 슬로우 소셜 웹앱입니다. 로그인 없이 접속하자마자 시작할 수 있고, 책과 일기 모두 **혼자** 또는 **함께**를 고를 수 있습니다.
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+- **책 읽기** — 저작권이 끝난 한국 단편(운수 좋은 날, 봄·봄, 메밀꽃 필 무렵)을 문단 단위로 읽고, 문단마다 메모를 남깁니다.
+  - 혼자 읽기: 나만 보는 메모(검정 펜).
+  - 함께 읽기: 낯선 사람 최대 3명과 같은 책 방. 각자 펜 색(파랑·초록·주황)으로 구분되고, 내가 먼저 쓰기 전에는 다른 사람의 메모가 가려지는 블라인드, 메모 아래 답글.
+- **일기 쓰기** — 오늘의 질문을 보며 1,000자 이내로 씁니다.
+  - 혼자 쓰기: 나만 보는 일기장.
+  - 교환일기: 낯선 짝과 번갈아 쓰는 일기장. 홈에 "내 차례" 표시.
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+**기술 스택:** Next.js (App Router) · TypeScript · Tailwind CSS · Supabase (익명 로그인, Postgres, RLS) · Vercel
 
-## Learn More
+_(5-13에서 기능 설명, 화면 스크린샷, 배포 주소를 완성합니다.)_
 
-To learn more about Next.js, take a look at the following resources:
+## 2. PRD와 Todo 리스트
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+- [PRD 전문](docs/PRD.md)
+- [Todo 리스트 전문](docs/TODO.md) — 진행 상황은 체크박스로 표시합니다.
+- 원본 문서: [Claude Doc](https://claude.ai/artifact/CzzFGXDqp23qeduMBbtov1)
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+**PRD 요약**
+- 목표: 마감(11/2) 전에 배포된 주소에 들어가자마자 혼자 또는 낯선 사람과 책을 읽고 일기를 쓸 수 있게 한다.
+- 화면 3개: 홈 `/`, 책 리더 `/room/[id]`, 일기장 `/diary/[id]`. 혼자 모드는 함께 모드 화면에서 상대만 없앤 것.
+- 테이블 8개: books, rooms, room_members, notes, unlocks, diaries, diary_members, diary_entries.
 
-## Deploy on Vercel
+**Todo 단계**
+1. 화면 뼈대와 첫 배포
+2. Supabase 연결과 익명 계정
+3. 혼자 읽기와 혼자 일기
+4. 함께 읽기
+5. 교환일기와 마무리
+6. 완료 기준 점검
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
+## 3. Todo 리스트의 변경 내역
 
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+처음 계획(v1)과 비교한 변경은 [Todo 변경 내역](docs/TODO.md#todo-변경-내역)에 기록합니다.
+
+| 버전 | 바뀐 것 |
+|---|---|
+| v1 | 처음 작성: 6단계, 할 일 61개 |
+| v2 | 과제 요건 반영: GitHub 저장소를 1단계 맨 앞으로, README·스킬·완료 기준 점검 할 일 추가 (61 → 70개) |
+| v3 | 스킬을 frontend-design으로 확정, 추가 제안 2·3 승인 (70 → 73개) |
+
+_(5-14에서 구현·테스트 중 바뀐 점을 정리합니다.)_
+
+## 4. 스킬
+
+_(5-15에서 작성: frontend-design 스킬의 SKILL.md 내용, 화면 작업에서 쓰인 방식, 고른 이유)_
+
+## 5. 느낀점, 결론
+
+_(5-16에서 작성)_
