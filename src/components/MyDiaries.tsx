@@ -63,7 +63,7 @@ export function MyDiaries() {
   if (state.diaries.length === 0) {
     return (
       <p className="mt-3 border-y border-rule py-6 text-[15px] leading-relaxed text-pencil">
-        아직 일기장이 없어요. 새 일기장을 눌러 첫 일기장을 만들어 보세요.
+        아직 일기장이 없어요. 아래 “새 일기장 시작하기”에서 골라 보세요.
       </p>
     );
   }
