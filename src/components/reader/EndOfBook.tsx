@@ -1,12 +1,13 @@
 "use client";
 
+import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useId, useState } from "react";
 import { getBrowserSupabase } from "@/lib/supabase/client";
 import { PEN, type PenColor } from "../PenChip";
 import { Sheet } from "../Sheet";
 
-// 7-7 다 읽고 편지 한 장 + 7-8 방 나가기 (책 끝에 놓는다)
+// 7-7 다 읽고 편지 한 장 + 7-8 방 나가기 + 10-3 기념 카드로 가기 (책 끝에 놓는다)
 
 export type Letter = { id: string; user_id: string; body: string; created_at: string };
 export const LETTER_COLUMNS = "id, user_id, body, created_at";
@@ -61,6 +62,14 @@ export function EndOfBook({
   return (
     <section aria-labelledby={`${fieldId}-title`} data-letters className="px-5 pb-6 pt-10 sm:px-8">
       <p className="text-center font-hand text-[26px] text-pencil">— 끝 —</p>
+      <div className="mt-4 text-center">
+        <Link
+          href={`/room/${roomId}/card`}
+          className="inline-flex h-11 items-center rounded-full border border-ink px-5 text-[15px] text-ink"
+        >
+          {together ? "함께 읽은 기념 카드 만들기" : "기념 카드 만들기"}
+        </Link>
+      </div>
       <h2 id={`${fieldId}-title`} className="mt-6 font-serif text-[22px] text-ink">
         {together ? "다 읽었다면, 이 방 사람들에게 편지 한 장" : "다 읽은 나에게 편지 한 장"}
       </h2>

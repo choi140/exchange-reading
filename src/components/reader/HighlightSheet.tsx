@@ -59,7 +59,7 @@ export function HighlightSheet({
             together={together}
             me={me}
             penOf={penOf}
-            quote={paragraphs[h.paragraph_index]?.slice(h.start_offset, h.end_offset) ?? ""}
+            quote={(paragraphs[h.paragraph_index]?.slice(h.start_offset, h.end_offset) ?? "").trim()}
             replies={replies.filter((r) => r.highlight_id === h.id)}
             blind={isBlind(h)}
             isNew={isNew}
