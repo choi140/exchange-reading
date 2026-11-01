@@ -5,21 +5,61 @@
 > **바로 써 보기: https://exchange-reading.vercel.app**
 >
 > 설치나 로그인 없이 브라우저(휴대폰·PC)에서 주소를 열면 바로 홈이 나옵니다.
+> 일반 창·시크릿 창·다른 브라우저는 각각 다른 익명 사용자가 되므로, 창 2~3개로 "낯선 사람"끼리의 함께 읽기·교환일기를 바로 해 볼 수 있습니다.
 
 ## 1. 제작한 것 소개
 
-**낯선 밑줄**은 친구끼리 하던 교환독서를 낯선 사람과의 경험으로 바꾼 익명 슬로우 소셜 웹앱입니다. 로그인 없이 접속하자마자 시작할 수 있고, 책과 일기 모두 **혼자** 또는 **함께**를 고를 수 있습니다.
+**낯선 밑줄**은 친구끼리 하던 교환독서를 낯선 사람과의 경험으로 바꾼 익명 슬로우 소셜 웹앱입니다.
 
-- **책 읽기** — 저작권이 끝난 한국 단편(운수 좋은 날, 봄·봄, 메밀꽃 필 무렵)을 문단 단위로 읽고, 문단마다 메모를 남깁니다.
-  - 혼자 읽기: 나만 보는 메모(검정 펜).
-  - 함께 읽기: 낯선 사람 최대 3명과 같은 책 방. 각자 펜 색(파랑·초록·주황)으로 구분되고, 내가 먼저 쓰기 전에는 다른 사람의 메모가 가려지는 블라인드, 메모 아래 답글.
-- **일기 쓰기** — 오늘의 질문을 보며 1,000자 이내로 씁니다.
-  - 혼자 쓰기: 나만 보는 일기장.
-  - 교환일기: 낯선 짝과 번갈아 쓰는 일기장. 홈에 "내 차례" 표시.
+교환독서는 한 권의 책을 돌려 읽으며 밑줄과 메모를 남기는 놀이입니다. 그런데 아는 사람끼리는 생각이 닮아 있고, 속마음을 적기엔 부끄럽고, 같이 할 사람이 없으면 시작조차 못 합니다. 그래서 이름도 얼굴도 없이 **펜 색으로만 구분되는 낯선 사람**과 책과 일기를 주고받게 했습니다.
 
-**기술 스택:** Next.js (App Router) · TypeScript · Tailwind CSS · Supabase (익명 로그인, Postgres, RLS) · Vercel
+### 주요 기능
 
-_(5-13에서 기능 설명, 화면 스크린샷, 배포 주소를 완성합니다.)_
+| 홈 | 함께 읽기 | 블라인드 | 교환일기 |
+|---|---|---|---|
+| ![홈](docs/screenshots/home.png) | ![함께 읽기](docs/screenshots/together-reader.png) | ![블라인드](docs/screenshots/blind.png) | ![교환일기](docs/screenshots/exchange-diary.png) |
+
+> 스크린샷은 README용 예시 데이터로 찍은 휴대폰(390px) 화면입니다.
+
+**로그인 없이 시작** — 처음 접속하면 화면 뒤에서 익명 계정이 만들어지고 그 브라우저에 기억됩니다(Supabase 익명 로그인).
+
+**책 읽기** — 저작권이 끝난 한국 단편 3편(운수 좋은 날, 봄·봄, 메밀꽃 필 무렵)을 문단 단위로 읽습니다. 문단을 누르면 여백에 메모(300자)를 남기고, 오른쪽 여백에 메모 개수가 동그라미로 표시됩니다.
+
+| | 혼자 읽기 | 함께 읽기 |
+|---|---|---|
+| 방 | 나만 있는 방. 같은 책을 다시 열면 같은 방 | 같은 책의 빈자리 있는 방(최대 3명). 없으면 새 방 |
+| 펜 색 | 검정 펜 | 남은 색 중 하나: 파란 펜 · 초록 펜 · 주황 펜 |
+| 메모 | 나만 봅니다 | 같은 방 사람들이 펜 색별로 봅니다 |
+| 블라인드 | — | 내 메모가 없는 문단은 "숨겨진 메모 N개"로만 보입니다. 내가 먼저 쓰거나 "그냥 보기"를 누르면 열립니다 |
+| 답글 | — | 메모 아래 한 단계 답글 |
+
+**일기 쓰기** — 날마다 바뀌는 "오늘의 질문"(10개 순환)을 보며 공책 줄 위에 1,000자 이내로 씁니다.
+
+| | 혼자 쓰기 | 교환일기 |
+|---|---|---|
+| 시작 | 바로 내 일기장이 생깁니다 | 기다리는 사람이 있으면 바로 짝. 없으면 "짝을 기다리는 중" |
+| 쓰기 | 언제든 | 번갈아 한 편씩. 마지막 글이 내 글이면 "짝의 답장을 기다리는 중"으로 잠깁니다 |
+| 홈 표시 | 편 수 | "내 차례" · "짝의 차례" · "짝을 기다리는 중" (알림 대신) |
+
+**권한** — 메모는 같은 방 멤버만, 일기는 같은 일기장 멤버만 읽고 쓸 수 있도록 DB(RLS)에서 막습니다. 혼자 모드는 멤버가 나 하나라서 같은 규칙만으로 "나만 보기"가 됩니다. 남의 방·없는 방 주소로 들어오면 안내한 뒤 홈으로 돌아갑니다.
+
+### 구조
+
+**기술 스택:** Next.js 16 (App Router) · TypeScript · Tailwind CSS 4 · Supabase (익명 로그인, Postgres, RLS) · Vercel
+
+| 화면 | 경로 | 파일 |
+|---|---|---|
+| 홈 (책장, 내 책, 내 일기장) | `/` | `src/app/page.tsx` |
+| 책 리더 (혼자·함께 공통) | `/room/[방 id]` | `src/components/RoomReader.tsx` |
+| 일기장 (혼자·교환 공통) | `/diary/[일기장 id]` | `src/components/DiaryView.tsx` |
+
+| DB | 내용 |
+|---|---|
+| 테이블 8개 | books, rooms, room_members, notes, unlocks, diaries, diary_members, diary_entries (`supabase/01_tables.sql`) |
+| 권한 | 모든 테이블 RLS (`supabase/02_rls.sql`) |
+| 함수 | `start_solo_room`, `create_solo_diary`, `join_room`, `find_diary_partner`, `can_write_diary`, `my_diaries` (`supabase/04~06`) |
+
+방·일기장에 들어가는 일(멤버 추가)은 앱에서 직접 하지 않고 DB 함수로만 합니다. 빈자리 찾기와 펜 색 배정을 한 번에, 동시에 두 사람이 같은 자리를 잡지 않게 처리하기 위해서입니다.
 
 ### 로컬에서 실행하기
 
@@ -30,6 +70,9 @@ _(5-13에서 기능 설명, 화면 스크린샷, 배포 주소를 완성합니�
      1. `supabase/01_tables.sql` — 테이블 8개
      2. `supabase/02_rls.sql` — 권한(RLS) 정책
      3. `supabase/03_books.sql` — 책 3편
+     4. `supabase/04_solo.sql` — 혼자 읽기·혼자 일기 함수
+     5. `supabase/05_together.sql` — 함께 읽기 방 배정, 답글 규칙
+     6. `supabase/06_exchange.sql` — 교환일기 짝 찾기, 번갈아 쓰기 규칙
 2. **환경변수** — `.env.example`을 `.env.local`로 복사하고, Project Settings → API의 값으로 채운다.
    ```
    NEXT_PUBLIC_SUPABASE_URL=https://YOUR-PROJECT.supabase.co
@@ -40,45 +83,186 @@ _(5-13에서 기능 설명, 화면 스크린샷, 배포 주소를 완성합니�
    npm install
    npm run dev
    ```
-   브라우저에서 http://localhost:3000 을 연다. 일반 창·시크릿 창·다른 브라우저는 각각 다른 익명 사용자가 된다.
+   브라우저에서 http://localhost:3000 을 연다.
 
 책 본문을 바꾸려면 `src/data/books.json`을 고친 뒤 `node scripts/gen-books-sql.mjs`로 `supabase/03_books.sql`을 다시 만들어 실행한다.
+
+Vercel에 배포할 때는 같은 환경변수 두 개를 프로젝트 Settings → Environment Variables에 넣고 **다시 배포**해야 한다. `NEXT_PUBLIC_` 값은 빌드할 때 코드에 들어가기 때문이다.
 
 ## 2. PRD와 Todo 리스트
 
 - [PRD 전문](docs/PRD.md)
-- [Todo 리스트 전문](docs/TODO.md) — 진행 상황은 체크박스로 표시합니다.
+- [Todo 리스트 전문](docs/TODO.md) — 할 일 73개, 진행 상황은 체크박스로 표시
+- [디자인 방향](docs/DESIGN.md) — Todo 1-5에서 정한 색·글꼴·배치
 - 원본 문서: [Claude Doc](https://claude.ai/artifact/CzzFGXDqp23qeduMBbtov1)
 
 **PRD 요약**
-- 목표: 마감(11/2) 전에 배포된 주소에 들어가자마자 혼자 또는 낯선 사람과 책을 읽고 일기를 쓸 수 있게 한다.
-- 화면 3개: 홈 `/`, 책 리더 `/room/[id]`, 일기장 `/diary/[id]`. 혼자 모드는 함께 모드 화면에서 상대만 없앤 것.
-- 테이블 8개: books, rooms, room_members, notes, unlocks, diaries, diary_members, diary_entries.
+- 목표: 마감(11/2) 전에, 배포된 주소에 들어가자마자 혼자 또는 낯선 사람과 책을 읽고 일기를 쓸 수 있게 한다.
+- 범위: 책·일기 각각 혼자/함께 두 모드. 로그인 화면, 안전장치, 릴레이·기한, 알림, 취향 매칭, 대나무숲은 이번에 하지 않는다.
+- 설계: Next.js + Supabase + Vercel. 서버를 따로 만들지 않고 계정·DB·권한을 Supabase에 맡긴다.
 
-**Todo 단계**
-1. 화면 뼈대와 첫 배포
-2. Supabase 연결과 익명 계정
-3. 혼자 읽기와 혼자 일기
-4. 함께 읽기
-5. 교환일기와 마무리
-6. 완료 기준 점검
+**Todo 단계** — 화면을 먼저 만들고 기능을 나중에 붙인다. 단계마다 배포한다.
+
+| 단계 | 내용 | 할 일 |
+|---|---|---|
+| 1 | 화면 뼈대와 첫 배포 | 15 |
+| 2 | Supabase 연결과 익명 계정 | 12 |
+| 3 | 혼자 읽기와 혼자 일기 | 11 |
+| 4 | 함께 읽기 | 9 |
+| 5 | 교환일기와 마무리 | 17 |
+| 6 | 완료 기준 점검 | 9 |
+
+커밋은 할 일 1~3개마다 `[할 일 번호] 내용` 형식으로 나눠 push했다 ([커밋 기록](https://github.com/choi140/exchange-reading/commits/main)).
 
 ## 3. Todo 리스트의 변경 내역
 
-처음 계획(v1)과 비교한 변경은 [Todo 변경 내역](docs/TODO.md#todo-변경-내역)에 기록합니다.
+자세한 기록은 [Todo 변경 내역](docs/TODO.md#todo-변경-내역)에 있다. 처음 계획(v1)과 최종을 비교하면 다음과 같다.
 
-| 버전 | 바뀐 것 |
-|---|---|
-| v1 | 처음 작성: 6단계, 할 일 61개 |
-| v2 | 과제 요건 반영: GitHub 저장소를 1단계 맨 앞으로, README·스킬·완료 기준 점검 할 일 추가 (61 → 70개) |
-| v3 | 스킬을 frontend-design으로 확정, 추가 제안 2·3 승인 (70 → 73개) |
+### 계획 단계에서 바뀐 것 (v1 → v3)
 
-_(5-14에서 구현·테스트 중 바뀐 점을 정리합니다.)_
+| 버전 | 바뀐 것 | 이유 |
+|---|---|---|
+| v1 | 처음 작성: 6단계, 할 일 61개 | — |
+| v2 | GitHub Public 저장소 만들기·연결을 1단계 맨 앞으로. README 할 일(1-4, 1-15, 5-13~5-16), 스킬 정하기(1-5), 과제 요건 점검(6-8, 6-9), 커밋·변경 기록 규칙 추가 (61 → 70개) | 과제 제출 요건(Public 저장소, 중간 push, README 5개 항목) 반영 |
+| v3 | 스킬을 frontend-design으로 확정. 추가 제안 승인: 없는 방 주소 안내(5-9), SQL 파일 보관과 로컬 실행 방법(2-11, 2-12) (70 → 73개) | 채점자가 직접 실행해 볼 수 있게, 남의 방 주소가 고장처럼 보이지 않게 |
+
+### 구현하면서 바뀐 것
+
+| 할 일 | 처음 계획 | 실제 |
+|---|---|---|
+| 2-3 | books: id, title, author, source, paragraphs | `year` 칸 추가해 홈·리더에 발표 연도 표시 |
+| 2-5, 5-11 | 책 SQL을 직접 작성 | 본문을 `books.json`으로 분리하고 SQL을 만드는 스크립트 추가 |
+| 2-9 | 홈 책 목록만 DB에서 읽기 | 리더 본문도 DB에서 읽기 (홈과 리더가 같은 데이터를 보게) |
+| 3-7 | 혼자 일기장은 함수 없이 바로 만든다 (PRD #9) | DB 함수 `create_solo_diary()`로 만든다. 만든 직후엔 아직 멤버가 아니라 RLS 때문에 그 일기장을 읽을 수도 들어갈 수도 없었다 |
+| 1-8, 3-2 | 책 카드에 버튼 | 1단계의 "책 제목을 누르면 본문" 임시 링크와 예시 일기장을 3단계에서 삭제 |
+| 4-4 | 리더 상단에 내 펜 색 | 이 방 사람들 전체의 펜 색·별명과 빈자리 수도 표시 |
+| 4-7 | 한 단계 답글 | 화면뿐 아니라 DB 정책에서도 답글의 답글을 막음 |
+| 5-3 | 서로 다른 펜 색 | 먼저 온 사람 파란 펜, 짝 주황 펜으로 고정 |
+| 5-4 | 쓰기 창 잠금 | DB 함수 `can_write_diary()`로도 막음. 짝이 오기 전에도 잠그고 "다시 확인하기" 버튼 추가 (알림이 없어서) |
+| 5-6 | 홈에 "내 차례" | DB 함수 `my_diaries()`로 "내 차례"·"짝의 차례"·"짝을 기다리는 중"을 한 번에 계산 |
+| 5-7 | 로딩·빈 화면·에러 | 화면별 상태에 더해 앱 전체의 "없는 페이지", "예상 못한 오류" 화면 추가 |
+| 5-8 | 375px 점검 | 320px까지 점검 |
+| 5-9 | 안내 후 홈으로 | 안내 문구와 함께 5초 뒤 자동으로 홈 이동, 일기장 주소에도 적용 |
+
+### 테스트 후 생긴 변화
+
+| 언제 | 문제 | 고친 것 |
+|---|---|---|
+| 2단계 확인 | 배포 주소에 "Supabase 연결 정보(환경변수)가 없어요"가 뜸 | 환경변수를 넣기 전에 만들어진 배포였다. Vercel에서 다시 배포해 해결하고 2-10과 README에 "넣은 뒤 다시 배포"를 적음 |
+| 3단계 확인 | 새 일기장을 만든 뒤 일기 칸이 눌리지 않음 | Next.js 16은 지난 화면을 지우지 않고 숨겨 두어서, 열린 선택창(모달)이 남아 화면 전체를 막았다. 이동 전과 화면이 숨겨질 때 모달을 닫도록 수정 |
+| 3단계 확인 | 시크릿 창에서 방 주소를 열자 Vercel 로그인 창이 뜸 | 배포마다 생기는 미리보기 주소는 Vercel 배포 보호 대상이었다. 확인은 정식 주소(exchange-reading.vercel.app)로만 하기로 함 |
+| 5단계 디자인 점검 | "내 차례" 표시를 주황색으로 만들었더니 "주황 펜" 사람처럼 보임 | 색은 사람만 뜻한다는 디자인 원칙에 맞춰 잉크색으로 변경 |
+
+### 하지 않기로 한 것
+
+로그인 화면, 안전장치(연락처 가림·신고·위기 표현 안내·연령 확인), 순서대로 넘기는 릴레이와 기한, 문장 드래그 하이라이트, 마지막 장 편지, 대나무숲, 취향 매칭, 알림, 관리자 화면, 메모 레이어 모드. 모르는 사람에게 주소를 공개하기 전에는 안전장치를 먼저 넣어야 한다 (PRD #6, #11).
 
 ## 4. 스킬
 
-_(5-15에서 작성: frontend-design 스킬의 SKILL.md 내용, 화면 작업에서 쓰인 방식, 고른 이유)_
+### 사용한 스킬: frontend-design
+
+Anthropic이 공개한 Claude 스킬로, 새 화면을 만들 때 "어디서 본 듯한 기본값"이 아니라 주제에 맞는 의도적인 디자인을 하도록 안내한다. 원문은 [`docs/skills/frontend-design/SKILL.md`](docs/skills/frontend-design/SKILL.md)에 있고, 라이선스(Apache 2.0)는 같은 폴더의 `LICENSE.txt`다.
+
+<details>
+<summary>SKILL.md 전문 펼치기</summary>
+
+```markdown
+---
+name: frontend-design
+description: Guidance for distinctive, intentional visual design when building new UI or reshaping an existing one. Helps with aesthetic direction, typography, and making choices that don't read as templated defaults.
+license: Complete terms in LICENSE.txt
+---
+
+# Frontend Design
+
+Approach this as the design lead at a design studio known for giving every client a distinct visual identity that is not mistaken for anyone else's. This client has already rejected proposals that felt cliché or templated, and is paying for a distinctive point of view: make deliberate, opinionated choices about palette, typography, and layout that are specific to this brief, and take aesthetic risk if justified.
+
+## Ground your designs in the subject matter
+
+If the brief does not identify what the product or subject matter is, identify it yourself before designing, and confirm with the client. You can come up with one concrete subject, the design's audience, and the design's primary job, as a proposal. If there's any information in your memory about the client's preferences or context about what they're building, use that as a hint. The subject's industry, subject matter, materials, and vernacular are where distinctive visual choices come from — a design for a toy for girls aged 8–11 will be very aesthetically different from a dashboard for financial analysts. Build with the brief's real content and subject matter throughout.
+
+## Design principles
+
+For web designs, the hero is the first thing viewers will see. Open with the most characteristic thing in the subject's world, in the form that is most appropriate: a headline, an image, an animation, a live demo, an interactive moment, or other treatments. Be deliberate with your choice: a big number with a small label, supporting stats, and a gradient accent is the default treatment, so only use it if that's truly the best option.
+
+Typography carries the personality of the page. You don't need a different typeface for display or headline text and body content: use one family or two, and if two, make them clearly distinct.
+
+Choose your typefaces deliberately, not the default families you would reach for on any other project, and set a clear type scale following the default guidance of The Elements of Typographic Style with intentional weights, widths, and spacing. When type is used as a headline or visual element, use the type treatment itself as an active part of the design, not a neutral delivery vehicle for the content.
+
+Default to line lengths of less than 80 characters. Serif typefaces can have slightly longer line lengths; give serif body text slightly more line-height than a sans-serif.
+
+Avoid these default typographic treatments; they are the commonest tells of a generated page:
+- Accenting just a single word or phrase in a headline, like putting one word in italic/bold or a different color.
+- Using all caps for labels.
+- Adding unnecessary typographic labels above content.
+
+Visual structure is information. Structural devices like outlines, borders, numbering, eyebrows, dividers, labels, etc., encode useful information about the content rather than decorate it. Many generic designs use numbered markers (01 / 02 / 03), but that's only appropriate if the content actually is a sequence — like a stepped process or a timeline. Before adding numbered markers, check the content really is a sequence.
+
+Use non-user-triggered motion sparingly and deliberately, only to draw attention. A single orchestrated moment — one page-load sequence or one reveal — lands better than scattered effects; fade-and-slide-up entrances on each section and hover transitions on every card are the generic default and read as AI-generated. Motion that answers a person's action (opening, expanding, confirming) is welcome when it shows what changed.
+
+Consider written content carefully. Often a design brief may not contain real content, and it's up to you to come up with copy and placeholder content. Copy can make a design feel as templated as the design itself. See the below section on writing for more guidance.
+
+## Process: plan, review against the brief, build, critique
+
+For calibration, AI-generated design right now clusters around some traits:
+1. a warm cream background (near #F4F1EA) with a high-contrast serif display and a terracotta or warm-clay accent (often near #D97757 — Anthropic's own Claude-interaction accent, so on a user's brief it reads as a tell);
+2. a near-black background with a single bright acid-green or vermilion accent;
+3. a broadsheet-style layout with hairline rules, zero border-radius, and dense newspaper-like columns;
+4. the SaaS-card kit: content chopped into identical rounded cards, one border-radius on everything regardless of hierarchy, the same soft grey shadow (rgba(0,0,0,.1)) under each, and gradient washes as decoration;
+5. template chrome that appears whatever the subject: a tracked-out ALL-CAPS eyebrow label above every heading; meta strings joined with middle dots ('A · B · C'); labels built as 'WORD — fragment' with a spaced em dash; tinted near-black (#0B0B0B, #111) standing in for black; a monospace face for small data labels; a '→' appended to link and button text.
+
+All traits are legitimate for some briefs, but they are defaults rather than choices, and they appear regardless of subject. Where the brief pins down a visual direction, follow it exactly — the brief's own words always win, including when it asks for one of these looks. Where it leaves an axis free, don't spend that freedom on one of these defaults. As with a hired human designer, there's often a careful balance between doing what you're good at and taking each project as a chance to experiment and learn.
+
+Work in two passes. First, brainstorm a short design plan based on the client's design brief: create a compact token system with color, type, layout, and principles.
+- Color: describe the core base palette as 4–6 named hex values.
+- Type: the typefaces and their roles.
+- Layout: a layout concept, using one-sentence prose descriptions and ASCII wireframes to ideate and compare. Include alignment guidance; should the content be left aligned, center aligned, justified?
+- Principles: the high-level guidance for what makes this page unique.
+
+Then review that plan against the brief before building: if any part of it reads like the generic default you would produce for any similar page (work through a similar prompt to see if you arrive somewhere similar) rather than a choice made for this specific brief — revise that part, say what you changed and why. Only after you've confirmed the relative uniqueness of your design plan should you start to write the code, following the revised plan.
+
+When writing the code, be careful of structuring your CSS selector specificities. It's easy to generate CSS classes that cancel each other out (especially with a type-based selector like .section and an element-based selector like .cta). This can happen often with padding/margin between sections.
+
+## Restraint and self-critique
+
+Spend your boldness in one place. Let one element be the memorable thing, keep everything around it quiet and disciplined, and cut any decoration that does not serve the brief. Build to a quality floor without announcing it: responsive down to mobile, visible keyboard focus, reduced motion respected, visually accessible, harmonious color palettes. Critique your own work as you build, taking screenshots to review if your environment supports it — a picture is worth 1000 tokens. Consider Chanel's advice: before leaving the house, take a look in the mirror and remove one accessory. Human creatives have memory and always try to do something new, so if you have a space to quickly jot down notes about what you've tried, it can help you in future passes.
+
+## More on writing in design
+
+Words appear in a design for one reason: to make it easier to understand and use. They are design content, not decoration. Bring the same intentionality and minimalism to copywriting that you would bring to spacing and color. Before writing anything, ask what the design needs to say, and how it can best be said to help the person navigate the experience.
+
+Write from the end user's perspective. Name things by what users will understand in simple language, not by how the system is built. A user manages notifications, not webhook config. Describe what something is or does in plain terms rather than selling it. Being specific and legible to new users is always better than being clever.
+
+Use active voice as default. A CTA says exactly what happens when it is used: "Save changes," not "Submit." An action keeps the same name through the whole flow, so the button that says "Publish" produces a toast that says "Published." The vocabulary of an interface is the signposting for someone navigating the product. Cohesion and consistency are how people learn their way around.
+
+Treat failure and emptiness as moments for direction, not mood. Explain what went wrong and how to fix it, in the interface's voice rather than a person's. Errors don't apologize, and they are never vague about what happened. An empty screen is an invitation to act.
+
+Keep the tone conversational: plain verbs, sentence case, no filler, with tone matched to the brand and the audience. Let each written element do exactly one job.
+```
+
+</details>
+
+### 고른 이유
+
+- 이 앱은 기능만큼 **분위기**가 중요하다. "낯선 사람과 천천히 책을 돌려 읽는" 느낌이 화면에서 나지 않으면 그냥 메모 앱이 된다.
+- 바이브코딩으로 화면을 만들면 둥근 카드, 그림자, 보라색 그라데이션 같은 비슷한 모양이 나오기 쉽다. 이 스킬은 그런 "AI가 만든 티가 나는 기본값" 목록을 구체적으로 짚고 피하게 해 준다.
+- 혼자 작업하는 마감 프로젝트라 디자이너가 없다. 디자인 결정을 한 번 정해 두고(1-5) 이후 화면이 모두 따르게 하는 절차가 필요했다.
+- 직접 스킬을 만들지 않은 이유: 필요한 것이 "디자인 판단을 돕는 일반적인 절차"여서, 이미 잘 정리된 스킬을 쓰는 편이 마감 안에 더 확실했다.
+
+### 작업에서 쓰인 방식
+
+스킬이 시키는 대로 **계획 → 브리프와 대조해 수정 → 구현 → 스크린샷으로 자기 비평**을 거쳤고, 결과를 [`docs/DESIGN.md`](docs/DESIGN.md)에 남긴 뒤 모든 화면(1-7~1-13, 이후 단계)이 이 방향을 따랐다.
+
+1. **주제에서 출발** — 돌려 읽은 책의 여백, 색이 다른 볼펜, 공책 줄, 밑줄을 재료로 삼았다. 핵심 아이디어는 **"펜 색이 곧 사람이다"**: 사람은 이름 없이 검정·파랑·초록·주황 펜으로만 구분되므로, 색은 장식이 아니라 "누가 썼는가"를 뜻할 때만 쓴다.
+2. **토큰 정하기** — 색 9개(종이·지면·잉크·연필·여백선 + 펜 4색), 글꼴 3개(본문 고운바탕, 앱의 말 고운돋움, 손으로 쓴 것 나눔손글씨 펜), 본문 18px / 줄간격 1.95, 폭 640px 안 왼쪽 정렬.
+3. **기본값과 대조해 고치기** — 스킬이 꼽은 AI 디자인의 흔한 특징과 비교해 세 가지를 바꿨다.
+   - 처음 떠올린 "따뜻한 크림색 종이 + 명조 + 테라코타 포인트"는 책 앱의 뻔한 기본값이라, 회녹빛 갱지와 청흑색 잉크로 바꾸고 포인트 색을 따로 두지 않았다.
+   - 그림자 있는 카드 격자 대신 도서관 대출 카드처럼 **가는 줄로 나뉜 목록**을 썼다.
+   - 섹션 위 영문 대문자 라벨(BOOKS 등)을 뺐다.
+4. **과감함은 한 곳에만** — 본문은 인쇄된 명조, **메모·답글·오늘의 질문은 그 사람의 펜 색 손글씨**로 쓴다. 실물 교환독서의 감각을 그대로 옮긴 대비이고, 로고 아래 파란 손그림 밑줄 하나 외에는 장식을 두지 않았다.
+5. **스크린샷으로 자기 비평** — 매 단계 휴대폰 폭으로 화면을 찍어 확인하고 고쳤다. 예: 공책 줄이 글자를 가로지르던 것을 글자 아래로 내림, "내 차례" 표시가 주황 펜 사람처럼 보여 잉크색으로 바꿈, 320px에서 메모 창이 넘치지 않는지 확인.
+6. **품질 기준** — 키보드 포커스 표시, 움직임 줄이기 설정 존중, 버튼 높이 44px 이상, 빈 화면은 다음 행동을 알려주는 문장("책장에서 한 권 골라 읽기를 시작해 보세요")으로.
 
 ## 5. 느낀점, 결론
 
-_(5-16에서 작성)_
+_(5-16에서 직접 작성)_
