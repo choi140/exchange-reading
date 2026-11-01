@@ -5,21 +5,20 @@ import { useEffect, useState } from "react";
 import { getBrowserSupabase } from "@/lib/supabase/client";
 import { useAnonymousSession } from "./AnonymousSession";
 
-// 3-10 홈 "내 일기장": 내 일기장 목록 (PRD #4.3)
+// 3-10 홈 "내 일기장" + 5-6 교환일기 "내 차례" 표시 (PRD #4.3)
 type MyDiary = {
-  diary: {
-    id: string;
-    mode: "solo" | "exchange";
-    status: "waiting" | "active";
-    created_at: string;
-    entries: { count: number }[];
-  } | null;
+  id: string;
+  mode: "solo" | "exchange";
+  status: "waiting" | "active";
+  created_at: string;
+  entry_count: number;
+  my_turn: boolean;
 };
 
 type State =
   | { status: "loading" }
   | { status: "error"; message: string }
-  | { status: "ready"; diaries: NonNullable<MyDiary["diary"]>[] };
+  | { status: "ready"; diaries: MyDiary[] };
 
 const dateFormat = new Intl.DateTimeFormat("ko-KR", {
   month: "long",
@@ -40,22 +39,11 @@ export function MyDiaries() {
     const supabase = getBrowserSupabase();
     if (!supabase) return;
     let cancelled = false;
-    supabase
-      .from("diary_members")
-      .select("diary:diaries(id, mode, status, created_at, entries:diary_entries(count))")
-      .eq("user_id", session.userId)
-      .order("joined_at", { ascending: false })
-      .then(({ data, error }) => {
-        if (cancelled) return;
-        if (error) setState({ status: "error", message: error.message });
-        else
-          setState({
-            status: "ready",
-            diaries: ((data ?? []) as unknown as MyDiary[])
-              .map((d) => d.diary)
-              .filter((d): d is NonNullable<MyDiary["diary"]> => d !== null),
-          });
-      });
+    supabase.rpc("my_diaries").then(({ data, error }) => {
+      if (cancelled) return;
+      if (error) setState({ status: "error", message: error.message });
+      else setState({ status: "ready", diaries: (data ?? []) as MyDiary[] });
+    });
     return () => {
       cancelled = true;
     };
@@ -87,9 +75,17 @@ export function MyDiaries() {
             <span>
               <span className="block font-serif text-[18px] text-ink">{diaryTitle(d.mode)}</span>
               <span className="mt-0.5 block text-[14px] text-pencil">
-                {dateFormat.format(new Date(d.created_at))}에 시작, {d.entries[0]?.count ?? 0}편
+                {dateFormat.format(new Date(d.created_at))}에 시작, {Number(d.entry_count)}편
               </span>
             </span>
+            {d.mode === "exchange" &&
+              (d.status === "waiting" ? (
+                <span className="shrink-0 text-[14px] text-pencil">짝을 기다리는 중</span>
+              ) : d.my_turn ? (
+                <span className="shrink-0 rounded-full bg-ink px-3 py-1 text-[14px] text-page">내 차례</span>
+              ) : (
+                <span className="shrink-0 text-[14px] text-pencil">짝의 차례</span>
+              ))}
           </Link>
         </li>
       ))}
