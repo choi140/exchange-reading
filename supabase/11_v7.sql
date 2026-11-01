@@ -116,3 +116,61 @@ revoke all on function public.claim_recovery_key(text) from public, anon;
 grant execute on function public.my_recovery_key() to authenticated;
 grant execute on function public.create_recovery_key() to authenticated;
 grant execute on function public.claim_recovery_key(text) to authenticated;
+
+-- 10-2 짝이 멀어졌을 때: 교환일기를 "마무리"한다 (둘 다 지난 일기는 계속 볼 수 있고, 새로 쓸 수는 없다)
+create or replace function public.close_diary(p_diary uuid)
+returns void
+language plpgsql
+security definer
+set search_path = ''
+as $$
+begin
+  if not public.is_diary_member(p_diary) then
+    raise exception '들어가 있지 않은 일기장이에요';
+  end if;
+  update public.diaries set status = 'closed' where id = p_diary and mode = 'exchange' and status = 'active';
+end;
+$$;
+revoke all on function public.close_diary(uuid) from public, anon;
+grant execute on function public.close_diary(uuid) to authenticated;
+
+-- 홈 "내 일기장"에 마지막 일기 시각도 함께 (짝이 오래 조용하면 표시하려고)
+drop function if exists public.my_diaries();
+create function public.my_diaries()
+returns table (
+  id uuid,
+  mode text,
+  status text,
+  title text,
+  created_at timestamptz,
+  entry_count bigint,
+  my_turn boolean,
+  last_entry_at timestamptz
+)
+language sql
+stable
+security invoker
+set search_path = ''
+as $$
+  select
+    d.id,
+    d.mode,
+    d.status,
+    d.title,
+    d.created_at,
+    (select count(*) from public.diary_entries e where e.diary_id = d.id) as entry_count,
+    (
+      d.mode = 'exchange'
+      and d.status = 'active'
+      and coalesce(
+        (select e.user_id from public.diary_entries e where e.diary_id = d.id order by e.created_at desc limit 1),
+        '00000000-0000-0000-0000-000000000000'::uuid
+      ) <> auth.uid()
+    ) as my_turn,
+    (select max(e.created_at) from public.diary_entries e where e.diary_id = d.id) as last_entry_at
+  from public.diaries d
+  join public.diary_members m on m.diary_id = d.id and m.user_id = auth.uid() and m.left_at is null
+  order by m.joined_at desc;
+$$;
+revoke all on function public.my_diaries() from public, anon;
+grant execute on function public.my_diaries() to authenticated;
