@@ -186,6 +186,7 @@ export function DiaryView({ diaryId }: { diaryId: string }) {
             ) : (
               <DiaryWriter
                 diaryId={ready.diary.id}
+                entryCount={entries.length}
                 onSaved={(entry) => setEntries((prev) => [entry, ...prev])}
               />
             )}

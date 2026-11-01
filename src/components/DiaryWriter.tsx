@@ -1,27 +1,28 @@
 "use client";
 
-import { useState, useSyncExternalStore } from "react";
+import { useState } from "react";
 import { questionFor } from "@/data/questions";
 import { getBrowserSupabase } from "@/lib/supabase/client";
 import type { Entry } from "./DiaryView";
 
 const MAX = 1000;
-const noop = () => () => {};
 
-// 1-12 쓰기 창 + 1-13 오늘의 질문 + 3-8 diary_entries에 저장 (1,000자, 그날의 질문도 같이)
+// 1-12 쓰기 창 + 1-13 오늘의 질문 + 3-8 diary_entries에 저장 (1,000자, 그 질문도 같이)
+// 7-3 질문은 이 일기장에 쓴 편 수(entryCount)로 고른다 → 한 편 쓰면 다음 질문
 export function DiaryWriter({
   diaryId,
+  entryCount,
   onSaved,
 }: {
   diaryId: string;
+  entryCount: number;
   onSaved: (entry: Entry) => void;
 }) {
   const [body, setBody] = useState("");
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [saved, setSaved] = useState(false);
-  // 날짜는 접속한 순간 기준으로 고른다 (빌드 시점 날짜로 굳지 않게)
-  const question = useSyncExternalStore(noop, () => questionFor(), () => "");
+  const question = questionFor(diaryId, entryCount);
 
   async function save(e: React.FormEvent) {
     e.preventDefault();
@@ -50,7 +51,7 @@ export function DiaryWriter({
   return (
     <form onSubmit={save}>
       <div className="border-l-2 border-pen-blue pl-4">
-        <p className="text-[14px] text-pencil">오늘의 질문</p>
+        <p className="text-[14px] text-pencil">{entryCount + 1}번째 일기의 질문</p>
         <p className="mt-1 font-hand text-[26px] leading-snug text-pen-blue">
           {question || " "}
         </p>
@@ -85,7 +86,7 @@ export function DiaryWriter({
         </button>
       </div>
       <p aria-live="polite" className={`mt-2 min-h-6 text-[14px] ${error ? "text-pen-orange" : "text-pencil"}`}>
-        {error ?? (saved ? "일기를 남겼어요. 아래 지난 일기에 들어갔어요." : "")}
+        {error ?? (saved ? "일기를 남겼어요. 다음 질문으로 넘어갔어요." : "")}
       </p>
     </form>
   );

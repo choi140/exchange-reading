@@ -1,4 +1,6 @@
-// 1-13 오늘의 질문 10개. 날짜(한국 시간 기준 일수)로 하나를 골라 순환한다 (PRD #4.2).
+// 오늘의 질문 (PRD #4.2)
+// 1-13: 10개를 날짜로 순환 → 7-3: 30개로 늘리고, 일기장마다 "한 편 쓸 때마다" 다음 질문으로 넘어간다.
+// 같은 일기장의 두 사람(교환일기)은 같은 질문을 보고, 일기장마다 시작 질문이 달라 다른 일기장과 겹치지 않는다.
 
 export const questions = [
   "오늘 가장 오래 바라본 것은 무엇이었나요?",
@@ -11,12 +13,35 @@ export const questions = [
   "지금 이 순간 들리는 소리를 적어 보세요.",
   "요즘 나를 지치게 하는 것과 버티게 하는 것은 무엇인가요?",
   "내일의 나에게 한 줄 남긴다면?",
+  "최근에 웃음이 터진 순간을 떠올려 보세요.",
+  "요즘 자주 걷는 길에는 무엇이 보이나요?",
+  "누군가에게 받은 말 중 아직 마음에 남은 말이 있나요?",
+  "지금 내 방에서 가장 오래된 물건은 무엇인가요?",
+  "올해 안에 꼭 해 보고 싶은 작은 일 하나는?",
+  "오늘 나를 조금 기분 좋게 만든 것은?",
+  "요즘 미루고 있는 일이 있다면, 왜 미루게 될까요?",
+  "어떤 냄새를 맡으면 떠오르는 장소가 있나요?",
+  "혼자 있는 시간에 주로 무엇을 하나요?",
+  "최근에 새로 알게 된 것이 있나요?",
+  "십 년 전의 나에게 해 주고 싶은 말은?",
+  "요즘 듣는 노래나 소리 중 하나를 소개해 주세요.",
+  "오늘 하루 중 다시 돌아가고 싶은 순간은?",
+  "나를 잘 아는 사람이 나를 한 단어로 말한다면?",
+  "최근에 고마웠지만 말하지 못한 사람이 있나요?",
+  "가장 편안하다고 느끼는 장소는 어디인가요?",
+  "요즘 마음에 걸리는 걱정 하나를 내려놓듯 적어 보세요.",
+  "오늘 본 하늘은 어떤 색이었나요?",
+  "좋아하는 계절과 그 이유는?",
+  "이 일기장을 함께 읽는 사람에게 묻고 싶은 질문 하나는?",
 ];
 
-const DAY = 24 * 60 * 60 * 1000;
-const KST_OFFSET = 9 * 60 * 60 * 1000;
+// 일기장 id로 시작 위치를 정하고, 쓴 편 수만큼 다음 질문으로 넘어간다
+function startOffset(diaryId: string) {
+  let h = 0;
+  for (let i = 0; i < diaryId.length; i++) h = (h * 31 + diaryId.charCodeAt(i)) >>> 0;
+  return h % questions.length;
+}
 
-export function questionFor(date: Date = new Date()) {
-  const dayNumber = Math.floor((date.getTime() + KST_OFFSET) / DAY);
-  return questions[dayNumber % questions.length];
+export function questionFor(diaryId: string, entryCount: number) {
+  return questions[(startOffset(diaryId) + entryCount) % questions.length];
 }
