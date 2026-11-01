@@ -4,9 +4,10 @@ import Link from "next/link";
 import { useEffect, useState } from "react";
 import { getBrowserSupabase } from "@/lib/supabase/client";
 import { useAnonymousSession } from "./AnonymousSession";
+import { getLastSeen } from "@/lib/prefs";
 import { PEN, type PenColor } from "./PenChip";
 
-// 3-6 홈 "내 책": 내가 들어간 방 목록 (PRD #4.3)
+// 3-6 홈 "내 책": 내가 들어간 방 목록 (PRD #4.3) + 7-5 새 메모 수
 type MyRoom = {
   pen_color: PenColor;
   room: {
@@ -20,7 +21,7 @@ type MyRoom = {
 type State =
   | { status: "loading" }
   | { status: "error"; message: string }
-  | { status: "ready"; rooms: MyRoom[] };
+  | { status: "ready"; rooms: MyRoom[]; fresh: Record<string, number> };
 
 export function MyShelf() {
   const session = useAnonymousSession();
@@ -31,16 +32,34 @@ export function MyShelf() {
     const supabase = getBrowserSupabase();
     if (!supabase) return;
     let cancelled = false;
-    supabase
-      .from("room_members")
-      .select("pen_color, room:rooms(id, mode, created_at, book:books(title, author))")
-      .eq("user_id", session.userId)
-      .order("joined_at", { ascending: false })
-      .then(({ data, error }) => {
-        if (cancelled) return;
-        if (error) setState({ status: "error", message: error.message });
-        else setState({ status: "ready", rooms: (data ?? []) as unknown as MyRoom[] });
-      });
+    (async () => {
+      const { data, error } = await supabase
+        .from("room_members")
+        .select("pen_color, room:rooms(id, mode, created_at, book:books(title, author))")
+        .eq("user_id", session.userId)
+        .order("joined_at", { ascending: false });
+      if (cancelled) return;
+      if (error) {
+        setState({ status: "error", message: error.message });
+        return;
+      }
+      const rooms = (data ?? []) as unknown as MyRoom[];
+      // 7-5 함께 읽기 방마다 내가 마지막으로 본 뒤 남이 쓴 메모·답글 수
+      const togetherIds = rooms.filter((r) => r.room?.mode === "together").map((r) => r.room!.id);
+      const fresh: Record<string, number> = {};
+      if (togetherIds.length) {
+        const notesRes = await supabase
+          .from("notes")
+          .select("room_id, created_at")
+          .in("room_id", togetherIds)
+          .neq("user_id", session.userId);
+        for (const n of notesRes.data ?? []) {
+          const seen = getLastSeen(n.room_id as string);
+          if (seen && (n.created_at as string) > seen) fresh[n.room_id as string] = (fresh[n.room_id as string] ?? 0) + 1;
+        }
+      }
+      if (!cancelled) setState({ status: "ready", rooms, fresh });
+    })();
     return () => {
       cancelled = true;
     };
@@ -76,8 +95,11 @@ export function MyShelf() {
                 {room!.mode === "solo" ? "혼자 읽기" : "함께 읽기"}
               </span>
             </span>
-            <span className={`shrink-0 font-hand text-[20px] ${PEN[pen_color].className}`}>
-              {PEN[pen_color].label}
+            <span className="flex shrink-0 items-center gap-3">
+              {state.fresh[room!.id] > 0 && (
+                <span className="rounded-full bg-ink px-3 py-1 text-[13px] text-page">새 메모 {state.fresh[room!.id]}</span>
+              )}
+              <span className={`font-hand text-[20px] ${PEN[pen_color].className}`}>{PEN[pen_color].label}</span>
             </span>
           </Link>
         </li>
