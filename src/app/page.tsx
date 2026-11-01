@@ -3,6 +3,7 @@ import { Logo } from "@/components/Logo";
 import { BookShelf } from "@/components/BookShelf";
 import { NewDiaryButton } from "@/components/NewDiaryButton";
 import { HomeCodeButton } from "@/components/HomeCodeButton";
+import { NightToggle } from "@/components/reader/ReaderSettings";
 import { listBooks } from "@/data/books";
 import { MyShelf } from "@/components/MyShelf";
 import { MyDiaries } from "@/components/MyDiaries";
@@ -19,8 +20,9 @@ export default function Home() {
           모르는 사람과 책 한 권, 일기장 한 권을 천천히 주고받는 곳.
           로그인 없이 바로 시작해요.
         </p>
-        <div className="mt-5">
+        <div className="mt-5 flex flex-wrap gap-2">
           <HomeCodeButton />
+          <NightToggle />
         </div>
       </header>
 

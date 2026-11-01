@@ -23,7 +23,24 @@
   --font-hand: "Nanum Pen Script", cursive;
 }
 
+/* 7-4 밤 모드: 같은 이름의 색을 어두운 값으로 바꾼다. 펜 색은 어두운 바탕에서 읽히도록 밝게 */
+[data-theme="night"] {
+  --color-paper: #15171d;
+  --color-page: #1c1f27;
+  --color-ink: #e4e1d8;
+  --color-pencil: #9b9e94;
+  --color-rule: #343945;
+  --color-margin: #8c5653;
+  --color-pen-black: #e4e1d8;
+  --color-pen-blue: #86a6ff;
+  --color-pen-green: #5ec897;
+  --color-pen-orange: #f2a464;
+  --notebook-line: #2f3a52;
+  color-scheme: dark;
+}
+
 html {
+  --notebook-line: #c9d3e3;
   background: var(--color-paper);
   color: var(--color-ink);
   -webkit-text-size-adjust: 100%;
@@ -47,13 +64,25 @@ body {
     to bottom,
     transparent 0,
     transparent calc(2rem - 1px),
-    #c9d3e3 calc(2rem - 1px),
-    #c9d3e3 2rem
+    var(--notebook-line) calc(2rem - 1px),
+    var(--notebook-line) 2rem
   );
   background-attachment: local;
   background-position: 0 0.35rem;
   line-height: 2rem;
 }
+
+/* 7-1 페이지 넘김: 넘긴 방향에서 살짝 들어온다 (사용자가 넘길 때만) */
+@keyframes page-from-right {
+  from { opacity: 0; transform: translateX(24px); }
+  to { opacity: 1; transform: none; }
+}
+@keyframes page-from-left {
+  from { opacity: 0; transform: translateX(-24px); }
+  to { opacity: 1; transform: none; }
+}
+.page-next { animation: page-from-right 180ms ease-out; }
+.page-prev { animation: page-from-left 180ms ease-out; }
 
 @media (prefers-reduced-motion: reduce) {
   *,
