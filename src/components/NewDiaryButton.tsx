@@ -1,62 +1,51 @@
 "use client";
 
 import { useRouter } from "next/navigation";
-import { useEffect, useRef, useState } from "react";
+import { useState } from "react";
 import { getBrowserSupabase } from "@/lib/supabase/client";
 import { useAnonymousSession } from "./AnonymousSession";
+import { CodeJoinForm } from "./CodeJoinForm";
+import { ChoiceButton, Sheet } from "./Sheet";
 
-// 1-9 "새 일기장" 버튼과 "혼자 쓰기"·"교환일기" 선택창
-// 3-7 혼자 쓰기 → create_solo_diary로 일기장을 만들고 이동
-// 5-2 교환일기 → find_diary_partner로 짝이 있으면 그 일기장, 없으면 기다리는 일기장으로 이동
+type DiaryRpc = "create_solo_diary" | "find_diary_partner" | "create_private_diary";
+
+// 1-9 "새 일기장" 선택창
+// 3-7 혼자 쓰기 → create_solo_diary
+// 5-2 / 7-2 교환일기 → 낯선 사람과(find_diary_partner) · 코드로 만들기(create_private_diary) · 코드로 들어가기
 export function NewDiaryButton() {
   const router = useRouter();
   const session = useAnonymousSession();
-  const dialogRef = useRef<HTMLDialogElement>(null);
   const [open, setOpen] = useState(false);
-  const [picked, setPicked] = useState<string | null>(null);
-  const [busy, setBusy] = useState(false);
+  const [step, setStep] = useState<"mode" | "exchange">("mode");
+  const [busy, setBusy] = useState<DiaryRpc | null>(null);
+  const [notice, setNotice] = useState<string | null>(null);
 
-  async function createDiary(mode: "solo" | "exchange") {
+  async function createDiary(rpc: DiaryRpc) {
     const supabase = getBrowserSupabase();
     if (!supabase || session.status !== "ready") {
-      setPicked("익명 계정을 준비하는 중이에요. 잠시 뒤 다시 눌러 주세요.");
+      setNotice("익명 계정을 준비하는 중이에요. 잠시 뒤 다시 눌러 주세요.");
       return;
     }
-    setBusy(true);
-    setPicked(mode === "solo" ? "일기장을 만드는 중…" : "짝을 찾는 중…");
-    const { data, error } = await supabase.rpc(
-      mode === "solo" ? "create_solo_diary" : "find_diary_partner",
-    );
+    setBusy(rpc);
+    setNotice(null);
+    const { data, error } = await supabase.rpc(rpc);
     if (error || !data) {
-      setBusy(false);
-      setPicked(`일기장을 만들지 못했어요. 다시 눌러 주세요. (${error?.message ?? "응답 없음"})`);
+      setBusy(null);
+      setNotice(`일기장을 만들지 못했어요. 다시 눌러 주세요. (${error?.message ?? "응답 없음"})`);
       return;
     }
-    dialogRef.current?.close();
     setOpen(false);
-    setBusy(false);
-    setPicked(null);
+    setBusy(null);
     router.push(`/diary/${data}`);
   }
-
-  useEffect(() => {
-    const d = dialogRef.current;
-    if (!d) return;
-    if (open && !d.open) d.showModal();
-    if (!open && d.open) d.close();
-    // 다른 화면으로 넘어가면 Next.js가 이 화면을 지우지 않고 숨겨 두기 때문에,
-    // 모달이 열린 채로 남으면 다음 화면 전체가 눌리지 않는다. 숨겨질 때 반드시 닫는다.
-    return () => {
-      if (d.open) d.close();
-    };
-  }, [open]);
 
   return (
     <>
       <button
         type="button"
         onClick={() => {
-          setPicked(null);
+          setNotice(null);
+          setStep("mode");
           setOpen(true);
         }}
         className="h-10 rounded-full border border-ink px-4 text-[15px] text-ink active:translate-y-px"
@@ -64,70 +53,61 @@ export function NewDiaryButton() {
         새 일기장
       </button>
 
-      <dialog
-        ref={dialogRef}
+      <Sheet
+        open={open}
         onClose={() => setOpen(false)}
-        onClick={(e) => {
-          if (e.target === dialogRef.current) setOpen(false);
-        }}
-        className="m-auto mb-0 w-full max-w-[640px] bg-transparent p-0 backdrop:bg-ink/40 sm:mb-auto"
+        title={step === "mode" ? "어떤 일기장을 만들까요?" : "누구와 교환일기를 쓸까요?"}
       >
-        <div className="rounded-t-2xl bg-page px-6 pb-8 pt-6 sm:rounded-2xl">
-          <h2 className="font-serif text-[22px] text-ink">
-            어떤 일기장을 만들까요?
-          </h2>
-          <div className="mt-5 grid gap-3">
-            <ChoiceButton
-              title="혼자 쓰기"
-              desc="나만 보는 일기장이에요. 언제든 쓸 수 있어요."
-              disabled={busy}
-              onClick={() => createDiary("solo")}
-            />
-            <ChoiceButton
-              title="교환일기"
-              desc="낯선 짝과 한 편씩 번갈아 써요. 짝이 없으면 올 때까지 기다려요."
-              disabled={busy}
-              onClick={() => createDiary("exchange")}
-            />
-          </div>
-          <p aria-live="polite" className="mt-4 min-h-6 text-[14px] text-pencil">
-            {picked}
+        <div className="mt-5 grid grid-cols-[minmax(0,1fr)] gap-3">
+          {step === "mode" ? (
+            <>
+              <ChoiceButton
+                title={busy === "create_solo_diary" ? "일기장을 만드는 중…" : "혼자 쓰기"}
+                desc="나만 보는 일기장이에요. 언제든 쓸 수 있어요."
+                disabled={busy !== null}
+                onClick={() => createDiary("create_solo_diary")}
+              />
+              <ChoiceButton
+                title="교환일기"
+                desc="짝과 한 편씩 번갈아 써요. 낯선 사람과도, 아는 사람과도 쓸 수 있어요."
+                disabled={busy !== null}
+                onClick={() => {
+                  setNotice(null);
+                  setStep("exchange");
+                }}
+              />
+            </>
+          ) : (
+            <>
+              <ChoiceButton
+                title={busy === "find_diary_partner" ? "짝을 찾는 중…" : "낯선 사람과 쓰기"}
+                desc="교환일기를 기다리는 사람이 있으면 바로 짝이 돼요. 없으면 올 때까지 기다려요."
+                disabled={busy !== null}
+                onClick={() => createDiary("find_diary_partner")}
+              />
+              <ChoiceButton
+                title={busy === "create_private_diary" ? "일기장을 만드는 중…" : "코드로 일기장 만들기"}
+                desc="아는 사람과 써요. 6자리 참여 코드가 생기면 친구에게 보내 주세요."
+                disabled={busy !== null}
+                onClick={() => createDiary("create_private_diary")}
+              />
+              <div className="rounded-lg border border-rule bg-paper/60 px-4 py-4">
+                <CodeJoinForm onDone={() => setOpen(false)} />
+              </div>
+              <button
+                type="button"
+                onClick={() => setStep("mode")}
+                className="h-10 text-left text-[14px] text-pencil underline underline-offset-4"
+              >
+                처음으로
+              </button>
+            </>
+          )}
+          <p aria-live="polite" className="min-h-5 text-[14px] text-pen-orange">
+            {notice}
           </p>
-          <button
-            type="button"
-            onClick={() => setOpen(false)}
-            className="mt-2 h-11 w-full rounded-full text-[15px] text-pencil underline underline-offset-4"
-          >
-            닫기
-          </button>
         </div>
-      </dialog>
+      </Sheet>
     </>
-  );
-}
-
-function ChoiceButton({
-  title,
-  desc,
-  onClick,
-  disabled,
-}: {
-  title: string;
-  desc: string;
-  onClick: () => void;
-  disabled?: boolean;
-}) {
-  return (
-    <button
-      type="button"
-      onClick={onClick}
-      disabled={disabled}
-      className="rounded-lg border border-rule bg-paper/60 px-4 py-4 text-left hover:border-ink disabled:opacity-60 active:translate-y-px"
-    >
-      <span className="block font-serif text-[18px] text-ink">{title}</span>
-      <span className="mt-1 block text-[14px] leading-relaxed text-pencil">
-        {desc}
-      </span>
-    </button>
   );
 }

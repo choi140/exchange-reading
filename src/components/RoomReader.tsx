@@ -4,6 +4,7 @@ import Link from "next/link";
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { getBrowserSupabase } from "@/lib/supabase/client";
 import { useAnonymousSession } from "./AnonymousSession";
+import { InviteCode } from "./CodeJoinForm";
 import { NotAllowed } from "./NotAllowed";
 import { PEN, PenChip, type PenColor } from "./PenChip";
 
@@ -18,6 +19,8 @@ type Mode = "solo" | "together";
 type Room = {
   id: string;
   mode: Mode;
+  is_private: boolean;
+  invite_code: string | null;
   book: {
     title: string;
     author: string;
@@ -57,7 +60,7 @@ export function RoomReader({ roomId }: { roomId: string }) {
 
     const roomRes = await supabase
       .from("rooms")
-      .select("id, mode, book:books(title, author, year, source, paragraphs)")
+      .select("id, mode, is_private, invite_code, book:books(title, author, year, source, paragraphs)")
       .eq("id", roomId)
       .maybeSingle();
     if (roomRes.error) {
@@ -191,6 +194,12 @@ export function RoomReader({ roomId }: { roomId: string }) {
                 <span className="text-[14px] text-pencil">빈자리 {ROOM_SIZE - members.length}</span>
               )}
             </p>
+            {room.is_private && room.invite_code && (
+              <InviteCode
+                code={room.invite_code}
+                note={members.length < ROOM_SIZE ? "친구에게 이 코드를 보내면 같은 방에서 읽을 수 있어요 (최대 3명)." : "방이 다 찼어요."}
+              />
+            )}
             <p className="mt-3 text-[14px] leading-relaxed text-pencil">
               문단을 누르면 여백에 메모를 남길 수 있어요. 다른 사람의 메모는 그 문단에 내 메모를 먼저 남기면 열려요.
             </p>

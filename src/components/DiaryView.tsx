@@ -6,13 +6,20 @@ import { getBrowserSupabase } from "@/lib/supabase/client";
 import { useAnonymousSession } from "./AnonymousSession";
 import { DiaryWriter } from "./DiaryWriter";
 import { diaryTitle } from "./MyDiaries";
+import { InviteCode } from "./CodeJoinForm";
 import { NotAllowed } from "./NotAllowed";
 import { PEN, type PenColor } from "./PenChip";
 
 // 일기장 (혼자·교환 공통) (PRD #4.2)
 // 1-12 화면 · 3-9 지난 일기 · 5-2 짝 기다리기 · 5-4 교대 잠금 · 5-5 글마다 작성자 펜 색
 
-type Diary = { id: string; mode: "solo" | "exchange"; status: "waiting" | "active" };
+type Diary = {
+  id: string;
+  mode: "solo" | "exchange";
+  status: "waiting" | "active";
+  is_private: boolean;
+  invite_code: string | null;
+};
 type Member = { user_id: string; alias: string; pen_color: PenColor };
 export type Entry = {
   id: string;
@@ -46,7 +53,7 @@ export function DiaryView({ diaryId }: { diaryId: string }) {
   > => {
     const supabase = getBrowserSupabase();
     if (!supabase) return { state: { status: "error", message: "Supabase 연결 정보가 없어요." } };
-    const diaryRes = await supabase.from("diaries").select("id, mode, status").eq("id", diaryId).maybeSingle();
+    const diaryRes = await supabase.from("diaries").select("id, mode, status, is_private, invite_code").eq("id", diaryId).maybeSingle();
     if (diaryRes.error) {
       if (diaryRes.error.code === "22P02") return { state: { status: "missing" } };
       return { state: { status: "error", message: diaryRes.error.message } };
@@ -138,6 +145,12 @@ export function DiaryView({ diaryId }: { diaryId: string }) {
         <>
           <header className="px-5 pt-10 sm:px-8">
             <h1 className="font-serif text-[30px] font-bold leading-tight text-ink">{diaryTitle(ready.diary.mode)}</h1>
+            {exchange && ready.diary.is_private && ready.diary.invite_code && (
+              <InviteCode
+                code={ready.diary.invite_code}
+                note={waiting ? "친구에게 이 코드를 보내 주세요. 친구가 코드로 들어오면 짝이 돼요." : "이 교환일기의 코드예요."}
+              />
+            )}
             {exchange && (
               <p className="mt-4 flex flex-wrap items-baseline gap-x-4 gap-y-1">
                 <span className="text-[14px] text-pencil">함께 쓰는 사람</span>
@@ -155,7 +168,11 @@ export function DiaryView({ diaryId }: { diaryId: string }) {
             {waiting ? (
               <WaitBox
                 title="짝을 기다리는 중"
-                desc="교환일기를 고른 다른 사람이 오면 이 일기장의 짝이 돼요. 짝이 생기면 둘 중 누구든 첫 일기를 쓸 수 있어요."
+                desc={
+                  ready.diary.is_private
+                    ? "위 참여 코드로 친구가 들어오면 짝이 돼요. 짝이 생기면 둘 중 누구든 첫 일기를 쓸 수 있어요."
+                    : "교환일기를 고른 다른 사람이 오면 이 일기장의 짝이 돼요. 짝이 생기면 둘 중 누구든 첫 일기를 쓸 수 있어요."
+                }
                 onRefresh={refresh}
                 refreshing={refreshing}
               />
