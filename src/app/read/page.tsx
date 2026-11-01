@@ -12,7 +12,7 @@ export default function ReadPage() {
         <header>
           <h1 className="font-serif text-[32px] font-bold leading-tight text-ink">교환독서</h1>
           <p className="mt-3 max-w-[30em] text-[15px] leading-relaxed text-pencil">
-            한 권의 책을 혼자, 낯선 사람과, 또는 코드로 친구와 읽어요. 마음에 드는 문장에 내 펜 색으로 밑줄을 긋고 한마디를 남겨요.
+            한 권의 책을 혼자, 낯선 사람과, 또는 코드로 친구와 읽어요. 문단을 누르면 여백에 메모를 남길 수 있어요.
           </p>
         </header>
 
@@ -28,7 +28,7 @@ export default function ReadPage() {
             책장
           </h2>
           <p className="mt-1 text-[14px] text-pencil">
-            혼자 읽거나, 함께 읽기에서 낯선 사람 또는 아는 사람(참여 코드)과 같은 책에 밑줄을 나눠요.
+            혼자 읽거나, 함께 읽기에서 낯선 사람 또는 아는 사람(참여 코드)과 같은 책에 메모를 나눠요.
           </p>
           <div className="mt-4">
             <Suspense fallback={<ShelfLoading />}>

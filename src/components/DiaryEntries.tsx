@@ -65,9 +65,8 @@ export function EntryPreview({
         >
           {entry.body}
         </span>
-        <span className="mt-2 flex gap-3 text-[13px] text-pencil">
-          {commentCount > 0 && <span>댓글 {commentCount}</span>}
-          <span className="underline underline-offset-4">이 날 일기 전체 보기</span>
+        <span className="mt-2 block text-[13px] text-pencil">
+          {commentCount > 0 ? `댓글 ${commentCount} · ` : ""}이 날 일기 전체 보기
         </span>
       </button>
     </li>

@@ -4,7 +4,6 @@ import { useMemo, useState } from "react";
 import { PEN, type PenColor } from "./PenChip";
 
 // 8-5 일기 달력: 일기를 쓴 날에 쓴 사람의 펜 색 동그라미. 교환일기에서 둘 다 쓴 날은 두 색을 반씩.
-// 요일 머리에는 색을 쓰지 않는다 (색은 사람만 뜻한다 — 7~9단계 디자인 점검)
 
 const PEN_VAR: Record<PenColor, string> = {
   black: "var(--color-pen-black)",
@@ -89,7 +88,7 @@ export function DiaryCalendar({
           <span
             key={w}
             role="columnheader"
-            className={`py-1 text-[13px] ${i === 0 || i === 6 ? "text-ink" : "text-pencil"}`}
+            className={`py-1 text-[13px] ${i === 0 ? "text-pen-orange" : i === 6 ? "text-pen-blue" : "text-pencil"}`}
           >
             {w}
           </span>

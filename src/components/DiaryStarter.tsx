@@ -35,7 +35,7 @@ export function DiaryStarter() {
   }
 
   return (
-    <div className="grid grid-cols-[minmax(0,1fr)] border-t border-rule">
+    <div className="grid grid-cols-[minmax(0,1fr)] gap-3 sm:grid-cols-2">
       <ChoiceButton
         title={busy === "create_solo_diary" ? "만드는 중…" : "혼자 쓰기"}
         desc="나만 보는 일기장. 언제든 쓸 수 있어요."
@@ -54,11 +54,11 @@ export function DiaryStarter() {
         disabled={busy !== null}
         onClick={() => start("create_private_diary")}
       />
-      <div className="border-b border-rule py-4">
+      <div className="rounded-lg border border-rule bg-paper/60 px-4 py-4">
         <CodeJoinForm />
       </div>
       {notice && (
-        <p role="alert" className="pt-3 text-[14px] text-pen-orange">
+        <p role="alert" className="text-[14px] text-pen-orange sm:col-span-2">
           {notice}
         </p>
       )}

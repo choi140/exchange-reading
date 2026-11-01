@@ -138,7 +138,7 @@ export function DiaryView({ diaryId }: { diaryId: string }) {
     if (entries.length % 2 === 1 && entries[0].prompt) {
       return { question: entries[0].prompt, questionLabel: `짝이 답한 ${round + 1}번째 질문에 나도 답해요` };
     }
-    return { question: questionFor(ready.diary.id, round), questionLabel: `${round + 1}번째 질문 (두 사람이 같은 질문에 답해요)` };
+    return { question: questionFor(ready.diary.id, round), questionLabel: `${round + 1}번째 질문 · 두 사람이 같은 질문에 답해요` };
   })();
 
   function openDay(key: string, has: boolean) {
