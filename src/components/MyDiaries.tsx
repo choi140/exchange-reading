@@ -10,6 +10,7 @@ type MyDiary = {
   id: string;
   mode: "solo" | "exchange";
   status: "waiting" | "active" | "closed";
+  title?: string | null;
   created_at: string;
   entry_count: number;
   my_turn: boolean;
@@ -73,7 +74,8 @@ export function MyDiaries() {
         <li key={d.id} className="border-b border-rule">
           <Link href={`/diary/${d.id}`} className="flex items-baseline justify-between gap-4 py-4">
             <span>
-              <span className="block font-serif text-[18px] text-ink">{diaryTitle(d.mode)}</span>
+              <span className="block font-serif text-[18px] text-ink [overflow-wrap:anywhere]">{d.title || diaryTitle(d.mode)}</span>
+              {d.title && <span className="block text-[13px] text-pencil">{diaryTitle(d.mode)}</span>}
               <span className="mt-0.5 block text-[14px] text-pencil">
                 {dateFormat.format(new Date(d.created_at))}에 시작, {Number(d.entry_count)}편
               </span>

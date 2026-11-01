@@ -2,21 +2,26 @@
 
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { useCallback, useEffect, useState } from "react";
+import { useCallback, useEffect, useMemo, useState } from "react";
+import { questionFor } from "@/data/questions";
 import { getBrowserSupabase } from "@/lib/supabase/client";
 import { useAnonymousSession } from "./AnonymousSession";
 import { AppShell } from "./AppShell";
+import { InviteCode } from "./CodeJoinForm";
 import { DiaryCalendar, dayKey } from "./DiaryCalendar";
+import { COMMENT_COLUMNS, EntryCard, EntryPreview, type Comment, type Entry } from "./DiaryEntries";
 import { DiaryWriter } from "./DiaryWriter";
 import { diaryTitle } from "./MyDiaries";
-import { InviteCode } from "./CodeJoinForm";
 import { NotAllowed } from "./NotAllowed";
 import { PEN, type PenColor } from "./PenChip";
 import { Sheet } from "./Sheet";
 
+export type { Entry } from "./DiaryEntries";
+
 // 일기장 (혼자·교환 공통) (PRD #4.2)
-// 1-12 화면 · 3-9 지난 일기 · 5-2 짝 기다리기 · 5-4 교대 잠금 · 5-5 글마다 작성자 펜 색 · 7-10 나가기·끝난 교환일기
-// 8-5 일기를 위에(달력 + 쓴 일기) · 8-6 오늘의 일기 쓰기 탭
+// 1-12 화면 · 3-9 지난 일기 · 5-2 짝 기다리기 · 5-4 교대 잠금 · 5-5 작성자 펜 색 · 7-10 나가기
+// 8-5 달력 + 쓴 일기 · 8-6 오늘의 일기 쓰기 탭
+// 9-1 이름 바꾸기 · 9-2 내 일기 지우기 · 9-3 교환일기는 두 사람이 같은 질문 · 9-4 댓글 · 9-5 날짜별 탭
 
 type Diary = {
   id: string;
@@ -24,15 +29,9 @@ type Diary = {
   status: "waiting" | "active" | "closed";
   is_private: boolean;
   invite_code: string | null;
+  title?: string | null;
 };
 type Member = { user_id: string; alias: string; pen_color: PenColor; left_at: string | null };
-export type Entry = {
-  id: string;
-  user_id: string;
-  prompt: string;
-  body: string;
-  created_at: string;
-};
 
 type State =
   | { status: "loading" }
@@ -40,48 +39,51 @@ type State =
   | { status: "error"; message: string }
   | { status: "ready"; diary: Diary; members: Member[] };
 
-const dateFormat = new Intl.DateTimeFormat("ko-KR", {
-  month: "long",
-  day: "numeric",
-  weekday: "short",
-  timeZone: "Asia/Seoul",
-});
+type Tab = "list" | "write" | "day";
+
+const dayTitleFormat = new Intl.DateTimeFormat("ko-KR", { month: "long", day: "numeric", timeZone: "Asia/Seoul" });
+const dayLongFormat = new Intl.DateTimeFormat("ko-KR", { year: "numeric", month: "long", day: "numeric", weekday: "long", timeZone: "Asia/Seoul" });
+const keyToDate = (k: string) => new Date(`${k}T12:00:00+09:00`);
 
 export function DiaryView({ diaryId }: { diaryId: string }) {
   const session = useAnonymousSession();
   const [state, setState] = useState<State>({ status: "loading" });
   const [entries, setEntries] = useState<Entry[]>([]);
+  const [comments, setComments] = useState<Comment[]>([]);
   const [refreshing, setRefreshing] = useState(false);
-  // 8-6 탭: 쓴 일기(달력 포함)가 기본, 쓰기는 따로
-  const [tab, setTab] = useState<"list" | "write">("list");
-  const [flashDay, setFlashDay] = useState<string | null>(null);
+  const [tab, setTab] = useState<Tab>("list");
+  const [day, setDay] = useState<string | null>(null);
   const [justSaved, setJustSaved] = useState<string | null>(null);
 
-  const load = useCallback(async (): Promise<
-    { state: State; entries?: Entry[] }
-  > => {
+  const load = useCallback(async (): Promise<{ state: State; entries?: Entry[]; comments?: Comment[] }> => {
     const supabase = getBrowserSupabase();
     if (!supabase) return { state: { status: "error", message: "Supabase 연결 정보가 없어요." } };
-    const diaryRes = await supabase.from("diaries").select("id, mode, status, is_private, invite_code").eq("id", diaryId).maybeSingle();
+    let diaryRes = await supabase
+      .from("diaries")
+      .select("id, mode, status, is_private, invite_code, title")
+      .eq("id", diaryId)
+      .maybeSingle();
+    // 10_v6.sql 전이면 title 칸이 없다
+    if (diaryRes.error?.code === "42703") {
+      diaryRes = await supabase.from("diaries").select("id, mode, status, is_private, invite_code").eq("id", diaryId).maybeSingle();
+    }
     if (diaryRes.error) {
       if (diaryRes.error.code === "22P02") return { state: { status: "missing" } };
       return { state: { status: "error", message: diaryRes.error.message } };
     }
     if (!diaryRes.data) return { state: { status: "missing" } };
 
-    const [membersRes, entriesRes] = await Promise.all([
+    const [membersRes, entriesRes, commentsRes] = await Promise.all([
       supabase.from("diary_members").select("user_id, alias, pen_color, left_at").eq("diary_id", diaryId).order("joined_at"),
-      supabase
-        .from("diary_entries")
-        .select("id, user_id, prompt, body, created_at")
-        .eq("diary_id", diaryId)
-        .order("created_at", { ascending: false }),
+      supabase.from("diary_entries").select("id, user_id, prompt, body, created_at").eq("diary_id", diaryId).order("created_at", { ascending: false }),
+      supabase.from("diary_comments").select(COMMENT_COLUMNS).eq("diary_id", diaryId).order("created_at", { ascending: true }),
     ]);
     const err = membersRes.error ?? entriesRes.error;
     if (err) return { state: { status: "error", message: err.message } };
     return {
       state: { status: "ready", diary: diaryRes.data as Diary, members: (membersRes.data ?? []) as Member[] },
       entries: (entriesRes.data ?? []) as Entry[],
+      comments: commentsRes.error ? [] : ((commentsRes.data ?? []) as Comment[]),
     };
   }, [diaryId]);
 
@@ -91,6 +93,7 @@ export function DiaryView({ diaryId }: { diaryId: string }) {
     load().then((res) => {
       if (cancelled) return;
       if (res.entries) setEntries(res.entries);
+      if (res.comments) setComments(res.comments);
       setState(res.state);
     });
     return () => {
@@ -102,38 +105,54 @@ export function DiaryView({ diaryId }: { diaryId: string }) {
     setRefreshing(true);
     const res = await load();
     if (res.entries) setEntries(res.entries);
+    if (res.comments) setComments(res.comments);
     setState(res.state);
     setRefreshing(false);
   }
 
+  const commentsByEntry = useMemo(() => {
+    const m = new Map<string, Comment[]>();
+    for (const c of comments) m.set(c.entry_id, [...(m.get(c.entry_id) ?? []), c]);
+    return m;
+  }, [comments]);
+
   const me = session.userId;
   const ready = state.status === "ready" ? state : null;
   const exchange = ready?.diary.mode === "exchange";
-  const penOf = (userId: string): PenColor =>
-    ready?.members.find((m) => m.user_id === userId)?.pen_color ?? "black";
+  const penOf = (userId: string): PenColor => ready?.members.find((m) => m.user_id === userId)?.pen_color ?? "black";
   // 5-4 마지막 일기가 내 글이면 잠금 (DB 정책도 같은 규칙으로 막는다)
   const lastIsMine = entries.length > 0 && entries[0].user_id === me;
   const waiting = exchange && ready?.diary.status === "waiting";
   const closed = exchange && ready?.diary.status === "closed";
   const locked = exchange && !waiting && !closed && lastIsMine;
-
   const canWrite = !!ready && !waiting && !closed && !locked;
   const myTurn = exchange && canWrite;
   const todayKey = dayKey(new Date());
-  const wroteToday = entries.some((e) => e.user_id === me && dayKey(e.created_at) === todayKey);
 
-  function pickDay(key: string, has: boolean) {
+  // 9-3 질문: 혼자 쓰기는 한 편마다 다음 질문.
+  // 교환일기는 두 사람이 같은 질문에 한 번씩 답한다 → 짝이 답한 질문이 있으면 그 질문, 둘 다 답했으면 다음 질문.
+  const { question, questionLabel } = (() => {
+    if (!ready) return { question: "", questionLabel: "" };
+    if (!exchange) return { question: questionFor(ready.diary.id, entries.length), questionLabel: `${entries.length + 1}번째 질문` };
+    const round = Math.floor(entries.length / 2);
+    if (entries.length % 2 === 1 && entries[0].prompt) {
+      return { question: entries[0].prompt, questionLabel: `짝이 답한 ${round + 1}번째 질문에 나도 답해요` };
+    }
+    return { question: questionFor(ready.diary.id, round), questionLabel: `${round + 1}번째 질문 · 두 사람이 같은 질문에 답해요` };
+  })();
+
+  function openDay(key: string, has: boolean) {
     if (!has) {
-      setTab("write");
+      if (key === todayKey) setTab("write");
       return;
     }
-    setTab("list");
-    requestAnimationFrame(() => {
-      const el = document.querySelector(`[data-day="${key}"]`);
-      el?.scrollIntoView({ behavior: "smooth", block: "start" });
-      setFlashDay(key);
-    });
+    setDay(key);
+    setTab("day");
+    requestAnimationFrame(() => document.querySelector('[role="tablist"]')?.scrollIntoView({ behavior: "smooth", block: "start" }));
   }
+
+  const dayEntries = day ? [...entries].filter((e) => dayKey(e.created_at) === day).reverse() : [];
+  const title = ready ? ready.diary.title || diaryTitle(ready.diary.mode) : "";
 
   return (
     <AppShell>
@@ -157,10 +176,7 @@ export function DiaryView({ diaryId }: { diaryId: string }) {
         )}
 
         {state.status === "missing" && (
-          <NotAllowed
-            title="들어갈 수 없는 일기장이에요"
-            desc="없는 일기장이거나, 이 브라우저의 내가 쓰는 일기장이 아니에요."
-          />
+          <NotAllowed title="들어갈 수 없는 일기장이에요" desc="없는 일기장이거나, 이 브라우저의 내가 쓰는 일기장이 아니에요." />
         )}
 
         {state.status === "error" && (
@@ -172,7 +188,14 @@ export function DiaryView({ diaryId }: { diaryId: string }) {
         {ready && (
           <>
             <header className="px-5 pt-4 sm:px-8">
-              <h1 className="font-serif text-[30px] font-bold leading-tight text-ink">{diaryTitle(ready.diary.mode)}</h1>
+              <TitleEditor
+                diaryId={ready.diary.id}
+                title={title}
+                placeholder={diaryTitle(ready.diary.mode)}
+                onRenamed={(t) =>
+                  setState((s) => (s.status === "ready" ? { ...s, diary: { ...s.diary, title: t } } : s))
+                }
+              />
               {exchange && (
                 <p className="mt-3 flex flex-wrap items-baseline gap-x-4 gap-y-1">
                   <span className="text-[14px] text-pencil">함께 쓰는 사람</span>
@@ -185,80 +208,103 @@ export function DiaryView({ diaryId }: { diaryId: string }) {
                 </p>
               )}
               {exchange && ready.diary.is_private && ready.diary.invite_code && waiting && (
-                <InviteCode
-                  code={ready.diary.invite_code}
-                  note="친구에게 이 코드를 보내 주세요. 친구가 코드로 들어오면 짝이 돼요."
-                />
+                <InviteCode code={ready.diary.invite_code} note="친구에게 이 코드를 보내 주세요. 친구가 코드로 들어오면 짝이 돼요." />
               )}
             </header>
 
-            {/* 8-6 탭: 일기(달력+쓴 일기) / 오늘의 일기 쓰기 */}
-            <div role="tablist" aria-label="일기장" className="mt-6 flex border-b border-rule px-5 sm:px-8">
-              <TabButton id="list" current={tab} onSelect={setTab}>
+            {/* 8-6 / 9-5 탭: 일기 · 오늘의 일기 쓰기 · (고른 날짜) */}
+            <div role="tablist" aria-label="일기장" className="mt-6 flex overflow-x-auto border-b border-rule px-5 sm:px-8">
+              <TabButton on={tab === "list"} onClick={() => setTab("list")}>
                 일기 <span className="text-[13px] text-pencil">{entries.length}편</span>
               </TabButton>
-              <TabButton id="write" current={tab} onSelect={setTab}>
+              <TabButton on={tab === "write"} onClick={() => setTab("write")}>
                 오늘의 일기 쓰기
-                {myTurn && !wroteToday && <span aria-label="쓸 수 있음" className="ml-1.5 inline-block h-2 w-2 rounded-full bg-ink align-middle" />}
+                {myTurn && <span aria-label="쓸 수 있음" className="ml-1.5 inline-block h-2 w-2 rounded-full bg-ink align-middle" />}
               </TabButton>
+              {day && (
+                <span className="flex items-stretch">
+                  <TabButton on={tab === "day"} onClick={() => setTab("day")}>
+                    {dayTitleFormat.format(keyToDate(day))}
+                  </TabButton>
+                  <button
+                    type="button"
+                    aria-label="날짜 탭 닫기"
+                    onClick={() => {
+                      setDay(null);
+                      setTab("list");
+                    }}
+                    className="-mb-px border-b-2 border-transparent px-1 text-[18px] text-pencil"
+                  >
+                    ×
+                  </button>
+                </span>
+              )}
             </div>
 
-            {tab === "list" ? (
+            {tab === "list" && (
               <section role="tabpanel" aria-label="일기" className="px-5 pt-6 sm:px-8">
-                <DiaryCalendar entries={entries} penOf={penOf} onPickDay={pickDay} todayKey={todayKey} />
+                <DiaryCalendar entries={entries} penOf={penOf} onPickDay={openDay} todayKey={todayKey} />
+                <p className="mt-2 text-[13px] text-pencil">날짜를 누르면 그날 쓴 일기만 따로 볼 수 있어요.</p>
 
                 {entries.length === 0 ? (
                   <div className="mt-6 border-y border-rule py-8 text-center">
-                    <p className="text-[15px] text-pencil">
-                      {waiting ? "짝이 생기면 여기에 둘의 일기가 쌓여요." : "아직 쓴 일기가 없어요."}
-                    </p>
-                    {!waiting && (
-                      <button
-                        type="button"
-                        onClick={() => setTab("write")}
-                        className="mt-4 h-11 rounded-full bg-ink px-6 text-[15px] text-page"
-                      >
+                    <p className="text-[15px] text-pencil">{waiting ? "짝이 생기면 여기에 둘의 일기가 쌓여요." : "아직 쓴 일기가 없어요."}</p>
+                    {!waiting && !closed && (
+                      <button type="button" onClick={() => setTab("write")} className="mt-4 h-11 rounded-full bg-ink px-6 text-[15px] text-page">
                         첫 일기 쓰러 가기
                       </button>
                     )}
                   </div>
                 ) : (
                   <ol className="mt-6 border-t border-rule">
-                    {entries.map((e, idx) => {
-                      const k = dayKey(e.created_at);
-                      const firstOfDay = idx === entries.findIndex((x) => dayKey(x.created_at) === k);
-                      return (
-                        <li
-                          key={e.id}
-                          data-day={firstOfDay ? k : undefined}
-                          className={`scroll-mt-20 border-b border-rule py-6 transition-colors duration-700 ${
-                            flashDay === k ? "bg-rule/30" : ""
-                          } ${e.id === justSaved ? "bg-rule/30" : ""}`}
-                        >
-                          <p className="flex flex-wrap items-baseline justify-between gap-2 text-[14px] text-pencil">
-                            <span>{dateFormat.format(new Date(e.created_at))}</span>
-                            {exchange && (
-                              <span className={`font-hand text-[20px] leading-none ${PEN[penOf(e.user_id)].className}`}>
-                                {PEN[penOf(e.user_id)].label}
-                                {e.user_id === me ? " (나)" : ""}
-                              </span>
-                            )}
-                          </p>
-                          {e.prompt && <p className="mt-2 font-hand text-[22px] leading-snug text-pencil">{e.prompt}</p>}
-                          <p
-                            className={`mt-3 whitespace-pre-wrap font-serif text-[17px] leading-[1.9] text-ink ${
-                              exchange ? `border-l-2 pl-3 ${PEN[penOf(e.user_id)].border}` : ""
-                            }`}
-                          >
-                            {e.body}
-                          </p>
-                        </li>
-                      );
-                    })}
+                    {entries.map((e) => (
+                      <EntryPreview
+                        key={e.id}
+                        entry={e}
+                        me={me}
+                        exchange={!!exchange}
+                        penOf={penOf}
+                        commentCount={commentsByEntry.get(e.id)?.length ?? 0}
+                        highlight={e.id === justSaved}
+                        onOpen={() => openDay(dayKey(e.created_at), true)}
+                      />
+                    ))}
                   </ol>
                 )}
               </section>
-            ) : (
+            )}
+
+            {tab === "day" && day && (
+              <section role="tabpanel" aria-label={dayLongFormat.format(keyToDate(day))} className="px-5 pt-6 sm:px-8">
+                <h2 className="font-serif text-[22px] text-ink">{dayLongFormat.format(keyToDate(day))}</h2>
+                {dayEntries.length === 0 ? (
+                  <p className="mt-4 border-y border-rule py-6 text-[15px] text-pencil">이 날 쓴 일기가 없어요.</p>
+                ) : (
+                  <div className="mt-2">
+                    {dayEntries.map((e) => (
+                      <EntryCard
+                        key={e.id}
+                        entry={e}
+                        me={me}
+                        exchange={!!exchange}
+                        penOf={penOf}
+                        comments={commentsByEntry.get(e.id) ?? []}
+                        diaryId={ready.diary.id}
+                        canComment={!closed}
+                        onDeleted={(id) => {
+                          setEntries((prev) => prev.filter((x) => x.id !== id));
+                          setComments((prev) => prev.filter((c) => c.entry_id !== id));
+                        }}
+                        onCommentAdded={(c) => setComments((prev) => [...prev, c])}
+                        onCommentDeleted={(id) => setComments((prev) => prev.filter((c) => c.id !== id))}
+                      />
+                    ))}
+                  </div>
+                )}
+              </section>
+            )}
+
+            {tab === "write" && (
               <section role="tabpanel" aria-label="오늘의 일기 쓰기" className="px-5 pt-6 sm:px-8">
                 {closed ? (
                   <div className="rounded-sm border border-dashed border-pencil/60 px-5 py-6">
@@ -281,16 +327,17 @@ export function DiaryView({ diaryId }: { diaryId: string }) {
                 ) : locked ? (
                   <WaitBox
                     title="짝의 답장을 기다리는 중"
-                    desc="마지막 일기를 내가 썼어요. 짝이 한 편을 쓰면 다시 내 차례가 돼요."
+                    desc="마지막 일기를 내가 썼어요. 짝이 같은 질문에 답하면 다음 질문으로 다시 내 차례가 돼요."
                     onRefresh={refresh}
                     refreshing={refreshing}
                   />
                 ) : (
                   <>
-                    <p className="mb-4 text-[14px] text-pencil">{todayFormat.format(new Date())}</p>
+                    <p className="mb-4 text-[14px] text-pencil">{dayLongFormat.format(new Date())}</p>
                     <DiaryWriter
                       diaryId={ready.diary.id}
-                      entryCount={entries.length}
+                      question={question}
+                      questionLabel={questionLabel}
                       onSaved={(entry) => {
                         setEntries((prev) => [entry, ...prev]);
                         setJustSaved(entry.id);
@@ -315,38 +362,101 @@ export function DiaryView({ diaryId }: { diaryId: string }) {
   );
 }
 
-function TabButton({
-  id,
-  current,
-  onSelect,
-  children,
-}: {
-  id: "list" | "write";
-  current: "list" | "write";
-  onSelect: (t: "list" | "write") => void;
-  children: React.ReactNode;
-}) {
-  const on = id === current;
+function TabButton({ on, onClick, children }: { on: boolean; onClick: () => void; children: React.ReactNode }) {
   return (
     <button
       type="button"
       role="tab"
       aria-selected={on}
-      onClick={() => onSelect(id)}
-      className={`-mb-px min-h-12 border-b-2 px-3 text-[16px] ${on ? "border-ink font-bold text-ink" : "border-transparent text-pencil"}`}
+      onClick={onClick}
+      className={`-mb-px min-h-12 shrink-0 border-b-2 px-3 text-[16px] ${on ? "border-ink font-bold text-ink" : "border-transparent text-pencil"}`}
     >
       {children}
     </button>
   );
 }
 
-const todayFormat = new Intl.DateTimeFormat("ko-KR", {
-  year: "numeric",
-  month: "long",
-  day: "numeric",
-  weekday: "long",
-  timeZone: "Asia/Seoul",
-});
+// 9-1 일기장 이름 바꾸기 (교환일기는 두 사람 모두 바꿀 수 있다)
+function TitleEditor({
+  diaryId,
+  title,
+  placeholder,
+  onRenamed,
+}: {
+  diaryId: string;
+  title: string;
+  placeholder: string;
+  onRenamed: (t: string | null) => void;
+}) {
+  const [editing, setEditing] = useState(false);
+  const [value, setValue] = useState(title);
+  const [busy, setBusy] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+
+  async function save(e: React.FormEvent) {
+    e.preventDefault();
+    const supabase = getBrowserSupabase();
+    if (!supabase) return;
+    setBusy(true);
+    setError(null);
+    const next = value.trim();
+    const { error } = await supabase.rpc("rename_diary", { p_diary: diaryId, p_title: next });
+    setBusy(false);
+    if (error) {
+      setError(`이름을 바꾸지 못했어요. (${error.message})`);
+      return;
+    }
+    onRenamed(next || null);
+    setEditing(false);
+  }
+
+  if (!editing) {
+    return (
+      <div className="flex flex-wrap items-baseline gap-x-3">
+        <h1 className="font-serif text-[30px] font-bold leading-tight text-ink [overflow-wrap:anywhere]">{title}</h1>
+        <button
+          type="button"
+          onClick={() => {
+            setValue(title === placeholder ? "" : title);
+            setEditing(true);
+          }}
+          className="h-9 text-[14px] text-pencil underline underline-offset-4"
+        >
+          이름 바꾸기
+        </button>
+      </div>
+    );
+  }
+  return (
+    <form onSubmit={save}>
+      <label htmlFor="diary-title" className="text-[14px] text-pencil">
+        일기장 이름 (30자까지, 비우면 기본 이름)
+      </label>
+      <div className="mt-1 flex gap-2">
+        <input
+          id="diary-title"
+          autoFocus
+          value={value}
+          maxLength={30}
+          placeholder={placeholder}
+          onChange={(e) => setValue(e.target.value)}
+          className="h-12 min-w-0 flex-1 rounded-lg border border-rule bg-page px-3 font-serif text-[20px] text-ink focus:border-ink focus:outline-none"
+        />
+        <button type="button" onClick={() => setEditing(false)} className="h-12 shrink-0 px-2 text-[14px] text-pencil">
+          취소
+        </button>
+        <button type="submit" disabled={busy} className="h-12 shrink-0 rounded-full bg-ink px-4 text-[14px] text-page disabled:opacity-50">
+          {busy ? "…" : "저장"}
+        </button>
+      </div>
+      {error && (
+        <p role="alert" className="mt-1 text-[13px] text-pen-orange">
+          {error}
+        </p>
+      )}
+    </form>
+  );
+}
 
 // 7-10 일기장 나가기
 function LeaveDiaryButton({
