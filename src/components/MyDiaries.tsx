@@ -9,7 +9,7 @@ import { useAnonymousSession } from "./AnonymousSession";
 type MyDiary = {
   id: string;
   mode: "solo" | "exchange";
-  status: "waiting" | "active";
+  status: "waiting" | "active" | "closed";
   created_at: string;
   entry_count: number;
   my_turn: boolean;
@@ -81,6 +81,8 @@ export function MyDiaries() {
             {d.mode === "exchange" &&
               (d.status === "waiting" ? (
                 <span className="shrink-0 text-[14px] text-pencil">짝을 기다리는 중</span>
+              ) : d.status === "closed" ? (
+                <span className="shrink-0 text-[14px] text-pencil">끝남</span>
               ) : d.my_turn ? (
                 <span className="shrink-0 rounded-full bg-ink px-3 py-1 text-[14px] text-page">내 차례</span>
               ) : (

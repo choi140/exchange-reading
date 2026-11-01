@@ -1,6 +1,7 @@
 "use client";
 
 import Link from "next/link";
+import { useRouter } from "next/navigation";
 import { useCallback, useEffect, useState } from "react";
 import { getBrowserSupabase } from "@/lib/supabase/client";
 import { useAnonymousSession } from "./AnonymousSession";
@@ -9,18 +10,19 @@ import { diaryTitle } from "./MyDiaries";
 import { InviteCode } from "./CodeJoinForm";
 import { NotAllowed } from "./NotAllowed";
 import { PEN, type PenColor } from "./PenChip";
+import { Sheet } from "./Sheet";
 
 // 일기장 (혼자·교환 공통) (PRD #4.2)
-// 1-12 화면 · 3-9 지난 일기 · 5-2 짝 기다리기 · 5-4 교대 잠금 · 5-5 글마다 작성자 펜 색
+// 1-12 화면 · 3-9 지난 일기 · 5-2 짝 기다리기 · 5-4 교대 잠금 · 5-5 글마다 작성자 펜 색 · 7-10 나가기·끝난 교환일기
 
 type Diary = {
   id: string;
   mode: "solo" | "exchange";
-  status: "waiting" | "active";
+  status: "waiting" | "active" | "closed";
   is_private: boolean;
   invite_code: string | null;
 };
-type Member = { user_id: string; alias: string; pen_color: PenColor };
+type Member = { user_id: string; alias: string; pen_color: PenColor; left_at: string | null };
 export type Entry = {
   id: string;
   user_id: string;
@@ -61,7 +63,7 @@ export function DiaryView({ diaryId }: { diaryId: string }) {
     if (!diaryRes.data) return { state: { status: "missing" } };
 
     const [membersRes, entriesRes] = await Promise.all([
-      supabase.from("diary_members").select("user_id, alias, pen_color").eq("diary_id", diaryId).order("joined_at"),
+      supabase.from("diary_members").select("user_id, alias, pen_color, left_at").eq("diary_id", diaryId).order("joined_at"),
       supabase
         .from("diary_entries")
         .select("id, user_id, prompt, body, created_at")
@@ -105,7 +107,8 @@ export function DiaryView({ diaryId }: { diaryId: string }) {
   // 5-4 마지막 일기가 내 글이면 잠금 (DB 정책도 같은 규칙으로 막는다)
   const lastIsMine = entries.length > 0 && entries[0].user_id === me;
   const waiting = exchange && ready?.diary.status === "waiting";
-  const locked = exchange && !waiting && lastIsMine;
+  const closed = exchange && ready?.diary.status === "closed";
+  const locked = exchange && !waiting && !closed && lastIsMine;
 
   return (
     <main className="mx-auto w-full max-w-[640px] pb-24">
@@ -157,7 +160,7 @@ export function DiaryView({ diaryId }: { diaryId: string }) {
                 {ready.members.map((m) => (
                   <span key={m.user_id} className={`font-hand text-[22px] leading-none ${PEN[m.pen_color].className}`}>
                     {m.alias}
-                    {m.user_id === me ? " (나)" : ""}
+                    {m.user_id === me ? " (나)" : m.left_at ? " (떠남)" : ""}
                   </span>
                 ))}
               </p>
@@ -165,7 +168,14 @@ export function DiaryView({ diaryId }: { diaryId: string }) {
           </header>
 
           <section aria-label="오늘 일기 쓰기" className="mt-8 px-5 sm:px-8">
-            {waiting ? (
+            {closed ? (
+              <div className="rounded-sm border border-dashed border-pencil/60 px-5 py-6">
+                <p className="font-serif text-[20px] text-ink">짝이 교환일기를 떠났어요</p>
+                <p className="mt-2 text-[15px] leading-relaxed text-pencil">
+                  이 교환일기는 여기서 끝났어요. 지난 일기는 그대로 남아 있지만 새 일기는 쓸 수 없어요. 새 짝과 쓰려면 홈에서 새 일기장을 만들어 주세요.
+                </p>
+              </div>
+            ) : waiting ? (
               <WaitBox
                 title="짝을 기다리는 중"
                 desc={
@@ -226,9 +236,83 @@ export function DiaryView({ diaryId }: { diaryId: string }) {
               </ol>
             )}
           </section>
+
+          <div className="mt-10 px-5 text-right sm:px-8">
+            <LeaveDiaryButton diaryId={ready.diary.id} mode={ready.diary.mode} status={ready.diary.status} />
+          </div>
         </>
       )}
     </main>
+  );
+}
+
+// 7-10 일기장 나가기
+function LeaveDiaryButton({
+  diaryId,
+  mode,
+  status,
+}: {
+  diaryId: string;
+  mode: Diary["mode"];
+  status: Diary["status"];
+}) {
+  const router = useRouter();
+  const [open, setOpen] = useState(false);
+  const [busy, setBusy] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+
+  const deletes = mode === "solo" || status === "waiting";
+  const label = mode === "solo" ? "이 일기장 지우기" : status === "waiting" ? "교환일기 그만두기" : "이 교환일기 나가기";
+  const explain =
+    mode === "solo"
+      ? "이 일기장과 쓴 일기가 모두 지워져요. 되돌릴 수 없어요."
+      : status === "waiting"
+        ? "아직 짝이 없어서 이 교환일기는 지워져요."
+        : status === "closed"
+          ? "짝도 이미 떠난 교환일기예요. 나가면 이 일기장은 완전히 지워져요."
+          : "나가면 이 교환일기는 끝나요. 짝은 지금까지의 일기를 계속 볼 수 있지만 둘 다 새 일기는 쓸 수 없고, 나는 다시 들어올 수 없어요.";
+
+  async function leave() {
+    const supabase = getBrowserSupabase();
+    if (!supabase) return;
+    setBusy(true);
+    setError(null);
+    const { error } = await supabase.rpc("leave_diary", { p_diary: diaryId });
+    if (error) {
+      setBusy(false);
+      setError(`나가지 못했어요. 다시 눌러 주세요. (${error.message})`);
+      return;
+    }
+    setOpen(false);
+    router.replace("/");
+  }
+
+  return (
+    <>
+      <button
+        type="button"
+        onClick={() => setOpen(true)}
+        className="h-9 text-[14px] text-pencil underline underline-offset-4"
+      >
+        {label}
+      </button>
+      <Sheet open={open} onClose={() => setOpen(false)} title={`${label}?`}>
+        <p className="mt-3 text-[15px] leading-relaxed text-pencil">{explain}</p>
+        <button
+          type="button"
+          onClick={leave}
+          disabled={busy}
+          className="mt-5 h-12 w-full rounded-full border border-pen-orange text-[15px] text-pen-orange disabled:opacity-50"
+        >
+          {busy ? "처리하는 중…" : deletes ? "지우기" : "나가기"}
+        </button>
+        {error && (
+          <p role="alert" className="mt-2 text-[14px] text-pen-orange">
+            {error}
+          </p>
+        )}
+      </Sheet>
+    </>
   );
 }
 
