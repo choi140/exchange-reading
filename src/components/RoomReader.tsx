@@ -65,6 +65,9 @@ export function RoomReader({ roomId }: { roomId: string }) {
   // 7-4 이어 읽기: 지금 보고 있는 문단 (0부터)
   const [position, setPosition] = useState(0);
   const [resumedFrom, setResumedFrom] = useState<number | null>(null);
+  // 7-1 페이지 모드에서 지금 쪽의 첫 항목(0 = 책 머리, n+1 = n번째 문단).
+  // 문단 번호만으로는 "책 머리만 있는 1쪽"과 "1번째 문단이 시작하는 2쪽"을 구분할 수 없어 따로 둔다.
+  const [pageAnchor, setPageAnchor] = useState<number | null>(null);
 
   const load = useCallback(async () => {
     const supabase = getBrowserSupabase();
@@ -159,6 +162,14 @@ export function RoomReader({ roomId }: { roomId: string }) {
     },
     [roomId],
   );
+  // 스크롤로 움직이면 쪽 기준은 다시 문단 번호에서 계산한다
+  const moveByScroll = useCallback(
+    (p: number) => {
+      movePosition(p);
+      setPageAnchor(null);
+    },
+    [movePosition],
+  );
 
   if (session.status === "error") return <Shell>{null}</Shell>;
   if (state.status === "loading") {
@@ -211,6 +222,7 @@ export function RoomReader({ roomId }: { roomId: string }) {
 
   function jumpTo(i: number, open: boolean) {
     movePosition(i);
+    setPageAnchor(open || i > 0 ? i + 1 : 0);
     if (open) setOpenIndex(i);
     if (!paged) {
       requestAnimationFrame(() =>
@@ -419,8 +431,9 @@ export function RoomReader({ roomId }: { roomId: string }) {
           renderList={list}
           renderFooter={endOfBook}
           measureKey={`${prefs.size}|${members.length}|${room.invite_code ?? ""}|${together}|${newParagraphs.length}|${resumedFrom}|${letters.length}`}
-          anchorItem={position === 0 ? 0 : position + 1}
+          anchorItem={pageAnchor ?? (position === 0 ? 0 : position + 1)}
           onAnchorChange={(item) => {
+            setPageAnchor(item);
             setOpenIndex(null);
             movePosition(Math.max(0, item - 1));
           }}
@@ -433,7 +446,7 @@ export function RoomReader({ roomId }: { roomId: string }) {
   return (
     <Shell pen={myPen}>
       <div className="pt-10">{header()}</div>
-      <ScrollPosition onChange={movePosition} start={resumedFrom} />
+      <ScrollPosition onChange={moveByScroll} start={resumedFrom} />
       <article className="mt-2 bg-page py-6">{list(room.book.paragraphs.map((_, i) => paragraph(i, false)))}</article>
       {endOfBook()}
       {underlineBar}
