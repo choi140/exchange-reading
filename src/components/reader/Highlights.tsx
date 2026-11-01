@@ -1,10 +1,11 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useId, useState } from "react";
 import { getBrowserSupabase } from "@/lib/supabase/client";
 import { PEN, type PenColor } from "../PenChip";
 
-// 7-6 문장 밑줄: 문단 글자 위치(start~end)로 저장하고, 그 사람의 펜 색으로 밑줄을 긋는다
+// 7-6 문장 밑줄 + 9-7 밑줄에 한마디
+// 문단 글자 위치(start~end)로 저장하고, 그 사람의 펜 색으로 밑줄을 긋는다. 밑줄을 누르면 한마디·답글이 열린다.
 
 export type Highlight = {
   id: string;
@@ -12,26 +13,33 @@ export type Highlight = {
   paragraph_index: number;
   start_offset: number;
   end_offset: number;
+  memo?: string | null;
   created_at: string;
 };
-export const HIGHLIGHT_COLUMNS = "id, user_id, paragraph_index, start_offset, end_offset, created_at";
+export const HIGHLIGHT_COLUMNS = "id, user_id, paragraph_index, start_offset, end_offset, memo, created_at";
+export const HIGHLIGHT_COLUMNS_OLD = "id, user_id, paragraph_index, start_offset, end_offset, created_at";
+const MEMO_MAX = 200;
 
-const PEN_VAR: Record<PenColor, string> = {
+export const PEN_VAR: Record<PenColor, string> = {
   black: "var(--color-pen-black)",
   blue: "var(--color-pen-blue)",
   green: "var(--color-pen-green)",
   orange: "var(--color-pen-orange)",
 };
 
-// 본문을 밑줄 구간별로 잘라 그린다. 겹치면 나중에 그은 밑줄 색을 쓴다.
+// 본문을 밑줄 구간별로 잘라 그린다. 겹치면 나중에 그은 밑줄 색. 밑줄을 누르면 그 구간의 밑줄들을 연다.
 export function HighlightedText({
   text,
   highlights,
   penOf,
+  newIds,
+  onOpen,
 }: {
   text: string;
   highlights: Highlight[];
   penOf: (userId: string) => PenColor;
+  newIds?: Set<string>;
+  onOpen?: (ids: string[]) => void;
 }) {
   if (highlights.length === 0) return <>{text}</>;
   const cuts = new Set([0, text.length]);
@@ -48,22 +56,47 @@ export function HighlightedText({
     const seg = text.slice(a, b);
     if (covering.length === 0) {
       parts.push(seg);
-    } else {
-      const top = covering[covering.length - 1];
-      parts.push(
-        <span
-          key={a}
-          style={{
-            textDecorationLine: "underline",
-            textDecorationColor: PEN_VAR[penOf(top.user_id)],
-            textDecorationThickness: covering.length > 1 ? "3px" : "2px",
-            textUnderlineOffset: "5px",
-          }}
-        >
-          {seg}
-        </span>,
-      );
+      continue;
     }
+    const top = covering[covering.length - 1];
+    const hasMemo = covering.some((h) => h.memo);
+    const isNew = covering.some((h) => newIds?.has(h.id));
+    const ids = covering.map((h) => h.id);
+    parts.push(
+      <span
+        key={a}
+        data-hl={ids.join(",")}
+        role={onOpen ? "button" : undefined}
+        tabIndex={onOpen ? 0 : undefined}
+        aria-label={onOpen ? `밑줄 ${covering.length}개${hasMemo ? ", 한마디 있음" : ""}${isNew ? ", 새 밑줄" : ""}` : undefined}
+        onClick={(e) => {
+          if (!onOpen || window.getSelection()?.toString()) return;
+          e.stopPropagation();
+          onOpen(ids);
+        }}
+        onKeyDown={(e) => {
+          if (onOpen && (e.key === "Enter" || e.key === " ")) {
+            e.preventDefault();
+            onOpen(ids);
+          }
+        }}
+        className={onOpen ? "cursor-pointer rounded-[2px] focus-visible:outline-2" : undefined}
+        style={{
+          textDecorationLine: "underline",
+          textDecorationColor: PEN_VAR[penOf(top.user_id)],
+          textDecorationThickness: covering.length > 1 ? "3px" : "2px",
+          textUnderlineOffset: "5px",
+          backgroundColor: isNew ? `color-mix(in srgb, ${PEN_VAR[penOf(top.user_id)]} 14%, transparent)` : undefined,
+        }}
+      >
+        {seg}
+        {hasMemo && b === Math.max(...covering.filter((h) => h.memo).map((h) => h.end_offset)) && (
+          <sup aria-hidden="true" className="ml-px font-hand text-[0.8em]" style={{ color: PEN_VAR[penOf(top.user_id)] }}>
+            ✎
+          </sup>
+        )}
+      </span>,
+    );
   }
   return <>{parts}</>;
 }
@@ -87,19 +120,26 @@ export function UnderlineBar({
   roomId,
   myPen,
   bottomOffset,
+  withMemo,
   onAdded,
 }: {
   roomId: string;
   myPen: PenColor;
   bottomOffset: number;
+  withMemo: boolean;
   onAdded: (h: Highlight) => void;
 }) {
+  const memoId = useId();
   const [picked, setPicked] = useState<Picked | null>(null);
+  // 한마디를 쓰는 동안에는 선택이 풀려도 고른 문장을 붙잡아 둔다
+  const [writing, setWriting] = useState(false);
+  const [memo, setMemo] = useState("");
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
     function onChange() {
+      if (writing) return;
       const sel = window.getSelection();
       if (!sel || sel.isCollapsed || sel.rangeCount === 0) {
         setPicked(null);
@@ -125,28 +165,37 @@ export function UnderlineBar({
     }
     document.addEventListener("selectionchange", onChange);
     return () => document.removeEventListener("selectionchange", onChange);
-  }, []);
+  }, [writing]);
 
   if (!picked) return null;
+
+  function reset() {
+    window.getSelection()?.removeAllRanges();
+    setPicked(null);
+    setWriting(false);
+    setMemo("");
+  }
 
   async function save() {
     if (!picked) return;
     const supabase = getBrowserSupabase();
     if (!supabase) return;
     setSaving(true);
-    const { data, error } = await supabase
-      .from("highlights")
-      .insert({ room_id: roomId, paragraph_index: picked.paragraph, start_offset: picked.start, end_offset: picked.end })
-      .select(HIGHLIGHT_COLUMNS)
-      .single();
+    const row: Record<string, unknown> = {
+      room_id: roomId,
+      paragraph_index: picked.paragraph,
+      start_offset: picked.start,
+      end_offset: picked.end,
+    };
+    if (memo.trim()) row.memo = memo.trim();
+    const { data, error } = await supabase.from("highlights").insert(row).select(HIGHLIGHT_COLUMNS).single();
     setSaving(false);
     if (error || !data) {
       setError(`밑줄을 긋지 못했어요. (${error?.message ?? "응답 없음"})`);
       return;
     }
     onAdded(data as Highlight);
-    window.getSelection()?.removeAllRanges();
-    setPicked(null);
+    reset();
   }
 
   return (
@@ -155,29 +204,51 @@ export function UnderlineBar({
       style={{ bottom: bottomOffset }}
     >
       <p className="line-clamp-2 font-serif text-[14px] leading-snug text-pencil">“{picked.preview}”</p>
+      {writing && (
+        <>
+          <label htmlFor={memoId} className="sr-only">
+            밑줄에 한마디
+          </label>
+          <textarea
+            id={memoId}
+            autoFocus
+            value={memo}
+            maxLength={MEMO_MAX}
+            onChange={(e) => setMemo(e.target.value)}
+            rows={2}
+            placeholder="이 문장에 한마디 (안 써도 돼요)"
+            className={`mt-2 block w-full resize-none rounded-lg border border-rule bg-page px-3 py-2 font-hand text-[21px] leading-[1.25] placeholder:font-sans placeholder:text-[14px] placeholder:text-pencil/70 focus:border-ink focus:outline-none ${PEN[myPen].className}`}
+          />
+        </>
+      )}
       <div className="mt-2 flex items-center justify-between gap-2">
         <span className={`font-hand text-[20px] leading-none ${PEN[myPen].className}`}>{PEN[myPen].label}으로</span>
-        <span className="flex gap-2">
-        <button
-          type="button"
-          onMouseDown={(e) => e.preventDefault()}
-          onClick={() => {
-            window.getSelection()?.removeAllRanges();
-            setPicked(null);
-          }}
-          className="h-10 px-3 text-[14px] text-pencil"
-        >
-          취소
-        </button>
-        <button
-          type="button"
-          onMouseDown={(e) => e.preventDefault()}
-          onClick={save}
-          disabled={saving}
-          className="h-10 rounded-full bg-ink px-5 text-[14px] text-page disabled:opacity-50"
-        >
-          {saving ? "긋는 중…" : "밑줄 긋기"}
-        </button>
+        <span className="flex gap-1">
+          <button type="button" onMouseDown={(e) => e.preventDefault()} onClick={reset} className="h-10 px-3 text-[14px] text-pencil">
+            취소
+          </button>
+          {withMemo && !writing && (
+            <button
+              type="button"
+              onMouseDown={(e) => e.preventDefault()}
+              onClick={() => {
+                setWriting(true);
+                window.getSelection()?.removeAllRanges();
+              }}
+              className="h-10 rounded-full border border-ink px-4 text-[14px] text-ink"
+            >
+              + 한마디
+            </button>
+          )}
+          <button
+            type="button"
+            onMouseDown={(e) => e.preventDefault()}
+            onClick={save}
+            disabled={saving}
+            className="h-10 rounded-full bg-ink px-4 text-[14px] text-page disabled:opacity-50"
+          >
+            {saving ? "긋는 중…" : "밑줄 긋기"}
+          </button>
         </span>
       </div>
       {error && (
@@ -185,47 +256,6 @@ export function UnderlineBar({
           {error}
         </p>
       )}
-    </div>
-  );
-}
-
-// 메모 창 안에서 보여 주는 이 문단의 내 밑줄 (지우기)
-export function MyUnderlines({
-  text,
-  mine,
-  onDeleted,
-}: {
-  text: string;
-  mine: Highlight[];
-  onDeleted: (id: string) => void;
-}) {
-  const [busy, setBusy] = useState<string | null>(null);
-  if (mine.length === 0) return null;
-  return (
-    <div className="mb-4">
-      <p className="text-[13px] text-pencil">이 문단에 내가 그은 밑줄</p>
-      <ul className="mt-1 space-y-1">
-        {mine.map((h) => (
-          <li key={h.id} className="flex items-start justify-between gap-3">
-            <span className="font-serif text-[14px] leading-snug text-ink">“{text.slice(h.start_offset, h.end_offset)}”</span>
-            <button
-              type="button"
-              disabled={busy === h.id}
-              onClick={async () => {
-                const supabase = getBrowserSupabase();
-                if (!supabase) return;
-                setBusy(h.id);
-                const { error } = await supabase.from("highlights").delete().eq("id", h.id);
-                setBusy(null);
-                if (!error) onDeleted(h.id);
-              }}
-              className="h-8 shrink-0 text-[13px] text-pencil underline underline-offset-4"
-            >
-              지우기
-            </button>
-          </li>
-        ))}
-      </ul>
     </div>
   );
 }
