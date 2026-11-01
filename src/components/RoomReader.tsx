@@ -487,8 +487,8 @@ function ScrollPosition({ onChange, start }: { onChange: (p: number) => void; st
 function Nav({ pen }: { pen?: PenColor }) {
   return (
     <nav className="sticky top-0 z-10 flex shrink-0 items-center justify-between gap-2 border-b border-rule bg-paper/95 px-5 py-2 backdrop-blur sm:px-8">
-      <Link href="/" className="py-2 text-[15px] text-pencil">
-        홈으로
+      <Link href="/read" className="py-2 text-[15px] text-pencil">
+        ‹ 교환독서
       </Link>
       <div className="flex items-center gap-3">
         {pen && <PenChip color={pen} />}

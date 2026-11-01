@@ -144,7 +144,7 @@ export function LeaveRoomButton({ roomId, together }: { roomId: string; together
       return;
     }
     setOpen(false);
-    router.replace("/");
+    router.replace("/read");
   }
 
   return (
