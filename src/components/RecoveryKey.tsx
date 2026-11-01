@@ -140,15 +140,18 @@ export function ClaimKey() {
   const clean = key.toUpperCase().replace(/[^A-Z0-9]/g, "");
 
   useEffect(() => {
-    const h = window.location.hash.replace(/^#/, "");
-    if (h) {
+    function readHash() {
+      const h = window.location.hash.replace(/^#/, "");
+      if (!h) return;
       // 주소창에 열쇠가 남지 않게 지운다
       history.replaceState(null, "", window.location.pathname);
-      // 주소의 #열쇠는 브라우저에서만 읽을 수 있어 화면이 뜬 뒤 한 번 채운다
-      // eslint-disable-next-line react-hooks/set-state-in-effect
       setKey(decodeURIComponent(h));
       setFromLink(true);
     }
+    // 주소의 #열쇠는 브라우저에서만 읽을 수 있어 화면이 뜬 뒤 읽는다 (이미 열린 화면에서 링크를 눌러도)
+    readHash();
+    window.addEventListener("hashchange", readHash);
+    return () => window.removeEventListener("hashchange", readHash);
   }, []);
 
   async function claim(e: React.FormEvent) {

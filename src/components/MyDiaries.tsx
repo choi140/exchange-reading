@@ -14,12 +14,13 @@ type MyDiary = {
   created_at: string;
   entry_count: number;
   my_turn: boolean;
+  last_entry_at?: string | null;
 };
 
 type State =
   | { status: "loading" }
   | { status: "error"; message: string }
-  | { status: "ready"; diaries: MyDiary[] };
+  | { status: "ready"; diaries: MyDiary[]; now: number };
 
 const dateFormat = new Intl.DateTimeFormat("ko-KR", {
   month: "long",
@@ -43,7 +44,7 @@ export function MyDiaries() {
     supabase.rpc("my_diaries").then(({ data, error }) => {
       if (cancelled) return;
       if (error) setState({ status: "error", message: error.message });
-      else setState({ status: "ready", diaries: (data ?? []) as MyDiary[] });
+      else setState({ status: "ready", diaries: (data ?? []) as MyDiary[], now: Date.now() });
     });
     return () => {
       cancelled = true;
@@ -84,9 +85,11 @@ export function MyDiaries() {
               (d.status === "waiting" ? (
                 <span className="shrink-0 text-[14px] text-pencil">짝을 기다리는 중</span>
               ) : d.status === "closed" ? (
-                <span className="shrink-0 text-[14px] text-pencil">끝남</span>
+                <span className="shrink-0 text-[14px] text-pencil">마무리됨</span>
               ) : d.my_turn ? (
                 <span className="shrink-0 rounded-full bg-ink px-3 py-1 text-[14px] text-page">내 차례</span>
+              ) : d.last_entry_at && state.now - new Date(d.last_entry_at).getTime() > 7 * 86400000 ? (
+                <span className="shrink-0 text-[14px] text-pencil">짝이 조용해요</span>
               ) : (
                 <span className="shrink-0 text-[14px] text-pencil">짝의 차례</span>
               ))}

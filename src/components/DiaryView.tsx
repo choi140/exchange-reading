@@ -30,6 +30,7 @@ type Diary = {
   is_private: boolean;
   invite_code: string | null;
   title?: string | null;
+  created_at?: string;
 };
 type Member = { user_id: string; alias: string; pen_color: PenColor; left_at: string | null };
 
@@ -54,18 +55,20 @@ export function DiaryView({ diaryId }: { diaryId: string }) {
   const [tab, setTab] = useState<Tab>("list");
   const [day, setDay] = useState<string | null>(null);
   const [justSaved, setJustSaved] = useState<string | null>(null);
+  // 불러온 시각 (며칠 지났는지 셀 때 쓴다. 렌더 중에는 시계를 읽지 않는다)
+  const [loadedAt, setLoadedAt] = useState(0);
 
   const load = useCallback(async (): Promise<{ state: State; entries?: Entry[]; comments?: Comment[] }> => {
     const supabase = getBrowserSupabase();
     if (!supabase) return { state: { status: "error", message: "Supabase 연결 정보가 없어요." } };
     let diaryRes = await supabase
       .from("diaries")
-      .select("id, mode, status, is_private, invite_code, title")
+      .select("id, mode, status, is_private, invite_code, title, created_at")
       .eq("id", diaryId)
       .maybeSingle();
     // 10_v6.sql 전이면 title 칸이 없다
     if (diaryRes.error?.code === "42703") {
-      diaryRes = await supabase.from("diaries").select("id, mode, status, is_private, invite_code").eq("id", diaryId).maybeSingle();
+      diaryRes = await supabase.from("diaries").select("id, mode, status, is_private, invite_code, created_at").eq("id", diaryId).maybeSingle();
     }
     if (diaryRes.error) {
       if (diaryRes.error.code === "22P02") return { state: { status: "missing" } };
@@ -94,6 +97,7 @@ export function DiaryView({ diaryId }: { diaryId: string }) {
       if (cancelled) return;
       if (res.entries) setEntries(res.entries);
       if (res.comments) setComments(res.comments);
+      setLoadedAt(Date.now());
       setState(res.state);
     });
     return () => {
@@ -106,6 +110,7 @@ export function DiaryView({ diaryId }: { diaryId: string }) {
     const res = await load();
     if (res.entries) setEntries(res.entries);
     if (res.comments) setComments(res.comments);
+    setLoadedAt(Date.now());
     setState(res.state);
     setRefreshing(false);
   }
@@ -126,6 +131,13 @@ export function DiaryView({ diaryId }: { diaryId: string }) {
   const closed = exchange && ready?.diary.status === "closed";
   const locked = exchange && !waiting && !closed && lastIsMine;
   const canWrite = !!ready && !waiting && !closed && !locked;
+  // 10-2 짝이 멀어졌을 때: 짝의 차례로 7일 넘게 멈춰 있으면 기다릴지·마무리할지 묻는다
+  const daysSince = (iso?: string) => (iso && loadedAt ? Math.floor((loadedAt - new Date(iso).getTime()) / 86400000) : 0);
+  const quietDays = locked ? daysSince(entries[0]?.created_at) : 0;
+  const snoozed = useSnooze(diaryId, loadedAt);
+  const partnerAway = locked && quietDays >= AWAY_DAYS && !snoozed.active;
+  const waitingDays = waiting ? daysSince(ready?.diary.created_at) : 0;
+  const someoneLeft = !!ready?.members.some((m) => m.left_at);
   const myTurn = exchange && canWrite;
   const todayKey = dayKey(new Date());
 
@@ -308,21 +320,35 @@ export function DiaryView({ diaryId }: { diaryId: string }) {
               <section role="tabpanel" aria-label="오늘의 일기 쓰기" className="px-5 pt-6 sm:px-8">
                 {closed ? (
                   <div className="rounded-sm border border-dashed border-pencil/60 px-5 py-6">
-                    <p className="font-serif text-[20px] text-ink">짝이 교환일기를 떠났어요</p>
+                    <p className="font-serif text-[20px] text-ink">
+                      {someoneLeft ? "짝이 교환일기를 떠났어요" : "이 교환일기는 마무리됐어요"}
+                    </p>
                     <p className="mt-2 text-[15px] leading-relaxed text-pencil">
-                      이 교환일기는 여기서 끝났어요. 지난 일기는 그대로 남아 있지만 새 일기는 쓸 수 없어요. 새 짝과 쓰려면 교환일기 화면에서 새 일기장을 만들어 주세요.
+                      지난 일기는 그대로 남아 있지만 새 일기는 쓸 수 없어요. 새 짝과 쓰려면 교환일기 화면에서 새 일기장을 만들어 주세요.
                     </p>
                   </div>
                 ) : waiting ? (
                   <WaitBox
                     title="짝을 기다리는 중"
                     desc={
-                      ready.diary.is_private
+                      (ready.diary.is_private
                         ? "위 참여 코드로 친구가 들어오면 짝이 돼요. 짝이 생기면 둘 중 누구든 첫 일기를 쓸 수 있어요."
-                        : "교환일기를 고른 다른 사람이 오면 이 일기장의 짝이 돼요. 짝이 생기면 둘 중 누구든 첫 일기를 쓸 수 있어요."
+                        : "교환일기를 고른 다른 사람이 오면 이 일기장의 짝이 돼요. 짝이 생기면 둘 중 누구든 첫 일기를 쓸 수 있어요.") +
+                      (waitingDays >= WAIT_HINT_DAYS
+                        ? ` ${waitingDays}일째 기다리고 있어요. 아는 사람과 쓰고 싶다면 아래 "교환일기 그만두기" 뒤에 교환일기 화면의 "아는 사람과 교환일기"로 친구를 불러 보세요.`
+                        : "")
                     }
                     onRefresh={refresh}
                     refreshing={refreshing}
+                  />
+                ) : partnerAway ? (
+                  <AwayBox
+                    diaryId={ready.diary.id}
+                    days={quietDays}
+                    onWait={snoozed.snooze}
+                    onClosed={() =>
+                      setState((st) => (st.status === "ready" ? { ...st, diary: { ...st.diary, status: "closed" } } : st))
+                    }
                   />
                 ) : locked ? (
                   <WaitBox
@@ -359,6 +385,102 @@ export function DiaryView({ diaryId }: { diaryId: string }) {
         )}
       </main>
     </AppShell>
+  );
+}
+
+const AWAY_DAYS = 7;
+const WAIT_HINT_DAYS = 3;
+const SNOOZE_DAYS = 3;
+
+// "조금 더 기다리기"를 누르면 3일 동안 다시 묻지 않는다 (이 브라우저에 기억)
+function useSnooze(diaryId: string, now: number) {
+  const key = `nb:snooze:${diaryId}`;
+  const [until, setUntil] = useState<number | null>(null);
+  useEffect(() => {
+    try {
+      const v = localStorage.getItem(key);
+      // eslint-disable-next-line react-hooks/set-state-in-effect
+      if (v) setUntil(Number(v));
+    } catch {}
+  }, [key]);
+  return {
+    active: until !== null && until > now,
+    snooze: () => {
+      const t = Date.now() + SNOOZE_DAYS * 86400000;
+      try {
+        localStorage.setItem(key, String(t));
+      } catch {}
+      setUntil(t);
+    },
+  };
+}
+
+// 10-2 짝이 잠시 멀어졌을 때: 기다리기 / 마무리하기 / 마무리하고 새 짝 찾기
+function AwayBox({
+  diaryId,
+  days,
+  onWait,
+  onClosed,
+}: {
+  diaryId: string;
+  days: number;
+  onWait: () => void;
+  onClosed: () => void;
+}) {
+  const router = useRouter();
+  const [busy, setBusy] = useState<"close" | "new" | null>(null);
+  const [error, setError] = useState<string | null>(null);
+
+  async function close(thenNew: boolean) {
+    const supabase = getBrowserSupabase();
+    if (!supabase) return;
+    setBusy(thenNew ? "new" : "close");
+    setError(null);
+    const { error } = await supabase.rpc("close_diary", { p_diary: diaryId });
+    if (error) {
+      setBusy(null);
+      setError(`마무리하지 못했어요. (${error.message})`);
+      return;
+    }
+    if (!thenNew) {
+      setBusy(null);
+      onClosed();
+      return;
+    }
+    const res = await supabase.rpc("find_diary_partner");
+    if (res.error || !res.data) {
+      setBusy(null);
+      onClosed();
+      setError(`마무리했지만 새 짝을 찾지 못했어요. 교환일기 화면에서 다시 시작해 주세요. (${res.error?.message ?? "응답 없음"})`);
+      return;
+    }
+    router.push(`/diary/${res.data}`);
+  }
+
+  return (
+    <div className="rounded-sm border border-dashed border-pencil/60 px-5 py-6">
+      <p className="font-serif text-[20px] text-ink">짝이 잠시 멀어졌어요</p>
+      <p className="mt-2 text-[15px] leading-relaxed text-pencil">
+        마지막으로 일기를 주고받은 지 {days}일이 지났어요. 바쁜 날이 이어지는 걸지도 몰라요. 조금 더 기다릴까요, 여기서 마무리할까요?
+        마무리해도 지금까지의 일기는 두 사람 모두 계속 볼 수 있어요.
+      </p>
+      <div className="mt-4 grid gap-2 sm:flex sm:flex-wrap">
+        <button type="button" onClick={onWait} disabled={busy !== null} className="h-11 rounded-full border border-ink px-5 text-[15px] text-ink">
+          조금 더 기다리기
+        </button>
+        <button type="button" onClick={() => close(false)} disabled={busy !== null} className="h-11 rounded-full border border-ink px-5 text-[15px] text-ink disabled:opacity-50">
+          {busy === "close" ? "마무리하는 중…" : "여기서 마무리하기"}
+        </button>
+        <button type="button" onClick={() => close(true)} disabled={busy !== null} className="h-11 rounded-full bg-ink px-5 text-[15px] text-page disabled:opacity-50">
+          {busy === "new" ? "새 짝을 찾는 중…" : "마무리하고 새 짝 찾기"}
+        </button>
+      </div>
+      {error && (
+        <p role="alert" className="mt-2 text-[14px] text-pen-orange">
+          {error}
+        </p>
+      )}
+    </div>
   );
 }
 
