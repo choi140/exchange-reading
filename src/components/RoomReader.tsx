@@ -4,6 +4,7 @@ import Link from "next/link";
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { getBrowserSupabase } from "@/lib/supabase/client";
 import { useAnonymousSession } from "./AnonymousSession";
+import { NotAllowed } from "./NotAllowed";
 import { PEN, PenChip, type PenColor } from "./PenChip";
 
 // 책 리더 (혼자·함께 공통) (PRD #4.1)
@@ -128,18 +129,10 @@ export function RoomReader({ roomId }: { roomId: string }) {
   if (state.status === "missing") {
     return (
       <Shell>
-        <div className="px-5 pt-12 sm:px-8">
-          <h1 className="font-serif text-[24px] text-ink">들어갈 수 없는 방이에요</h1>
-          <p className="mt-3 text-[15px] leading-relaxed text-pencil">
-            없는 방이거나, 이 브라우저의 내가 들어간 방이 아니에요. 홈의 책장에서 책을 골라 읽기를 시작해 주세요.
-          </p>
-          <Link
-            href="/"
-            className="mt-6 inline-flex h-11 items-center rounded-full bg-ink px-6 text-[15px] text-page"
-          >
-            홈으로 가기
-          </Link>
-        </div>
+        <NotAllowed
+          title="들어갈 수 없는 방이에요"
+          desc="없는 방이거나, 이 브라우저의 내가 들어간 방이 아니에요. 홈의 책장에서 책을 골라 읽기를 시작해 주세요."
+        />
       </Shell>
     );
   }
