@@ -86,7 +86,7 @@ export function BookShelf({ books }: { books: ShelfBook[] }) {
         title={together ? `「${together.title}」 누구와 읽을까요?` : ""}
       >
         {together && (
-          <div className="mt-5 grid grid-cols-[minmax(0,1fr)] gap-3">
+          <div className="mt-5 grid grid-cols-[minmax(0,1fr)] border-t border-rule">
             <ChoiceButton
               title={busy === `${together.id}:join_room` ? "자리를 찾는 중…" : "낯선 사람과 읽기"}
               desc="빈자리 있는 방에 들어가요. 최대 3명이 펜 색으로만 서로를 알아봐요."
@@ -99,10 +99,10 @@ export function BookShelf({ books }: { books: ShelfBook[] }) {
               disabled={busy !== null}
               onClick={() => openRoom(together, "create_private_room")}
             />
-            <div className="rounded-lg border border-rule bg-paper/60 px-4 py-4">
+            <div className="border-b border-rule py-4">
               <CodeJoinForm onDone={() => setTogether(null)} />
             </div>
-            <p aria-live="polite" className="min-h-5 text-[14px] text-pen-orange">
+            <p aria-live="polite" className="min-h-5 pt-3 text-[14px] text-pen-orange">
               {sheetNotice}
             </p>
           </div>

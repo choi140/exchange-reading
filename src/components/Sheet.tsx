@@ -67,9 +67,9 @@ export function ChoiceButton({
       type="button"
       onClick={onClick}
       disabled={disabled}
-      className="w-full rounded-lg border border-rule bg-paper/60 px-4 py-4 text-left hover:border-ink disabled:opacity-60 active:translate-y-px"
+      className="group w-full border-b border-rule py-4 text-left disabled:opacity-60"
     >
-      <span className="block font-serif text-[18px] text-ink">{title}</span>
+      <span className="block font-serif text-[19px] text-ink decoration-2 underline-offset-4 group-hover:underline">{title}</span>
       <span className="mt-1 block text-[14px] leading-relaxed text-pencil">{desc}</span>
     </button>
   );
