@@ -56,6 +56,7 @@
 - **문장 밑줄** — 문장을 길게 눌러 고르면 내 펜 색으로 밑줄. 블라인드 문단에서는 남의 밑줄도 가린다.
 - **다 읽고 편지 한 장** — 책 끝에서 함께 읽은 사람들에게(혼자 읽기는 나에게) 한 장.
 - **이 방 나가기** — 이 방에 남긴 내 기록을 지우고 나간다.
+- **일기장 나가기** — 혼자 쓰는 일기장은 지우기. 교환일기는 나가면 "끝남"이 되고, 짝은 지난 일기를 계속 볼 수 있다.
 
 **권한** — 메모는 같은 방 멤버만, 일기는 같은 일기장 멤버만 읽고 쓸 수 있도록 DB(RLS)에서 막습니다. 혼자 모드는 멤버가 나 하나라서 같은 규칙만으로 "나만 보기"가 됩니다. 남의 방·없는 방 주소로 들어오면 안내한 뒤 홈으로 돌아갑니다.
 
@@ -73,7 +74,7 @@
 |---|---|
 | 테이블 8개 | books, rooms, room_members, notes, unlocks, diaries, diary_members, diary_entries (`supabase/01_tables.sql`) |
 | 권한 | 모든 테이블 RLS (`supabase/02_rls.sql`) |
-| 함수 | `start_solo_room`, `create_solo_diary`, `join_room`, `find_diary_partner`, `can_write_diary`, `my_diaries` (`supabase/04~06`), `create_private_room`, `create_private_diary`, `join_by_code`, `leave_room` (`07~08`) |
+| 함수 | `start_solo_room`, `create_solo_diary`, `join_room`, `find_diary_partner`, `can_write_diary`, `my_diaries` (`supabase/04~06`), `create_private_room`, `create_private_diary`, `join_by_code`, `leave_room`, `leave_diary` (`07~09`) |
 | 7단계 테이블 | highlights(문장 밑줄), letters(편지) (`supabase/08_extras.sql`) |
 
 방·일기장에 들어가는 일(멤버 추가)은 앱에서 직접 하지 않고 DB 함수로만 합니다. 빈자리 찾기와 펜 색 배정을 한 번에, 동시에 두 사람이 같은 자리를 잡지 않게 처리하기 위해서입니다.
@@ -92,6 +93,7 @@
      6. `supabase/06_exchange.sql` — 교환일기 짝 찾기, 번갈아 쓰기 규칙
      7. `supabase/07_invite.sql` — 참여 코드
      8. `supabase/08_extras.sql` — 문장 밑줄, 편지, 방 나가기
+     9. `supabase/09_leave_diary.sql` — 일기장 나가기
 2. **환경변수** — `.env.example`을 `.env.local`로 복사하고, Project Settings → API의 값으로 채운다.
    ```
    NEXT_PUBLIC_SUPABASE_URL=https://YOUR-PROJECT.supabase.co
@@ -111,7 +113,7 @@ Vercel에 배포할 때는 같은 환경변수 두 개를 프로젝트 Settings 
 ## 2. PRD와 Todo 리스트
 
 - [PRD 전문](docs/PRD.md)
-- [Todo 리스트 전문](docs/TODO.md) — 마감 버전 할 일 73개 + 추가 기능 9개, 진행 상황은 체크박스로 표시
+- [Todo 리스트 전문](docs/TODO.md) — 마감 버전 할 일 73개 + 추가 기능 10개, 진행 상황은 체크박스로 표시
 - [디자인 방향](docs/DESIGN.md) — Todo 1-5에서 정한 색·글꼴·배치
 - 원본 문서: [Claude Doc](https://claude.ai/artifact/CzzFGXDqp23qeduMBbtov1)
 
@@ -130,7 +132,7 @@ Vercel에 배포할 때는 같은 환경변수 두 개를 프로젝트 Settings 
 | 4 | 함께 읽기 | 9 |
 | 5 | 교환일기와 마무리 | 17 |
 | 6 | 완료 기준 점검 | 9 |
-| 7 | 추가 기능 (마감 후) | 9 |
+| 7 | 추가 기능 (마감 후) | 10 |
 
 커밋은 할 일 1~3개마다 `[할 일 번호] 내용` 형식으로 나눠 push했다 ([커밋 기록](https://github.com/choi140/exchange-reading/commits/main)).
 
@@ -176,7 +178,7 @@ Vercel에 배포할 때는 같은 환경변수 두 개를 프로젝트 Settings 
 
 ### 마감 후: 7단계 추가 (v4)
 
-마감 버전의 완료 기준 9개를 모두 확인한 뒤, 실제로 써 보며 나온 요청으로 7단계를 새로 만들었다 (73개 → 82개).
+마감 버전의 완료 기준 9개를 모두 확인한 뒤, 실제로 써 보며 나온 요청으로 7단계를 새로 만들었다 (73개 → 83개, 7-10은 확인 중 추가).
 
 | 할 일 | 처음 생각 | 실제 |
 |---|---|---|
@@ -185,8 +187,9 @@ Vercel에 배포할 때는 같은 환경변수 두 개를 프로젝트 Settings 
 | 7-4, 7-5 이어 읽기·새 메모 | — | 기준(읽던 문단, 마지막으로 본 시각)을 DB가 아닌 브라우저에 저장. 익명 계정 자체가 브라우저 단위라 범위가 같고, SQL을 늘리지 않아도 된다 |
 | 7-6, 7-7 | PRD에서 "하지 않는 것"(제외-4, 제외-5) | 문장 밑줄과 마지막 장 편지를 되살려 넣음 |
 | 7-8 방 나가기 | 멤버에서만 빠지기 | 내 메모·밑줄·편지를 함께 지운다. 펜 색이 다음 사람에게 넘어가면 내 글이 그 사람 글처럼 보이기 때문 |
+| 7-10 일기장 나가기 | (확인 중 추가 요청) | 교환일기는 방과 달리 내 일기를 지우지 않고 일기장을 "끝남"으로 둔다. 주고받은 일기는 두 사람의 것이라서 |
 
-테스트 중 고친 것: 선택창 안의 코드 입력칸이 창을 화면보다 넓게 만들던 문제(열 너비 고정), 페이지 모드에서 쪽 높이를 재려고 그리는 숨은 복사본이 입력칸 id를 겹치게 만들던 문제(복사본을 inert로, id를 고유하게).
+테스트 중 고친 것: 페이지 모드에서 1쪽이 책 머리(참여 코드 상자 등)만으로 차면 "다음"을 눌러도 1쪽으로 되돌아오던 문제(사용자가 넓은 PC 화면에서 발견, 휴대폰 크기로만 테스트했던 탓), 선택창 안의 코드 입력칸이 창을 화면보다 넓게 만들던 문제(열 너비 고정), 페이지 모드에서 쪽 높이를 재려고 그리는 숨은 복사본이 입력칸 id를 겹치게 만들던 문제(복사본을 inert로, id를 고유하게).
 
 ### 하지 않기로 한 것
 
