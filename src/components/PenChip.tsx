@@ -1,11 +1,11 @@
 // 내 펜 색 표시. 사람은 펜 색으로만 구분된다 (PRD #4.1)
 export type PenColor = "black" | "blue" | "green" | "orange";
 
-export const PEN: Record<PenColor, { label: string; className: string }> = {
-  black: { label: "검정 펜", className: "text-pen-black" },
-  blue: { label: "파란 펜", className: "text-pen-blue" },
-  green: { label: "초록 펜", className: "text-pen-green" },
-  orange: { label: "주황 펜", className: "text-pen-orange" },
+export const PEN: Record<PenColor, { label: string; className: string; border: string }> = {
+  black: { label: "검정 펜", className: "text-pen-black", border: "border-pen-black" },
+  blue: { label: "파란 펜", className: "text-pen-blue", border: "border-pen-blue" },
+  green: { label: "초록 펜", className: "text-pen-green", border: "border-pen-green" },
+  orange: { label: "주황 펜", className: "text-pen-orange", border: "border-pen-orange" },
 };
 
 export function PenChip({ color }: { color: PenColor }) {

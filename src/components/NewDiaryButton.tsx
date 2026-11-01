@@ -6,7 +6,8 @@ import { getBrowserSupabase } from "@/lib/supabase/client";
 import { useAnonymousSession } from "./AnonymousSession";
 
 // 1-9 "새 일기장" 버튼과 "혼자 쓰기"·"교환일기" 선택창
-// 3-7 혼자 쓰기 → create_solo_diary로 일기장을 만들고 이동 (교환일기는 5단계)
+// 3-7 혼자 쓰기 → create_solo_diary로 일기장을 만들고 이동
+// 5-2 교환일기 → find_diary_partner로 짝이 있으면 그 일기장, 없으면 기다리는 일기장으로 이동
 export function NewDiaryButton() {
   const router = useRouter();
   const session = useAnonymousSession();
@@ -15,15 +16,17 @@ export function NewDiaryButton() {
   const [picked, setPicked] = useState<string | null>(null);
   const [busy, setBusy] = useState(false);
 
-  async function createSolo() {
+  async function createDiary(mode: "solo" | "exchange") {
     const supabase = getBrowserSupabase();
     if (!supabase || session.status !== "ready") {
       setPicked("익명 계정을 준비하는 중이에요. 잠시 뒤 다시 눌러 주세요.");
       return;
     }
     setBusy(true);
-    setPicked("일기장을 만드는 중…");
-    const { data, error } = await supabase.rpc("create_solo_diary");
+    setPicked(mode === "solo" ? "일기장을 만드는 중…" : "짝을 찾는 중…");
+    const { data, error } = await supabase.rpc(
+      mode === "solo" ? "create_solo_diary" : "find_diary_partner",
+    );
     if (error || !data) {
       setBusy(false);
       setPicked(`일기장을 만들지 못했어요. 다시 눌러 주세요. (${error?.message ?? "응답 없음"})`);
@@ -78,13 +81,13 @@ export function NewDiaryButton() {
               title="혼자 쓰기"
               desc="나만 보는 일기장이에요. 언제든 쓸 수 있어요."
               disabled={busy}
-              onClick={createSolo}
+              onClick={() => createDiary("solo")}
             />
             <ChoiceButton
               title="교환일기"
               desc="낯선 짝과 한 편씩 번갈아 써요. 짝이 없으면 올 때까지 기다려요."
               disabled={busy}
-              onClick={() => setPicked("교환일기는 곧 시작할 수 있어요.")}
+              onClick={() => createDiary("exchange")}
             />
           </div>
           <p aria-live="polite" className="mt-4 min-h-6 text-[14px] text-pencil">
