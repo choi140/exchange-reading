@@ -11,7 +11,7 @@ export function HomeChooser() {
       <Choice
         href="/read"
         title="교환독서"
-        line="한 권의 책을 낯선 사람이나 친구와 돌려 읽어요. 문단마다 메모를 남기고, 펜 색으로 서로를 알아봐요."
+        line="한 권의 책을 낯선 사람이나 친구와 돌려 읽어요. 문장에 밑줄을 긋고 한마디를 남기며, 펜 색으로 서로를 알아봐요."
         status={s ? (s.rooms > 0 ? `읽고 있는 책 ${s.rooms}권` : "아직 읽는 책이 없어요") : null}
         mark={
           <svg aria-hidden="true" viewBox="0 0 64 40" className="h-10 w-16 text-pen-blue">
