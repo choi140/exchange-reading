@@ -89,7 +89,7 @@ create policy "notes: 같은 방 멤버만 쓰기" on public.notes
       parent_id is null
       or exists (
         select 1 from public.notes p
-        where p.id = parent_id
+        where p.id = notes.parent_id
           and p.room_id = notes.room_id
           and p.paragraph_index = notes.paragraph_index
           and p.parent_id is null
