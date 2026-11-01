@@ -16,12 +16,15 @@ import { InviteCode } from "./CodeJoinForm";
 import { NotAllowed } from "./NotAllowed";
 import { PEN, PenChip, type PenColor } from "./PenChip";
 import { NOTE_COLUMNS, NotePanel, type Note } from "./reader/NotePanel";
+import { EndOfBook, LeaveRoomButton, LETTER_COLUMNS, type Letter } from "./reader/EndOfBook";
+import { HIGHLIGHT_COLUMNS, HighlightedText, MyUnderlines, UnderlineBar, type Highlight } from "./reader/Highlights";
 import { Paged } from "./reader/Paged";
 import { ReaderSettingsButton } from "./reader/ReaderSettings";
 
 // 책 리더 (혼자·함께 공통) (PRD #4.1)
 // 1-10 리더 · 3-3~3-5 문단 메모 · 4-4 펜 색 · 4-5 블라인드 · 4-6 그냥 보기 · 4-7 답글 · 4-8 mode 분기
 // 7-1 스크롤/페이지 · 7-2 참여 코드 · 7-4 글자 크기·밤 모드·이어 읽기 · 7-5 새 메모 표시
+// 7-6 문장 밑줄 · 7-7 다 읽고 편지 · 7-8 방 나가기
 // 방·멤버·메모는 RLS 때문에 이 브라우저의 익명 세션으로만 읽을 수 있어 클라이언트에서 불러온다.
 
 const ROOM_SIZE = 3;
@@ -54,6 +57,8 @@ export function RoomReader({ roomId }: { roomId: string }) {
   const [state, setState] = useState<LoadState>({ status: "loading" });
   const [notes, setNotes] = useState<Note[]>([]);
   const [unlocked, setUnlocked] = useState<Set<number>>(new Set());
+  const [highlights, setHighlights] = useState<Highlight[]>([]);
+  const [letters, setLetters] = useState<Letter[]>([]);
   const [openIndex, setOpenIndex] = useState<number | null>(null);
   // 7-5 이번에 들어오기 전 마지막으로 본 시각 (그 뒤에 남이 쓴 메모가 "새 메모")
   const [seenBefore, setSeenBefore] = useState<string | null>(null);
@@ -77,10 +82,12 @@ export function RoomReader({ roomId }: { roomId: string }) {
     }
     if (!roomRes.data) return { status: "missing" } as const;
 
-    const [membersRes, notesRes, unlocksRes] = await Promise.all([
+    const [membersRes, notesRes, unlocksRes, highlightsRes, lettersRes] = await Promise.all([
       supabase.from("room_members").select("user_id, pen_color, alias").eq("room_id", roomId).order("joined_at"),
       supabase.from("notes").select(NOTE_COLUMNS).eq("room_id", roomId).order("created_at", { ascending: true }),
       supabase.from("unlocks").select("paragraph_index").eq("room_id", roomId),
+      supabase.from("highlights").select(HIGHLIGHT_COLUMNS).eq("room_id", roomId).order("created_at", { ascending: true }),
+      supabase.from("letters").select(LETTER_COLUMNS).eq("room_id", roomId).order("created_at", { ascending: true }),
     ]);
     const err = membersRes.error ?? notesRes.error ?? unlocksRes.error;
     if (err) return { status: "error", message: err.message } as const;
@@ -91,6 +98,9 @@ export function RoomReader({ roomId }: { roomId: string }) {
       members: (membersRes.data ?? []) as Member[],
       notes: (notesRes.data ?? []) as Note[],
       unlocked: new Set((unlocksRes.data ?? []).map((u) => u.paragraph_index as number)),
+      // 08_extras.sql을 아직 실행하지 않았으면 밑줄·편지는 비어 있는 채로 둔다
+      highlights: (highlightsRes.error ? [] : (highlightsRes.data ?? [])) as Highlight[],
+      letters: (lettersRes.error ? [] : (lettersRes.data ?? [])) as Letter[],
     } as const;
   }, [roomId]);
 
@@ -110,6 +120,8 @@ export function RoomReader({ roomId }: { roomId: string }) {
         setState({ status: "ready", room: res.room, members: res.members });
         setNotes(res.notes);
         setUnlocked(res.unlocked);
+        setHighlights(res.highlights);
+        setLetters(res.letters);
       } else {
         setState(res);
       }
@@ -242,11 +254,15 @@ export function RoomReader({ roomId }: { roomId: string }) {
           )}
           <p className="mt-3 text-[14px] leading-relaxed text-pencil">
             문단을 누르면 여백에 메모를 남길 수 있어요. 다른 사람의 메모는 그 문단에 내 메모를 먼저 남기면 열려요.
+            문장을 길게 눌러 고르면 내 펜 색으로 밑줄을 그을 수 있어요.
           </p>
+          <div className="mt-1 text-right">
+            <LeaveRoomButton roomId={room.id} together />
+          </div>
         </div>
       ) : (
         <p className="mt-6 text-[14px] leading-relaxed text-pencil">
-          문단을 누르면 여백에 메모를 남길 수 있어요. 메모는 나만 봐요.
+          문단을 누르면 여백에 메모를 남길 수 있어요. 문장을 길게 눌러 고르면 밑줄을 그을 수 있어요. 메모와 밑줄은 나만 봐요.
         </p>
       )}
 
@@ -289,17 +305,25 @@ export function RoomReader({ roomId }: { roomId: string }) {
     const blind = together && tops.length > 0 && !mine && !unlocked.has(i);
     const open = !measuring && openIndex === i;
     const hasNew = !measuring && newParagraphs.includes(i);
+    // 블라인드인 문단에서는 남의 밑줄도 가린다
+    const paraHighlights = highlights.filter((h) => h.paragraph_index === i);
+    const visibleHighlights = blind ? paraHighlights.filter((h) => h.user_id === me) : paraHighlights;
     return (
       <li key={i} data-p={measuring ? undefined : i} className="scroll-mt-20 pl-4 sm:pl-6">
         <div className="grid grid-cols-[1fr_3rem] gap-1">
           <p
-            onClick={() => setOpenIndex(open ? null : i)}
+            data-ptext={measuring ? undefined : i}
+            onClick={() => {
+              // 문장을 고르는 중(밑줄 긋기)이면 메모 창을 열지 않는다
+              if (window.getSelection()?.toString()) return;
+              setOpenIndex(open ? null : i);
+            }}
             style={{ fontSize: fontPx }}
-            className={`cursor-pointer py-3 font-serif leading-[1.95] text-ink [text-wrap:pretty] ${
-              open ? "underline decoration-pen-blue/40 decoration-2 underline-offset-[6px]" : ""
+            className={`-mx-2 cursor-pointer rounded-md px-2 py-3 font-serif leading-[1.95] text-ink [text-wrap:pretty] ${
+              open ? "bg-rule/35" : ""
             }`}
           >
-            {text}
+            <HighlightedText text={text} highlights={visibleHighlights} penOf={penOf} />
           </p>
           <button
             type="button"
@@ -342,6 +366,13 @@ export function RoomReader({ roomId }: { roomId: string }) {
             penOf={penOf}
             myPen={myPen}
             isNew={isNew}
+            underlines={
+              <MyUnderlines
+                text={text}
+                mine={paraHighlights.filter((h) => h.user_id === me)}
+                onDeleted={(id) => setHighlights((prev) => prev.filter((h) => h.id !== id))}
+              />
+            }
             onAdded={(n) => setNotes((prev) => [...prev, n])}
             onUnlock={() => unlock(i)}
             onClose={() => setOpenIndex(null)}
@@ -352,8 +383,30 @@ export function RoomReader({ roomId }: { roomId: string }) {
   };
 
   const list = (children: React.ReactNode) => <ol className="ml-5 border-l-2 border-margin sm:ml-8">{children}</ol>;
-  const footer = (
-    <p className="px-5 pt-6 text-[13px] leading-relaxed text-pencil sm:px-8">{room.book.source}</p>
+  const endOfBook = () => (
+    <>
+      <EndOfBook
+        roomId={room.id}
+        together={together}
+        me={me!}
+        myPen={myPen}
+        penOf={penOf}
+        letters={letters}
+        onSent={(l) => setLetters((prev) => [...prev, l])}
+      />
+      <div className="flex flex-wrap items-center justify-between gap-3 px-5 pb-6 sm:px-8">
+        <p className="text-[13px] leading-relaxed text-pencil">{room.book.source}</p>
+        <LeaveRoomButton roomId={room.id} together={together} />
+      </div>
+    </>
+  );
+  const underlineBar = (
+    <UnderlineBar
+      roomId={room.id}
+      myPen={myPen}
+      bottomOffset={paged ? 84 : 16}
+      onAdded={(h) => setHighlights((prev) => [...prev, h])}
+    />
   );
 
   if (paged) {
@@ -364,13 +417,15 @@ export function RoomReader({ roomId }: { roomId: string }) {
           itemCount={room.book.paragraphs.length + 1}
           renderItem={(item, measuring) => (item === 0 ? header() : paragraph(item - 1, measuring))}
           renderList={list}
-          measureKey={`${prefs.size}|${members.length}|${room.invite_code ?? ""}|${together}|${newParagraphs.length}|${resumedFrom}`}
+          renderFooter={endOfBook}
+          measureKey={`${prefs.size}|${members.length}|${room.invite_code ?? ""}|${together}|${newParagraphs.length}|${resumedFrom}|${letters.length}`}
           anchorItem={position === 0 ? 0 : position + 1}
           onAnchorChange={(item) => {
             setOpenIndex(null);
             movePosition(Math.max(0, item - 1));
           }}
         />
+        {underlineBar}
       </main>
     );
   }
@@ -380,7 +435,8 @@ export function RoomReader({ roomId }: { roomId: string }) {
       <div className="pt-10">{header()}</div>
       <ScrollPosition onChange={movePosition} start={resumedFrom} />
       <article className="mt-2 bg-page py-6">{list(room.book.paragraphs.map((_, i) => paragraph(i, false)))}</article>
-      {footer}
+      {endOfBook()}
+      {underlineBar}
     </Shell>
   );
 }

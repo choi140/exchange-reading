@@ -51,6 +51,7 @@ export function NotePanel({
   penOf,
   myPen,
   isNew,
+  underlines,
   onAdded,
   onUnlock,
   onClose,
@@ -64,6 +65,7 @@ export function NotePanel({
   penOf: (userId: string) => PenColor;
   myPen: PenColor;
   isNew: (n: Note) => boolean;
+  underlines?: React.ReactNode;
   onAdded: (n: Note) => void;
   onUnlock: () => Promise<string | null | undefined>;
   onClose: () => void;
@@ -92,6 +94,7 @@ export function NotePanel({
 
   return (
     <div className="mb-4 mr-3 border-t border-dashed border-rule pt-4">
+      {underlines}
       {blind ? (
         <div className="rounded-sm border border-dashed border-pencil/60 px-4 py-4">
           <p className="font-serif text-[17px] text-ink">숨겨진 메모 {tops.length}개</p>

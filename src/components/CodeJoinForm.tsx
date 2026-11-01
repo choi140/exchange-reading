@@ -1,7 +1,7 @@
 "use client";
 
 import { useRouter } from "next/navigation";
-import { useState } from "react";
+import { useId, useState } from "react";
 import { getBrowserSupabase } from "@/lib/supabase/client";
 import { useAnonymousSession } from "./AnonymousSession";
 
@@ -9,6 +9,7 @@ import { useAnonymousSession } from "./AnonymousSession";
 export function CodeJoinForm({ onDone }: { onDone?: () => void }) {
   const router = useRouter();
   const session = useAnonymousSession();
+  const fieldId = useId();
   const [code, setCode] = useState("");
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -36,12 +37,13 @@ export function CodeJoinForm({ onDone }: { onDone?: () => void }) {
 
   return (
     <form onSubmit={join}>
-      <label htmlFor="invite-code" className="block text-[14px] text-pencil">
+      <label htmlFor={fieldId} className="block text-[14px] text-pencil">
         친구에게 받은 6자리 참여 코드
       </label>
       <div className="mt-2 flex gap-2">
         <input
-          id="invite-code"
+          id={fieldId}
+          data-invite-code
           value={code}
           onChange={(e) => setCode(e.target.value)}
           inputMode="text"

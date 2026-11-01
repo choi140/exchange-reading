@@ -14,6 +14,7 @@ export function Paged({
   itemCount,
   renderItem,
   renderList,
+  renderFooter,
   measureKey,
   anchorItem,
   onAnchorChange,
@@ -23,6 +24,8 @@ export function Paged({
   renderItem: (i: number, measuring: boolean) => React.ReactNode;
   // 문단 항목들을 감싸는 목록(붉은 여백선)
   renderList: (children: React.ReactNode) => React.ReactNode;
+  // 책 끝(편지 등): 마지막 항목(번호 itemCount)으로 목록 밖에 그린다
+  renderFooter?: () => React.ReactNode;
   measureKey: string;
   anchorItem: number;
   onAnchorChange: (item: number) => void;
@@ -104,7 +107,8 @@ export function Paged({
 
   const current = pages?.[pageIndex] ?? [];
   const hasHeader = current.includes(0);
-  const paragraphItems = current.filter((i) => i !== 0);
+  const hasFooter = !!renderFooter && current.includes(itemCount);
+  const paragraphItems = current.filter((i) => i !== 0 && i !== itemCount);
   const total = pages?.length ?? 0;
 
   return (
@@ -130,7 +134,7 @@ export function Paged({
         }}
       >
         {/* 쪽 나누기용으로 보이지 않게 그려 높이를 잰다 */}
-        <div ref={measureRef} aria-hidden="true" className="pointer-events-none invisible absolute inset-x-0 top-0">
+        <div ref={measureRef} aria-hidden="true" inert className="pointer-events-none invisible absolute inset-x-0 top-0">
           <div data-item={0}>{renderItem(0, true)}</div>
           {renderList(
             Array.from({ length: itemCount - 1 }, (_, k) => (
@@ -139,6 +143,7 @@ export function Paged({
               </div>
             )),
           )}
+          {renderFooter && <div data-item={itemCount}>{renderFooter()}</div>}
         </div>
 
         {pages && (
@@ -150,6 +155,7 @@ export function Paged({
             {hasHeader && renderItem(0, false)}
             {paragraphItems.length > 0 &&
               renderList(paragraphItems.map((i) => <div key={i}>{renderItem(i, false)}</div>))}
+            {hasFooter && renderFooter!()}
           </div>
         )}
       </div>
