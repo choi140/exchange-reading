@@ -2,6 +2,7 @@
 
 import { useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
+import { setRecoveryKey, useRecoveryKey } from "@/lib/prefs";
 import { getBrowserSupabase } from "@/lib/supabase/client";
 import { useAnonymousSession } from "./AnonymousSession";
 
@@ -13,7 +14,7 @@ const dateFormat = new Intl.DateTimeFormat("ko-KR", { year: "numeric", month: "l
 export function RecoveryKey() {
   const session = useAnonymousSession();
   const [made, setMade] = useState<string | null | undefined>(undefined); // 만든 날짜
-  const [fresh, setFresh] = useState<string | null>(null); // 방금 만든 열쇠 (이 화면에서만 보인다)
+  const saved = useRecoveryKey(); // 이 브라우저에 기억해 둔 열쇠
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [confirmNew, setConfirmNew] = useState(false);
@@ -25,6 +26,8 @@ export function RecoveryKey() {
     supabase.rpc("my_recovery_key").then(({ data, error }) => {
       if (error) setError(`열쇠 정보를 불러오지 못했어요. (${error.message})`);
       setMade((data as string | null) ?? null);
+      // 이 계정에 열쇠가 없으면 기억해 둔 것은 더 이상 쓸 수 없는 열쇠다
+      if (!error && !data) setRecoveryKey(null);
     });
   }, [session.status]);
 
@@ -39,30 +42,45 @@ export function RecoveryKey() {
       setError(`열쇠를 만들지 못했어요. (${error?.message ?? "응답 없음"})`);
       return;
     }
-    setFresh(data as string);
+    setRecoveryKey(data as string);
     setMade(new Date().toISOString());
     setConfirmNew(false);
   }
 
-  const link = fresh && typeof window !== "undefined" ? `${window.location.origin}/key#${fresh}` : "";
+  const link = saved && typeof window !== "undefined" ? `${window.location.origin}/key#${saved}` : "";
+  const renew = confirmNew ? (
+    <div className="mt-3 flex flex-wrap gap-2">
+      <button type="button" onClick={() => setConfirmNew(false)} className="h-11 px-3 text-[14px] text-pencil">
+        취소
+      </button>
+      <button type="button" onClick={create} disabled={busy} className="h-11 rounded-full bg-ink px-5 text-[15px] text-page disabled:opacity-50">
+        {busy ? "만드는 중…" : "예전 열쇠 버리고 새로 만들기"}
+      </button>
+    </div>
+  ) : (
+    <button type="button" onClick={() => setConfirmNew(true)} className="mt-3 h-11 rounded-full border border-ink px-5 text-[15px] text-ink">
+      새 열쇠 만들기
+    </button>
+  );
 
   return (
     <div>
-      {fresh ? (
+      {saved ? (
         <div className="rounded-lg border border-ink px-5 py-5">
           <p className="text-[14px] text-pencil">나만의 열쇠</p>
-          <p className="mt-1 break-all font-serif text-[28px] tracking-[0.12em] text-ink">{fresh}</p>
+          <p className="mt-1 break-all font-serif text-[28px] tracking-[0.12em] text-ink">{saved}</p>
           <p className="mt-3 text-[14px] leading-relaxed text-ink">
-            이 열쇠는 지금 이 화면에서만 보여 드려요. 메모 앱에 적어 두거나, 아래 복구 링크를 나에게 보내 두세요.
+            이 브라우저에서는 언제든 다시 볼 수 있어요. 브라우저를 바꾸거나 방문 기록을 지우면 사라지니, 메모 앱에 적어 두거나 아래 복구 링크를 나에게 보내 두세요.
           </p>
           <div className="mt-4 flex flex-wrap gap-2">
-            <CopyButton text={fresh} label="열쇠 복사" />
+            <CopyButton text={saved} label="열쇠 복사" />
             <CopyButton text={link} label="복구 링크 복사" />
           </div>
           <p className="mt-3 break-all text-[13px] text-pencil">{link}</p>
           <p className="mt-3 text-[13px] leading-relaxed text-pen-orange">
             열쇠나 링크를 가진 사람은 내 책과 일기를 가져갈 수 있어요. 다른 사람에게 보여 주지 마세요.
           </p>
+          <div className="mt-4 border-t border-rule pt-1">{renew}</div>
         </div>
       ) : made === undefined ? (
         <div className="h-24 rounded-lg bg-rule/25" aria-label="열쇠 정보를 불러오는 중" />
@@ -70,22 +88,9 @@ export function RecoveryKey() {
         <div className="border-y border-rule py-5">
           <p className="text-[15px] text-ink">{dateFormat.format(new Date(made))}에 만든 열쇠가 있어요.</p>
           <p className="mt-1 text-[14px] leading-relaxed text-pencil">
-            열쇠를 잃어버렸다면 새로 만들 수 있어요. 새로 만들면 예전 열쇠와 링크는 더 이상 쓸 수 없어요.
+            이 브라우저에는 기억해 둔 열쇠가 없어요. 열쇠를 잃어버렸다면 새로 만들 수 있어요. 새로 만들면 예전 열쇠와 링크는 더 이상 쓸 수 없어요.
           </p>
-          {confirmNew ? (
-            <div className="mt-3 flex flex-wrap gap-2">
-              <button type="button" onClick={() => setConfirmNew(false)} className="h-11 px-3 text-[14px] text-pencil">
-                취소
-              </button>
-              <button type="button" onClick={create} disabled={busy} className="h-11 rounded-full bg-ink px-5 text-[15px] text-page disabled:opacity-50">
-                {busy ? "만드는 중…" : "예전 열쇠 버리고 새로 만들기"}
-              </button>
-            </div>
-          ) : (
-            <button type="button" onClick={() => setConfirmNew(true)} className="mt-3 h-11 rounded-full border border-ink px-5 text-[15px] text-ink">
-              새 열쇠 만들기
-            </button>
-          )}
+          {renew}
         </div>
       ) : (
         <div className="border-y border-rule py-5">
@@ -169,6 +174,8 @@ export function ClaimKey() {
       setError(error.message);
       return;
     }
+    // 되찾은 열쇠는 이 브라우저에서 계속 쓰이니 여기서도 보이게 기억한다
+    setRecoveryKey(`${clean.slice(0, 4)}-${clean.slice(4, 8)}-${clean.slice(8)}`);
     setDone(true);
   }
 

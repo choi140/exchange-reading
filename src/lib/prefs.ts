@@ -93,3 +93,38 @@ export function setLastSeen(roomId: string, iso: string) {
     localStorage.setItem(`nb:seen:${roomId}`, iso);
   } catch {}
 }
+
+// 11-1 나만의 열쇠: DB에는 해시만 있어 다시 꺼낼 수 없으니, 원문은 이 브라우저에 기억한다
+const RECOVERY_KEY = "nb:key";
+const keyListeners = new Set<() => void>();
+let keyInMemory: string | null = null;
+
+function readRecoveryKey(): string | null {
+  try {
+    return localStorage.getItem(RECOVERY_KEY);
+  } catch {
+    return keyInMemory;
+  }
+}
+
+export function setRecoveryKey(key: string | null) {
+  keyInMemory = key;
+  try {
+    if (key) localStorage.setItem(RECOVERY_KEY, key);
+    else localStorage.removeItem(RECOVERY_KEY);
+  } catch {
+    // 저장이 막힌 브라우저에서는 이번 화면에서만 기억
+  }
+  keyListeners.forEach((l) => l());
+}
+
+function subscribeRecoveryKey(l: () => void) {
+  keyListeners.add(l);
+  return () => {
+    keyListeners.delete(l);
+  };
+}
+
+export function useRecoveryKey(): string | null {
+  return useSyncExternalStore(subscribeRecoveryKey, readRecoveryKey, () => null);
+}
