@@ -5,12 +5,13 @@ import { useEffect, useRef, useState } from "react";
 import { toPng } from "html-to-image";
 import { getBrowserSupabase } from "@/lib/supabase/client";
 import { useAnonymousSession } from "./AnonymousSession";
+import { bookColor } from "./BookCover";
 import { NotAllowed } from "./NotAllowed";
 import { PEN, type PenColor } from "./PenChip";
 import { LETTER_COLUMNS, type Letter } from "./reader/EndOfBook";
 import { HIGHLIGHT_COLUMNS, HIGHLIGHT_COLUMNS_OLD, type Highlight } from "./reader/Highlights";
 
-// 10-3 다 읽은 뒤 기념 카드: 함께 그은 밑줄·한마디·편지를 도서관 대출 카드 같은 한 장으로 모아 이미지로 저장·공유
+// 10-3/20-1 다 읽은 뒤 기념 카드: 함께 그은 밑줄·한마디·편지를 독서 영수증 한 장으로 모아 이미지로 저장·공유
 
 type Room = {
   id: string;
@@ -36,6 +37,26 @@ const DAY_VARS = {
   "--color-pen-green": "#1d7a50",
   "--color-pen-orange": "#d2691e",
 } as React.CSSProperties;
+
+const RECEIPT_LINE = "mt-4 border-t border-dashed border-pencil/50 pt-4";
+
+function ReceiptRow({ label, children }: { label: string; children: React.ReactNode }) {
+  return (
+    <div className="flex items-baseline gap-3">
+      <dt className="w-12 shrink-0 font-bold">{label}</dt>
+      <dd className="min-w-0">{children}</dd>
+    </div>
+  );
+}
+
+function ReceiptTotal({ label, children }: { label: string; children: React.ReactNode }) {
+  return (
+    <div className="flex items-baseline justify-between gap-3">
+      <dt>{label}</dt>
+      <dd>{children}</dd>
+    </div>
+  );
+}
 
 export function MemoryCardPage({ roomId }: { roomId: string }) {
   const session = useAnonymousSession();
@@ -103,7 +124,7 @@ export function MemoryCardPage({ roomId }: { roomId: string }) {
     );
   }
   if (data.status === "loading") {
-    return <div aria-label="기념 카드를 만드는 중" className="mx-auto mt-10 h-[520px] w-[360px] max-w-full rounded-sm bg-rule/25" />;
+    return <div aria-label="기념 카드를 만드는 중" className="mx-auto mt-10 h-[640px] w-[360px] max-w-full bg-rule/25" />;
   }
 
   const { room, members, highlights, letters } = data;
@@ -115,6 +136,7 @@ export function MemoryCardPage({ roomId }: { roomId: string }) {
     .slice(0, MAX_QUOTES)
     .sort((a, b) => a.paragraph_index - b.paragraph_index || a.start_offset - b.start_offset);
   const memoCount = highlights.filter((h) => h.memo).length;
+  const cover = bookColor(room.book.id);
   // 한글 파일 이름은 일부 브라우저에서 "download"로 바뀌어 영문(책 id)으로 짓는다
   const fileName = `natseon-miljul-${room.book.id}.png`;
 
@@ -173,85 +195,98 @@ export function MemoryCardPage({ roomId }: { roomId: string }) {
   }
 
   return (
-    <div className="mx-auto w-full max-w-[640px] px-5 pb-20 pt-6 sm:px-8">
+    <div className="mx-auto w-full max-w-[960px] px-5 pb-20 pt-6 sm:px-8">
       <Link href={`/room/${room.id}`} className="py-2 text-[15px] text-pencil">
         ‹ 책으로 돌아가기
       </Link>
-      <h1 className="mt-4 font-display text-[26px] font-bold text-ink">기념 카드</h1>
-      <p className="mt-1 text-[14px] leading-relaxed text-pencil">
+      <h1 className="mt-4 font-display text-[40px] leading-tight text-ink">기념 카드</h1>
+      <p className="mt-2 text-[15px] leading-relaxed text-pencil">
         {room.mode === "together" ? "함께 그은 밑줄과 한마디, 편지를 한 장에 모았어요." : "내가 그은 밑줄과 한마디, 편지를 한 장에 모았어요."}{" "}
         한마디가 있는 밑줄을 먼저, 최대 {MAX_QUOTES}개까지 담아요.
       </p>
 
-      {/* 저장되는 카드 */}
-      <div className="mt-6 flex justify-center">
-        <div ref={cardRef} style={DAY_VARS} className="w-[360px] max-w-full bg-page text-ink">
-          <div className="border-l-2 border-margin py-6 pl-5 pr-5">
-            <p className="flex items-baseline justify-between gap-3 text-[12px] text-pencil">
-              <span className="font-display text-[14px] font-bold text-ink">낯선 밑줄</span>
-              <span>{dateFormat.format(new Date())} 다 읽음</span>
-            </p>
-            <p className="mt-4 font-display text-[28px] font-bold leading-tight">{room.book.title}</p>
-            <p className="mt-1 text-[13px] text-pencil">
-              {room.book.author}
-              {room.book.year ? `, ${room.book.year}년` : ""}
-            </p>
+      {/* 저장되는 카드: 위쪽 색 표지 + 아래쪽 영수증 */}
+      <div className="mt-8 flex justify-center">
+        <div className="w-[360px] max-w-full shadow-[0_8px_24px_rgba(0,0,0,0.14)]">
+          <div ref={cardRef} style={DAY_VARS} className="bg-page text-ink">
+            <div className={`grain flex h-44 flex-col items-center justify-center px-6 text-center ${cover.bg} ${cover.text}`}>
+              <p className="font-hand text-[20px] leading-none">낯선 밑줄</p>
+              <p className="mt-3 font-display text-[28px] leading-tight">[ 독서 영수증 ]</p>
+              <p className="mt-2 text-[13px] font-medium">- {room.mode === "together" ? "함께 읽음" : "혼자 읽음"} -</p>
+            </div>
 
-            <dl className="mt-4 border-y border-rule text-[12px]">
-              <div className="flex items-baseline gap-3 border-b border-rule py-2">
-                <dt className="w-16 shrink-0 text-pencil">{room.mode === "together" ? "함께 읽음" : "읽은 사람"}</dt>
-                <dd className="flex flex-wrap gap-x-3">
-                  {members.map((m) => (
-                    <span key={m.user_id} className={`font-hand text-[18px] leading-none ${PEN[m.pen_color].className}`}>
-                      {m.alias}
-                      {m.user_id === me ? "(나)" : ""}
-                    </span>
-                  ))}
-                </dd>
-              </div>
-              <div className="flex items-baseline gap-3 py-2">
-                <dt className="w-16 shrink-0 text-pencil">남긴 것</dt>
-                <dd>
-                  밑줄 {highlights.length}개, 한마디 {memoCount}개{room.mode === "together" ? `, 답글 ${data.replies}개` : ""}, 편지 {letters.length}장
-                </dd>
-              </div>
-            </dl>
+            <div className="px-6 pb-5 pt-6">
+              <p className="text-center font-display text-[22px] leading-tight">{room.book.title}</p>
+              <p className="mt-1 text-center text-[12px] text-pencil">- 독자용 -</p>
 
-            {picked.length === 0 ? (
-              <p className="mt-5 text-[13px] text-pencil">아직 그은 밑줄이 없어요.</p>
-            ) : (
-              <ul className="mt-5 space-y-4">
-                {picked.map((h) => {
-                  const pen = PEN[penOf(h.user_id)];
-                  const quote = (room.book.paragraphs[h.paragraph_index]?.slice(h.start_offset, h.end_offset) ?? "").trim();
-                  return (
-                    <li key={h.id} className={`border-l-2 pl-3 ${pen.border}`}>
-                      <p className="font-serif text-[14px] leading-[1.7]">“{quote.length > 90 ? `${quote.slice(0, 90)}…` : quote}”</p>
-                      {h.memo && <p className={`mt-1 font-hand text-[19px] leading-[1.2] ${pen.className}`}>{h.memo}</p>}
-                    </li>
-                  );
-                })}
-              </ul>
-            )}
+              <dl className="mt-5 space-y-1.5 text-[13px]">
+                <ReceiptRow label="도서명">{room.book.title}</ReceiptRow>
+                <ReceiptRow label="지은이">{room.book.author}</ReceiptRow>
+                {room.book.year && <ReceiptRow label="발표">{room.book.year}년</ReceiptRow>}
+                <ReceiptRow label="독서일">{dateFormat.format(new Date())}</ReceiptRow>
+                <ReceiptRow label="독자">
+                  <span className="flex flex-wrap gap-x-3">
+                    {members.map((m) => (
+                      <span key={m.user_id} className={`font-hand text-[18px] leading-none ${PEN[m.pen_color].className}`}>
+                        {m.alias}
+                        {m.user_id === me ? "(나)" : ""}
+                      </span>
+                    ))}
+                  </span>
+                </ReceiptRow>
+              </dl>
 
-            {letters.length > 0 && (
-              <div className="mt-6 border-t border-dashed border-rule pt-4">
-                <p className="text-[12px] text-pencil">마지막 장의 편지</p>
-                <ul className="mt-2 space-y-3">
-                  {letters.slice(0, MAX_LETTERS).map((l) => {
-                    const pen = PEN[penOf(l.user_id)];
-                    return (
-                      <li key={l.id}>
-                        <p className={`whitespace-pre-wrap font-hand text-[19px] leading-[1.25] ${pen.className}`}>
-                          {l.body.length > 120 ? `${l.body.slice(0, 120)}…` : l.body}
-                        </p>
-                        <p className="text-[11px] text-pencil">{pen.label}</p>
-                      </li>
-                    );
-                  })}
-                </ul>
+              <div className={RECEIPT_LINE}>
+                <p className="text-[13px] font-bold">책의 문장</p>
+                {picked.length === 0 ? (
+                  <p className="mt-2 text-[13px] text-pencil">아직 그은 밑줄이 없어요.</p>
+                ) : (
+                  <ul className="mt-3 space-y-3">
+                    {picked.map((h) => {
+                      const pen = PEN[penOf(h.user_id)];
+                      const quote = (room.book.paragraphs[h.paragraph_index]?.slice(h.start_offset, h.end_offset) ?? "").trim();
+                      return (
+                        <li key={h.id} className={`border-l-2 pl-3 ${pen.border}`}>
+                          <p className="font-serif text-[14px] leading-[1.7]">“{quote.length > 90 ? `${quote.slice(0, 90)}…` : quote}”</p>
+                          {h.memo && <p className={`mt-1 font-hand text-[19px] leading-[1.2] ${pen.className}`}>{h.memo}</p>}
+                        </li>
+                      );
+                    })}
+                  </ul>
+                )}
               </div>
-            )}
+
+              {letters.length > 0 && (
+                <div className={RECEIPT_LINE}>
+                  <p className="text-[13px] font-bold">마지막 장의 편지</p>
+                  <ul className="mt-2 space-y-3">
+                    {letters.slice(0, MAX_LETTERS).map((l) => {
+                      const pen = PEN[penOf(l.user_id)];
+                      return (
+                        <li key={l.id}>
+                          <p className={`whitespace-pre-wrap font-hand text-[19px] leading-[1.25] ${pen.className}`}>
+                            {l.body.length > 120 ? `${l.body.slice(0, 120)}…` : l.body}
+                          </p>
+                          <p className="text-[11px] text-pencil">{pen.label}</p>
+                        </li>
+                      );
+                    })}
+                  </ul>
+                </div>
+              )}
+
+              <div className={RECEIPT_LINE}>
+                <p className="text-[13px] font-bold">합계</p>
+                <dl className="mt-2 space-y-1 text-[13px] tabular-nums">
+                  <ReceiptTotal label="밑줄">{highlights.length}개</ReceiptTotal>
+                  <ReceiptTotal label="한마디">{memoCount}개</ReceiptTotal>
+                  {room.mode === "together" && <ReceiptTotal label="답글">{data.replies}개</ReceiptTotal>}
+                  <ReceiptTotal label="편지">{letters.length}장</ReceiptTotal>
+                </dl>
+              </div>
+
+              <p className={`${RECEIPT_LINE} text-center font-hand text-[20px] leading-none text-pencil`}>읽어 주셔서 고맙습니다</p>
+            </div>
           </div>
         </div>
       </div>
