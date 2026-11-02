@@ -11,41 +11,43 @@ import { NightToggle } from "./reader/ReaderSettings";
 // 8-3 교환독서(/read)와 교환일기(/diary)를 서로 다른 화면으로 나눈다.
 
 const NAV = [
-  { href: "/", label: "처음", desc: "독서와 일기 고르기", match: (p: string) => p === "/" },
-  { href: "/read", label: "교환독서", desc: "책을 돌려 읽고 메모 나누기", match: (p: string) => p.startsWith("/read") || p.startsWith("/room") },
-  { href: "/diary", label: "교환일기", desc: "혼자 또는 짝과 번갈아 쓰기", match: (p: string) => p.startsWith("/diary") },
-  { href: "/calendar", label: "나의 독서 달력", desc: "읽고 쓴 날이 조용히 쌓여요", match: (p: string) => p.startsWith("/calendar") },
-  { href: "/key", label: "나만의 열쇠", desc: "다른 브라우저에서 이어 쓰기", match: (p: string) => p.startsWith("/key") },
+  { href: "/", label: "처음", icon: "M4 11l8-7 8 7v8a1 1 0 0 1-1 1h-5v-6h-4v6H5a1 1 0 0 1-1-1z", match: (p: string) => p === "/" },
+  { href: "/read", label: "교환독서", icon: "M12 6c-2-1.5-5-2-8-1.5v14c3-.5 6 0 8 1.5 2-1.5 5-2 8-1.5v-14c-3-.5-6 0-8 1.5zm0 0v14", match: (p: string) => p.startsWith("/read") || p.startsWith("/room") },
+  { href: "/diary", label: "교환일기", icon: "M6 3h13v18H6a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2zm3 0v18m3-13h4m-4 4h4", match: (p: string) => p.startsWith("/diary") },
+  { href: "/calendar", label: "나의 독서 달력", icon: "M4 6h16v14H4zm0 5h16M8 3v5m8-5v5", match: (p: string) => p.startsWith("/calendar") },
+  { href: "/key", label: "나만의 열쇠", icon: "M14 10a4 4 0 1 1 0 .01M11 13l-7 7m3-3 3 3", match: (p: string) => p.startsWith("/key") },
 ];
 
 function SideNav({ onNavigate }: { onNavigate?: () => void }) {
   const pathname = usePathname();
   return (
     <div className="flex h-full flex-col">
-      <Link href="/" onClick={onNavigate} className="inline-block px-1 pt-2">
+      <Link href="/" onClick={onNavigate} className="inline-block px-3 pt-2">
         <Logo size="sm" />
       </Link>
       <nav aria-label="주 메뉴" className="mt-10">
-        <ul className="border-t border-rule">
+        <ul className="grid gap-1">
           {NAV.map((item) => {
             const on = item.match(pathname);
             return (
-              <li key={item.href} className="border-b border-rule">
+              <li key={item.href}>
                 <Link
                   href={item.href}
                   onClick={onNavigate}
                   aria-current={on ? "page" : undefined}
-                  className={`block border-l-2 py-3 pl-3 pr-2 ${on ? "border-ink" : "border-transparent hover:border-rule"}`}
+                  className={`flex h-11 items-center gap-3 rounded-full px-3 text-[15px] ${on ? "font-bold text-accent" : "font-medium text-pencil hover:text-ink"}`}
                 >
-                  <span className={`block font-serif text-[18px] ${on ? "font-bold text-ink" : "text-ink"}`}>{item.label}</span>
-                  <span className="mt-0.5 block text-[13px] text-pencil">{item.desc}</span>
+                  <svg aria-hidden="true" viewBox="0 0 24 24" className="h-5 w-5 shrink-0">
+                    <path d={item.icon} fill="none" stroke="currentColor" strokeWidth="1.7" strokeLinecap="round" strokeLinejoin="round" />
+                  </svg>
+                  {item.label}
                 </Link>
               </li>
             );
           })}
         </ul>
       </nav>
-      <div className="mt-8 grid gap-2">
+      <div className="mt-auto grid gap-2 pt-8">
         <HomeCodeButton />
         <NightToggle />
       </div>
@@ -78,12 +80,12 @@ export function AppShell({ children }: { children: React.ReactNode }) {
   return (
     <div className="min-h-dvh">
       {/* PC: 왼쪽 고정 사이드바 */}
-      <aside className="fixed inset-y-0 left-0 hidden w-60 overflow-y-auto border-r border-rule bg-paper px-5 py-8 md:block">
+      <aside className="fixed inset-y-4 left-4 hidden w-60 overflow-y-auto rounded-2xl bg-page px-4 py-6 md:block">
         <SideNav />
       </aside>
 
       {/* 휴대폰: 위쪽 막대 + 서랍 */}
-      <div className="sticky top-0 z-20 flex items-center gap-3 border-b border-rule bg-paper/95 px-3 py-2 backdrop-blur md:hidden">
+      <div className="sticky top-0 z-20 flex items-center gap-3 border-b border-ink bg-paper px-3 py-2 md:hidden">
         <button
           type="button"
           onClick={() => setOpen(true)}
@@ -94,11 +96,9 @@ export function AppShell({ children }: { children: React.ReactNode }) {
             <path d="M4 7h16M4 12h16M4 17h11" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" fill="none" />
           </svg>
         </button>
-        {pathname !== "/" && (
-          <Link href="/" className="pb-1">
-            <Logo size="sm" />
-          </Link>
-        )}
+        <Link href="/" className="pb-1">
+          <Logo size="sm" />
+        </Link>
       </div>
       <dialog
         ref={ref}
@@ -108,19 +108,21 @@ export function AppShell({ children }: { children: React.ReactNode }) {
         }}
         className="m-0 h-dvh max-h-dvh w-[min(300px,85vw)] max-w-none bg-transparent p-0 backdrop:bg-ink/40"
       >
-        <div className="h-full overflow-y-auto border-r border-rule bg-paper px-5 py-6">
+        <div className="flex h-full flex-col overflow-y-auto bg-page px-4 py-6">
           <button
             type="button"
             onClick={() => setOpen(false)}
-            className="mb-4 h-10 text-[14px] text-pencil underline underline-offset-4"
+            className="mb-4 h-10 self-start px-3 text-[14px] text-pencil underline underline-offset-4"
           >
             닫기
           </button>
-          <SideNav onNavigate={() => setOpen(false)} />
+          <div className="min-h-0 flex-1">
+            <SideNav onNavigate={() => setOpen(false)} />
+          </div>
         </div>
       </dialog>
 
-      <div className="md:pl-60">{children}</div>
+      <div className="md:pl-[17rem]">{children}</div>
     </div>
   );
 }

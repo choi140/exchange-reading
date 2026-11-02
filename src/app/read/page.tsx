@@ -8,23 +8,23 @@ import { listBooks } from "@/data/books";
 export default function ReadPage() {
   return (
     <AppShell>
-      <main className="mx-auto w-full max-w-[640px] px-5 pb-20 pt-10 sm:px-8">
+      <main className="mx-auto w-full max-w-[960px] px-5 pb-20 pt-10 sm:px-8">
         <header>
-          <h1 className="font-serif text-[32px] font-bold leading-tight text-ink">교환독서</h1>
+          <h1 className="font-display text-[40px] leading-tight text-ink">교환독서</h1>
           <p className="mt-3 max-w-[30em] text-[15px] leading-relaxed text-pencil">
             한 권의 책을 혼자, 낯선 사람과, 또는 코드로 친구와 읽어요. 마음에 드는 문장에 밑줄을 긋고 한마디를 남겨요.
           </p>
         </header>
 
         <section aria-labelledby="my-books" className="mt-10">
-          <h2 id="my-books" className="font-serif text-[22px] text-ink">
+          <h2 id="my-books" className="font-display text-[24px] text-ink">
             내 책
           </h2>
           <MyShelf />
         </section>
 
         <section aria-labelledby="shelf" className="mt-12">
-          <h2 id="shelf" className="font-serif text-[22px] text-ink">
+          <h2 id="shelf" className="font-display text-[24px] text-ink">
             책장
           </h2>
           <p className="mt-1 text-[14px] text-pencil">

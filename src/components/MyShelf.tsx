@@ -91,12 +91,12 @@ export function MyShelf() {
     );
   }
   return (
-    <ul className="mt-3 border-t border-rule">
+    <ul className="mt-3 divide-y divide-rule rounded-2xl bg-page px-4 sm:px-5">
       {rooms.map(({ room, pen_color }) => (
-        <li key={room!.id} className="border-b border-rule">
+        <li key={room!.id}>
           <Link href={`/room/${room!.id}`} className="flex items-baseline justify-between gap-4 py-4">
             <span>
-              <span className="block font-serif text-[18px] text-ink">{room!.book?.title}</span>
+              <span className="block font-display text-[18px] text-ink">{room!.book?.title}</span>
               <span className="mt-0.5 block text-[14px] text-pencil">
                 {room!.mode === "solo" ? "혼자 읽기" : "함께 읽기"}
               </span>

@@ -1,82 +1,47 @@
 "use client";
 
 import Link from "next/link";
+import { Star } from "./BookCover";
 import { useHomeSummary } from "./HomeSummary";
 
-// 8-1 처음 화면: 교환독서를 할지, 교환일기를 할지 고른다
+// 8-1/17-2 처음 화면: 기대어 선 책등 세 권을 눌러 어디로 갈지 고른다
 export function HomeChooser() {
   const s = useHomeSummary();
   return (
-    <div className="grid gap-4 sm:grid-cols-2">
-      <Choice
+    <nav aria-label="어디로 갈까요" className="relative h-[440px] overflow-hidden lg:h-full lg:min-h-[640px]">
+      <Spine
         href="/read"
         title="교환독서"
-        line="한 권의 책을 낯선 사람이나 친구와 돌려 읽어요. 문장에 밑줄을 긋고 한마디를 남기며, 펜 색으로 서로를 알아봐요."
-        status={s ? (s.rooms > 0 ? `읽고 있는 책 ${s.rooms}권` : "아직 읽는 책이 없어요") : null}
-        mark={
-          <svg aria-hidden="true" viewBox="0 0 64 40" className="h-10 w-16 text-pen-blue">
-            <path d="M4 8c10-4 20-4 28 2 8-6 18-6 28-2v26c-10-4-20-4-28 2-8-6-18-6-28-2z" fill="none" stroke="var(--color-ink)" strokeWidth="1.6" strokeLinejoin="round" />
-            <path d="M32 10v26" stroke="var(--color-ink)" strokeWidth="1.2" />
-            <path d="M9 24c5-1.5 11-1.5 17 0" stroke="currentColor" strokeWidth="2.4" strokeLinecap="round" fill="none" />
-          </svg>
-        }
+        status={s ? (s.rooms > 0 ? `읽는 책 ${s.rooms}권` : "함께 읽기") : null}
+        className="left-[4%] h-[78%] w-[29%] origin-bottom rotate-[13deg] bg-spine-orange text-white hover:-translate-y-3"
       />
-      <Choice
+      <Spine
         href="/diary"
         title="교환일기"
-        line="혼자 쓰거나, 짝과 한 편씩 번갈아 써요. 날마다 바뀌는 질문이 첫 줄을 도와줘요."
-        status={
-          s
-            ? s.diaries > 0
-              ? `일기장 ${s.diaries}권${s.myTurn > 0 ? ` · 내 차례 ${s.myTurn}` : ""}`
-              : "아직 일기장이 없어요"
-            : null
-        }
-        highlight={!!s && s.myTurn > 0}
-        mark={
-          <svg aria-hidden="true" viewBox="0 0 64 40" className="h-10 w-16 text-pen-orange">
-            <rect x="14" y="3" width="36" height="34" rx="2" fill="none" stroke="var(--color-ink)" strokeWidth="1.6" />
-            <path d="M14 3v34" stroke="var(--color-margin)" strokeWidth="2" />
-            <path d="M21 15h22M21 22h22M21 29h14" stroke="var(--color-rule)" strokeWidth="1.4" />
-            <path d="M22 22c5 2 11-2 18 0" stroke="currentColor" strokeWidth="2.4" strokeLinecap="round" fill="none" />
-          </svg>
-        }
+        status={s ? (s.myTurn > 0 ? `내 차례 ${s.myTurn}` : s.diaries > 0 ? `일기장 ${s.diaries}권` : "번갈아 쓰기") : null}
+        className="left-[36%] h-[88%] w-[29%] origin-bottom rotate-[7deg] bg-spine-navy text-white hover:-translate-y-3"
       />
-    </div>
+      <Spine
+        href="/calendar"
+        title="독서 달력"
+        status="읽고 쓴 날"
+        className="left-[69%] h-[97%] w-[29%] origin-bottom rotate-[2deg] bg-spine-mustard text-[#191919] hover:-translate-y-3"
+      />
+    </nav>
   );
 }
 
-function Choice({
-  href,
-  title,
-  line,
-  status,
-  mark,
-  highlight,
-}: {
-  href: string;
-  title: string;
-  line: string;
-  status: string | null;
-  mark: React.ReactNode;
-  highlight?: boolean;
-}) {
+function Spine({ href, title, status, className }: { href: string; title: string; status: string | null; className: string }) {
   return (
     <Link
       href={href}
-      className="group flex flex-col rounded-lg border border-rule bg-page px-5 py-6 hover:border-ink active:translate-y-px"
+      className={`grain absolute -bottom-6 flex flex-col items-center justify-between px-2 pb-14 pt-5 shadow-[9px_5px_0_#000] transition-transform duration-200 lg:pt-8 ${className}`}
     >
-      {mark}
-      <span className="mt-4 font-serif text-[26px] font-bold leading-tight text-ink">{title}</span>
-      <span className="mt-2 text-[15px] leading-relaxed text-pencil">{line}</span>
-      <span className="mt-5 flex items-center justify-between gap-3">
-        <span className={`text-[14px] ${highlight ? "rounded-full bg-ink px-3 py-1 text-page" : "text-pencil"}`}>
-          {status ?? " "}
-        </span>
-        <span className="text-[15px] text-ink underline decoration-rule underline-offset-4 group-hover:decoration-ink">
-          {title} 하러 가기
-        </span>
+      <span className="flex flex-col items-center gap-3">
+        <Star className="h-11 w-11 lg:h-14 lg:w-14" />
+        <span className="min-h-5 text-center text-[13px] font-medium leading-tight lg:text-[15px]">{status}</span>
       </span>
+      <span className="spine-text font-display text-[38px] leading-none lg:text-[56px]">{title}</span>
     </Link>
   );
 }

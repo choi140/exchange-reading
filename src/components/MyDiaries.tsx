@@ -70,12 +70,12 @@ export function MyDiaries() {
     );
   }
   return (
-    <ul className="mt-3 border-t border-rule">
+    <ul className="mt-3 divide-y divide-rule rounded-2xl bg-page px-4 sm:px-5">
       {state.diaries.map((d) => (
-        <li key={d.id} className="border-b border-rule">
+        <li key={d.id}>
           <Link href={`/diary/${d.id}`} className="flex items-baseline justify-between gap-4 py-4">
             <span>
-              <span className="block font-serif text-[18px] text-ink [overflow-wrap:anywhere]">{d.title || diaryTitle(d.mode)}</span>
+              <span className="block font-display text-[18px] text-ink [overflow-wrap:anywhere]">{d.title || diaryTitle(d.mode)}</span>
               {d.title && <span className="block text-[13px] text-pencil">{diaryTitle(d.mode)}</span>}
               <span className="mt-0.5 block text-[14px] text-pencil">
                 {dateFormat.format(new Date(d.created_at))}에 시작, {Number(d.entry_count)}편

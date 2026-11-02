@@ -6,7 +6,7 @@ import type { Book } from "@/data/books";
 import { setPrefs, usePrefs, type ShelfView } from "@/lib/prefs";
 import { getBrowserSupabase } from "@/lib/supabase/client";
 import { useAnonymousSession } from "./AnonymousSession";
-import { BookCover } from "./BookCover";
+import { BookCover, bookColor } from "./BookCover";
 import { CodeJoinForm } from "./CodeJoinForm";
 import { ChoiceButton, Sheet } from "./Sheet";
 
@@ -20,14 +20,14 @@ const SHELF_VIEWS: { value: ShelfView; label: string }[] = [
   { value: "four", label: "4열" },
 ];
 const SHELF_LIST: Record<ShelfView, string> = {
-  list: "border-t border-rule",
-  three: "grid grid-cols-3 gap-x-3 gap-y-7 border-t border-rule pt-6",
-  four: "grid grid-cols-4 gap-x-2 gap-y-7 border-t border-rule pt-6 sm:gap-x-3",
+  list: "grid gap-3",
+  three: "grid grid-cols-3 gap-2 sm:gap-4",
+  four: "grid grid-cols-4 gap-1.5 sm:gap-3",
 };
 const SHELF_TITLE: Record<ShelfView, string> = {
   list: "text-[22px]",
-  three: "mt-2 text-[15px]",
-  four: "mt-2 text-[14px]",
+  three: "mt-3 text-[15px] font-bold font-sans sm:text-[17px]",
+  four: "mt-3 text-[13px] font-bold font-sans sm:text-[15px]",
 };
 
 // 1-7 책 목록 + 1-8 "혼자 읽기"·"함께 읽기" 버튼
@@ -81,10 +81,17 @@ export function BookShelf({ books }: { books: ShelfBook[] }) {
       </div>
       <ul className={SHELF_LIST[view]}>
         {books.map((book) => (
-          <li key={book.id} className={inList ? "flex items-center justify-between gap-4 border-b border-rule py-5" : "min-w-0"}>
-            {!inList && <BookCover id={book.id} title={book.title} author={book.author} />}
-            <div className="min-w-0">
-              <p className={`font-serif leading-snug text-ink ${SHELF_TITLE[view]}`}>{book.title}</p>
+          <li
+            key={book.id}
+            className={inList ? "flex items-center gap-4 rounded-2xl bg-page px-4 py-4 sm:px-5" : `min-w-0 rounded-2xl bg-page ${view === "three" ? "p-2 sm:p-4" : "p-1.5 sm:p-3"}`}
+          >
+            {inList ? (
+              <span aria-hidden className={`grain h-14 w-3.5 shrink-0 rotate-[6deg] shadow-[3px_2px_0_#000] ${bookColor(book.id).bg}`} />
+            ) : (
+              <BookCover id={book.id} title={book.title} author={book.author} />
+            )}
+            <div className="min-w-0 flex-1">
+              <p className={`font-display leading-snug text-ink ${SHELF_TITLE[view]}`}>{book.title}</p>
               <p className={`mt-1 text-pencil ${inList ? "text-[14px]" : "text-[12px] sm:text-[13px]"}`}>
                 {book.author}
                 {book.year ? `, ${book.year}년` : ""}
