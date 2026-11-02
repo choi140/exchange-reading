@@ -1,20 +1,16 @@
 """11-2 책장 넓히기: 원문 텍스트 파일을 문단 배열로 나눠 src/data/books.json에 더한다 (같은 id면 바꾼다).
 
-사용법: python scripts/import-more2.py "B사감과 러브레터.txt" 감자.txt "벙어리 삼룡이.txt"
+사용법: python scripts/import-more2.py "B사감과 러브레터.txt" 감자.txt scripts/samnyong-modern.txt
 - 한 줄 = 한 문단. 앞의 제목 줄과 빈 줄은 뺀다.
-- 복사 과정에서 생긴 것만 고친다: 장식 기호(🙝🙟), 교정 표시(⟨⟩), 겹쳐 들어간 구절, 단어 중간 공백.
-- 「벙어리 삼룡이」의 옛 된소리 글자(ᄯ, ᄭ, ᄲ, ᄶ)는 글꼴에 없어 깨지므로 지금 글자(ㄸ, ㄲ, ㅃ, ㅉ)로만 바꾼다.
-  맞춤법과 띄어쓰기는 원문 그대로 둔다.
+- 복사 과정에서 생긴 것만 고친다: 장식 기호(🙝🙟), 겹쳐 들어간 구절.
+- 「벙어리 삼룡이」는 1925년 표기(옛 글자, 붙여쓰기)를 읽기 어려워 사용자 요청으로 지금 맞춤법과
+  띄어쓰기로 다듬은 scripts/samnyong-modern.txt를 쓴다. 문단과 내용은 원문 그대로다.
 - 저작권 보호기간(저자 사후 70년)이 끝난 작품만 넣는다. (PRD #7)
 """
 import json
 import sys
-import unicodedata
 
 BSAGAM, GAMJA, SAMNYONG = sys.argv[1:4]
-
-# 옛 된소리 첫소리 → 지금 쓰는 첫소리
-OLD_INITIALS = str.maketrans({"ᄭ": "ᄁ", "ᄯ": "ᄄ", "ᄲ": "ᄈ", "ᄶ": "ᄍ"})
 
 
 def paragraphs(path, fixes=()):
@@ -26,10 +22,6 @@ def paragraphs(path, fixes=()):
     lines = [l.strip() for l in text.split("\n")]
     # 맨 앞 제목 줄을 뺀다
     return [l for l in lines if l][1:]
-
-
-def modern_letters(paras):
-    return [unicodedata.normalize("NFC", p.translate(OLD_INITIALS)) for p in paras]
 
 
 SOURCE = "원문 텍스트 (저작권 보호기간 만료: 저자 사후 70년 경과). 복사 과정에서 생긴 끊김·깨진 문자만 고침"
@@ -55,8 +47,8 @@ new_books = [
         "title": "벙어리 삼룡이",
         "author": "나도향",
         "year": 1925,
-        "source": SOURCE + " · 나도향(1902–1926). 옛 된소리 글자만 지금 글자로 바꾸고 표기는 1925년 원문 그대로",
-        "paragraphs": modern_letters(paragraphs(SAMNYONG, fixes=[("⟨름⟩", "름"), ("말하는사 람들과", "말하는사람들과")])),
+        "source": "원문 텍스트 (저작권 보호기간 만료: 저자 사후 70년 경과). 1925년 표기를 지금 맞춤법과 띄어쓰기로 다듬음 · 나도향(1902–1926)",
+        "paragraphs": paragraphs(SAMNYONG),
     },
 ]
 
