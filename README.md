@@ -41,6 +41,10 @@
 | 쓰기 | 언제든 | 번갈아 한 편씩. 마지막 글이 내 글이면 "짝의 답장을 기다리는 중"으로 잠깁니다 |
 | 홈 표시 | 편 수 | "내 차례" · "짝의 차례" · "짝을 기다리는 중" (알림 대신) |
 
+### 형광펜 (22단계)
+
+- **형광펜** — 문장을 고르면 밑줄 긋기와 형광펜 칠하기 중에 고른다. 형광펜도 내 펜 색으로 칠해지고, 누르면 밑줄처럼 한마디·답글이 열린다.
+
 ### 새 디자인 (17단계)
 
 - 참고 이미지의 느낌으로 앱 전체를 다시 꾸몄다. 처음 화면의 입자감 있는 책등 세 권을 누르면 교환독서·교환일기·독서 달력으로 간다.
@@ -141,6 +145,7 @@
 | 함수 | `start_solo_room`, `create_solo_diary`, `join_room`, `find_diary_partner`, `can_write_diary`, `my_diaries` (`supabase/04~06`), `create_private_room`, `create_private_diary`, `join_by_code`, `leave_room`, `leave_diary` (`07~09`) |
 | 7단계 테이블 | highlights(문장 밑줄), letters(편지) (`supabase/08_extras.sql`) |
 | 10단계 | recovery_keys(열쇠 해시), `create_recovery_key`, `claim_recovery_key`, `close_diary` (`supabase/11_v7.sql`) |
+| 22단계 | highlights.mark(밑줄·형광펜 구분) (`supabase/15_marker.sql`) |
 | 12단계 | room_next(다음 책 제안), reading_days(날마다 읽은 문단 수), `propose_next_book`, `respond_next_book`, `add_reading` (`supabase/14_v9.sql`) |
 | 9단계 | diaries.title, diary_comments(일기 댓글), highlights.memo(밑줄 한마디), highlight_replies(밑줄 답글), `rename_diary` (`supabase/10_v6.sql`). 문단 메모용 notes 테이블은 남아 있지만 화면에서는 쓰지 않는다 |
 
@@ -166,6 +171,7 @@
      12. `supabase/12_more_books.sql` — 책 2편 더 (「날개」, 「동백꽃」)
      13. `supabase/13_more_books.sql` — 책 3편 더 (「B사감과 러브레터」, 「감자」, 「벙어리 삼룡이」)
      14. `supabase/14_v9.sql` — 같은 사람들과 다음 책, 나의 독서 달력
+     15. `supabase/15_marker.sql` — 형광펜
 2. **환경변수** — `.env.example`을 `.env.local`로 복사하고, Project Settings → API의 값으로 채운다.
    ```
    NEXT_PUBLIC_SUPABASE_URL=https://YOUR-PROJECT.supabase.co
@@ -373,6 +379,12 @@ Vercel에 배포할 때는 같은 환경변수 두 개를 프로젝트 Settings 
 |---|---|---|---|
 | 21-1 | 한마디·답글·편지·펜 이름은 펜 색 손글씨체 | 책과 같은 고운바탕, 색으로만 사람을 구분. 손글씨 글꼴 패키지 삭제 | 글꼴이 여러 가지라 화면이 산만했다. 사람을 구분하는 일은 펜 색만으로 충분하다 |
 | 21-2 | 일기 질문이 파란 손글씨 | 검은색 기본 글꼴 | 질문은 특정 사람의 글이 아니라 앱이 건네는 말이다 |
+
+### 형광펜: 22단계 (v19)
+
+| 할 일 | 내용 | 정한 것과 이유 |
+|---|---|---|
+| 22-1 형광펜 | 고른 문장에 펜 색 형광펜 칠하기 | 새 표를 만들지 않고 밑줄 표에 표시 방식 칸만 더했다. 한마디·답글·블라인드·지우기를 밑줄과 똑같이 쓸 수 있고, 예전 밑줄은 그대로다. 색은 사람을 뜻해야 해서 노란색 하나가 아니라 내 펜 색을 옅게 칠한다 |
 
 ### 하지 않기로 한 것
 
