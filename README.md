@@ -41,6 +41,11 @@
 | 쓰기 | 언제든 | 번갈아 한 편씩. 마지막 글이 내 글이면 "짝의 답장을 기다리는 중"으로 잠깁니다 |
 | 홈 표시 | 편 수 | "내 차례" · "짝의 차례" · "짝을 기다리는 중" (알림 대신) |
 
+### 오래 함께하기 (12단계)
+
+- **같은 사람들과 다음 책** — 함께 읽기 책 끝에서 다음 책을 제안하고, 방 사람 모두가 좋다고 하면 같은 펜 색으로 새 방이 열린다. 서로 누구인지는 끝까지 모른다. 거절은 상대에게 따로 알리지 않는다.
+- **나의 독서 달력** — 언제 얼마나 읽고 썼는지(읽은 문단, 밑줄, 답글, 편지, 일기)를 나만 보는 달력에 쌓는다. 점수나 연속 기록은 없다.
+
 ### 오래 쓰기 위한 기능 (10단계)
 
 <img src="docs/screenshots/memory-card.png" alt="다 읽은 뒤 기념 카드" width="300" align="right" />
@@ -103,6 +108,7 @@
 | 교환독서 (내 책, 책장) | `/read` | `src/app/read/page.tsx` |
 | 교환일기 (내 일기장, 새 일기장) | `/diary` | `src/app/diary/page.tsx` |
 | 나만의 열쇠 (만들기, 되찾기) | `/key` | `src/app/key/page.tsx` |
+| 나의 독서 달력 | `/calendar` | `src/components/ReadingCalendar.tsx` |
 | 기념 카드 | `/room/[방 id]/card` | `src/components/MemoryCard.tsx` |
 | 책 리더 (혼자·함께 공통) | `/room/[방 id]` | `src/components/RoomReader.tsx`, `src/components/reader/*` |
 | 일기장 (혼자·교환 공통, 달력·쓰기 탭) | `/diary/[일기장 id]` | `src/components/DiaryView.tsx`, `DiaryCalendar.tsx` |
@@ -114,6 +120,7 @@
 | 함수 | `start_solo_room`, `create_solo_diary`, `join_room`, `find_diary_partner`, `can_write_diary`, `my_diaries` (`supabase/04~06`), `create_private_room`, `create_private_diary`, `join_by_code`, `leave_room`, `leave_diary` (`07~09`) |
 | 7단계 테이블 | highlights(문장 밑줄), letters(편지) (`supabase/08_extras.sql`) |
 | 10단계 | recovery_keys(열쇠 해시), `create_recovery_key`, `claim_recovery_key`, `close_diary` (`supabase/11_v7.sql`) |
+| 12단계 | room_next(다음 책 제안), reading_days(날마다 읽은 문단 수), `propose_next_book`, `respond_next_book`, `add_reading` (`supabase/14_v9.sql`) |
 | 9단계 | diaries.title, diary_comments(일기 댓글), highlights.memo(밑줄 한마디), highlight_replies(밑줄 답글), `rename_diary` (`supabase/10_v6.sql`). 문단 메모용 notes 테이블은 남아 있지만 화면에서는 쓰지 않는다 |
 
 방·일기장에 들어가는 일(멤버 추가)은 앱에서 직접 하지 않고 DB 함수로만 합니다. 빈자리 찾기와 펜 색 배정을 한 번에, 동시에 두 사람이 같은 자리를 잡지 않게 처리하기 위해서입니다.
@@ -137,6 +144,7 @@
      11. `supabase/11_v7.sql` — 나만의 열쇠, 교환일기 마무리
      12. `supabase/12_more_books.sql` — 책 2편 더 (「날개」, 「동백꽃」)
      13. `supabase/13_more_books.sql` — 책 3편 더 (「B사감과 러브레터」, 「감자」, 「벙어리 삼룡이」)
+     14. `supabase/14_v9.sql` — 같은 사람들과 다음 책, 나의 독서 달력
 2. **환경변수** — `.env.example`을 `.env.local`로 복사하고, Project Settings → API의 값으로 채운다.
    ```
    NEXT_PUBLIC_SUPABASE_URL=https://YOUR-PROJECT.supabase.co
@@ -273,6 +281,13 @@ Vercel에 배포할 때는 같은 환경변수 두 개를 프로젝트 Settings 
 |---|---|---|---|
 | 11-1 열쇠 계속 보이기 (10-1 고침) | 열쇠는 만든 화면에서 한 번만 보임 | 원문을 그 브라우저에 기억해 `/key`에서 계속 보임. DB에는 그대로 해시만 저장 | 다른 탭에 다녀오면 열쇠가 사라져 불편하다는 사용 후기. 이 브라우저는 이미 그 계정으로 쓰는 곳이라, 여기에 기억해도 새로 위험해지는 것이 적다 |
 | 11-2 책장 넓히기 | 5권 | 「B사감과 러브레터」, 「감자」, 「벙어리 삼룡이」를 더해 8권 | 사용자가 원문을 보내 줌. 세 저자 모두 사후 70년이 지났다. 「벙어리 삼룡이」는 1925년 표기가 읽기 어렵다는 의견으로 지금 맞춤법과 띄어쓰기로 다듬었다(문단과 내용은 그대로). 다른 책은 원문 표기를 유지한다 |
+
+### 오래 함께하기: 12단계 (v9)
+
+| 할 일 | 내용 | 정한 것과 이유 |
+|---|---|---|
+| 12-1 같은 사람들과 다음 책 | 책 끝에서 제안, 모두 좋다고 하면 새 방 | 함께 읽기 방은 최대 3명이라 "둘 다"가 아니라 "방 사람 모두"로 정했다. 거절은 알리지 않고 제안만 사라지게 해 부담을 줄였다. 사람을 펜 색으로 적어, 열쇠로 계정을 옮겨도 그대로 이어진다 |
+| 12-2 나의 독서 달력 | 읽은 문단·밑줄·답글·편지·일기를 달력으로 | 점수와 연속 기록은 넣지 않았다. 읽은 양은 저장돼 있지 않아 새로 쌓기 시작했고, 방을 나가도 남도록 방이 아니라 책에 묶었다. 펜 색은 사람을 뜻하므로 달력 표시는 잉크색이다 |
 
 ### 하지 않기로 한 것
 
