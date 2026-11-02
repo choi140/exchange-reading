@@ -124,7 +124,7 @@ export function BookPager({
   useEffect(() => {
     function onKey(e: KeyboardEvent) {
       const t = e.target as HTMLElement | null;
-      if (t && (t.tagName === "TEXTAREA" || t.tagName === "INPUT" || t.isContentEditable)) return;
+      if (t && (t.tagName === "TEXTAREA" || t.tagName === "INPUT" || t.tagName === "SELECT" || t.isContentEditable)) return;
       if (document.querySelector("dialog[open]")) return;
       if (e.key === "ArrowRight") go(1);
       if (e.key === "ArrowLeft") go(-1);
@@ -155,7 +155,7 @@ export function BookPager({
         onClick={(e) => {
           // 화면 가장자리를 누르면 넘긴다 (밑줄·버튼·글쓰기 칸은 제외)
           const target = e.target as HTMLElement;
-          if (target.closest("[data-hl], button, a, textarea, input, label, form")) return;
+          if (target.closest("[data-hl], button, a, textarea, input, select, label, form")) return;
           if (window.getSelection()?.toString()) return;
           const rect = areaRef.current!.getBoundingClientRect();
           const x = (e.clientX - rect.left) / rect.width;

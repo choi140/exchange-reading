@@ -48,7 +48,8 @@ export function NextBook({
   const respond = (yes: boolean) => run("respond_next_book", { p_room: roomId, p_yes: yes });
 
   return (
-    <section aria-labelledby={`${fieldId}-title`} className="border-t border-rule px-5 py-6 sm:px-8">
+    // 페이지 모드에서 설명과 버튼이 두 쪽으로 갈리지 않게 한 덩어리로 둔다
+    <section aria-labelledby={`${fieldId}-title`} className="break-inside-avoid border-t border-rule px-5 py-6 sm:px-8">
       <h2 id={`${fieldId}-title`} className="font-serif text-[20px] text-ink">
         같은 사람들과 다음 책
       </h2>
