@@ -14,6 +14,7 @@ const NAV = [
   { href: "/", label: "처음", desc: "독서와 일기 고르기", match: (p: string) => p === "/" },
   { href: "/read", label: "교환독서", desc: "책을 돌려 읽고 메모 나누기", match: (p: string) => p.startsWith("/read") || p.startsWith("/room") },
   { href: "/diary", label: "교환일기", desc: "혼자 또는 짝과 번갈아 쓰기", match: (p: string) => p.startsWith("/diary") },
+  { href: "/calendar", label: "나의 독서 달력", desc: "읽고 쓴 날이 조용히 쌓여요", match: (p: string) => p.startsWith("/calendar") },
   { href: "/key", label: "나만의 열쇠", desc: "다른 브라우저에서 이어 쓰기", match: (p: string) => p.startsWith("/key") },
 ];
 
