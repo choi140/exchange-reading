@@ -50,9 +50,9 @@ export function DiaryWriter({
 
   return (
     <form onSubmit={save}>
-      <div className="border-l-2 border-pen-blue pl-4">
+      <div className="border-l-2 border-ink pl-4">
         <p className="text-[14px] text-pencil">{questionLabel}</p>
-        <p className="mt-1 font-hand text-[26px] leading-snug text-pen-blue">
+        <p className="mt-1 text-[18px] font-medium leading-snug text-ink">
           {question || " "}
         </p>
       </div>

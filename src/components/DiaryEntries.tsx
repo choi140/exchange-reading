@@ -25,7 +25,7 @@ function Author({ userId, me, exchange, penOf }: { userId: string; me: string | 
   if (!exchange) return null;
   const pen = PEN[penOf(userId)];
   return (
-    <span className={`font-hand text-[20px] leading-none ${pen.className}`}>
+    <span className={`font-serif text-[15px] leading-none ${pen.className}`}>
       {pen.label}
       {userId === me ? " (나)" : ""}
     </span>
@@ -57,7 +57,7 @@ export function EntryPreview({
           <span>{dateFormat.format(new Date(entry.created_at))}</span>
           <Author userId={entry.user_id} me={me} exchange={exchange} penOf={penOf} />
         </span>
-        {entry.prompt && <span className="mt-1.5 block font-hand text-[20px] leading-snug text-pencil">{entry.prompt}</span>}
+        {entry.prompt && <span className="mt-1.5 block text-[14px] font-medium leading-snug text-ink">{entry.prompt}</span>}
         <span
           className={`mt-2 line-clamp-3 whitespace-pre-wrap font-serif text-[16px] leading-[1.8] text-ink ${
             exchange ? `border-l-2 pl-3 ${PEN[penOf(entry.user_id)].border}` : ""
@@ -121,7 +121,7 @@ export function EntryCard({
         <span>{timeFormat.format(new Date(entry.created_at))}</span>
         <Author userId={entry.user_id} me={me} exchange={exchange} penOf={penOf} />
       </p>
-      {entry.prompt && <p className="mt-2 font-hand text-[22px] leading-snug text-pencil">{entry.prompt}</p>}
+      {entry.prompt && <p className="mt-2 text-[15px] font-medium leading-snug text-ink">{entry.prompt}</p>}
       <p
         className={`mt-3 whitespace-pre-wrap font-serif text-[17px] leading-[1.9] text-ink ${
           exchange ? `border-l-2 pl-3 ${PEN[penOf(entry.user_id)].border}` : ""
@@ -235,7 +235,7 @@ function Comments({
             const pen = PEN[penOf(c.user_id)];
             return (
               <li key={c.id}>
-                <p className={`whitespace-pre-wrap font-hand text-[21px] leading-[1.25] ${pen.className}`}>{c.body}</p>
+                <p className={`whitespace-pre-wrap font-serif text-[16px] leading-[1.7] ${pen.className}`}>{c.body}</p>
                 <p className="mt-0.5 flex items-center gap-3 text-[12px] text-pencil">
                   <span>
                     {pen.label}
