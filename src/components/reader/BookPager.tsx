@@ -6,8 +6,10 @@ import { useCallback, useEffect, useLayoutEffect, useRef, useState } from "react
 // - 글을 CSS 다단(column)으로 흘려 화면 한 장 크기의 쪽으로 나눈다. 문단이 쪽을 넘어가면 다음 쪽으로 이어진다(빈자리 없음).
 // - 넘기기: 좌우로 밀기, 화면 왼쪽·오른쪽 가장자리 누르기, 아래 ‹ › 버튼, 키보드 ← →
 // - 글자 크기·화면 크기가 바뀌면 다시 나누고, 보던 문단이 있는 쪽으로 돌아간다.
+// 13-4 넓은 화면(태블릿 가로, PC)에서는 펼친 책처럼 두 쪽을 함께 보여 준다. page는 화면 한 장(펼침면) 번호다.
 
 const PAD_Y = 28;
+const SPREAD_MIN_WIDTH = 900;
 
 export function BookPager({
   children,
@@ -29,7 +31,7 @@ export function BookPager({
   const turnRef = useRef<HTMLDivElement>(null);
   const [size, setSize] = useState({ w: 0, h: 0 });
   const [page, setPage] = useState(0);
-  const [total, setTotal] = useState(1);
+  const [columns, setColumns] = useState(1); // 전체 쪽 수
   const [fontsReady, setFontsReady] = useState(false);
   const touch = useRef<{ x: number; y: number } | null>(null);
   // 다시 나눌 때 돌아갈 문단 (렌더 중이 아니라 effect에서 갱신)
@@ -50,6 +52,8 @@ export function BookPager({
   }, []);
 
   const padX = size.w < 640 ? 20 : 32;
+  const perView = size.w >= SPREAD_MIN_WIDTH ? 2 : 1;
+  const total = Math.ceil(columns / perView); // 넘길 수 있는 화면 수
 
   const pageOfEl = useCallback(
     (el: Element | null) => {
@@ -90,9 +94,9 @@ export function BookPager({
       for (const r of el.getClientRects()) maxRight = Math.max(maxRight, r.right - left);
     }
     // 그려진 글의 위치를 재고 나서 쪽 수·쪽을 정한다 (DOM 측정 뒤 동기화)
-    setTotal(Math.max(1, Math.ceil((maxRight + padX) / size.w)));
+    setColumns(Math.max(1, Math.ceil((maxRight + padX) / (size.w / perView))));
     setPage(pageOfParagraph(anchorRef.current));
-  }, [size.w, size.h, layoutKey, fontsReady, padX, pageOfParagraph]);
+  }, [size.w, size.h, layoutKey, fontsReady, padX, perView, pageOfParagraph]);
 
   // 바깥에서 보낸 이동
   useLayoutEffect(() => {
@@ -163,6 +167,7 @@ export function BookPager({
           else if (x > 0.78) go(1);
         }}
       >
+        {perView === 2 && <div aria-hidden className="absolute inset-y-0 left-1/2 w-px bg-rule" />}
         <div ref={turnRef} className="absolute inset-0">
         <div
           ref={flowRef}
@@ -172,7 +177,8 @@ export function BookPager({
             left: padX,
             width: Math.max(0, size.w - padX * 2),
             height: Math.max(0, size.h - PAD_Y * 2),
-            columnWidth: Math.max(1, size.w - padX * 2),
+            // 쪽 너비 + 간격이 화면 너비(두 쪽이면 절반)와 같아서, 화면 너비만큼 옮기면 정확히 다음 장이 된다
+            columnCount: perView,
             columnGap: padX * 2,
             columnFill: "auto",
             transform: `translateX(${-page * size.w}px)`,
@@ -190,7 +196,7 @@ export function BookPager({
             ‹ 이전
           </button>
           <span className="text-[14px] tabular-nums text-pencil">
-            {page + 1} / {total}쪽
+            {perView === 2 && page * 2 + 2 <= columns ? `${page * 2 + 1}–${page * 2 + 2}` : page * perView + 1} / {columns}쪽
           </span>
           <button
             type="button"
