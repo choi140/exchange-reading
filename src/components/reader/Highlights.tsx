@@ -203,7 +203,7 @@ export function UnderlineBar({
       className="fixed inset-x-0 z-30 mx-auto w-[min(600px,calc(100%-1.5rem))] rounded-2xl border border-rule bg-page px-4 py-3 shadow-[0_6px_24px_rgba(0,0,0,0.18)]"
       style={{ bottom: bottomOffset }}
     >
-      <p className="line-clamp-2 font-serif text-[14px] leading-snug text-pencil">“{picked.preview}”</p>
+      <p className="line-clamp-2 font-serif text-[13px] leading-snug text-pencil">“{picked.preview}”</p>
       {writing && (
         <>
           <label htmlFor={memoId} className="sr-only">
@@ -224,7 +224,7 @@ export function UnderlineBar({
       <div className="mt-2 flex items-center justify-between gap-2">
         <span className={`font-hand text-[20px] leading-none ${PEN[myPen].className}`}>{PEN[myPen].label}으로</span>
         <span className="flex gap-1">
-          <button type="button" onMouseDown={(e) => e.preventDefault()} onClick={reset} className="h-10 px-3 text-[14px] text-pencil">
+          <button type="button" onMouseDown={(e) => e.preventDefault()} onClick={reset} className="h-10 px-3 text-[13px] text-pencil">
             취소
           </button>
           {withMemo && !writing && (
@@ -235,7 +235,7 @@ export function UnderlineBar({
                 setWriting(true);
                 window.getSelection()?.removeAllRanges();
               }}
-              className="h-10 rounded-full border border-ink px-4 text-[14px] text-ink"
+              className="h-10 rounded-full border border-ink px-4 text-[13px] text-ink"
             >
               + 한마디
             </button>
@@ -245,14 +245,14 @@ export function UnderlineBar({
             onMouseDown={(e) => e.preventDefault()}
             onClick={save}
             disabled={saving}
-            className="h-10 rounded-full bg-ink px-4 text-[14px] text-page disabled:opacity-50"
+            className="h-10 rounded-full bg-ink px-4 text-[13px] text-page disabled:opacity-50"
           >
             {saving ? "긋는 중…" : "밑줄 긋기"}
           </button>
         </span>
       </div>
       {error && (
-        <p role="alert" className="mt-1 text-[13px] text-pen-orange">
+        <p role="alert" className="mt-1 text-[12px] text-pen-orange">
           {error}
         </p>
       )}

@@ -97,7 +97,7 @@ export function MemoryCardPage({ roomId }: { roomId: string }) {
   }
   if (data.status === "error") {
     return (
-      <p role="alert" className="px-5 pt-12 text-[15px] text-pen-orange">
+      <p role="alert" className="px-5 pt-12 text-[14px] text-pen-orange">
         기념 카드를 만들지 못했어요. 새로고침해 주세요. ({data.message})
       </p>
     );
@@ -174,11 +174,11 @@ export function MemoryCardPage({ roomId }: { roomId: string }) {
 
   return (
     <div className="mx-auto w-full max-w-[640px] px-5 pb-20 pt-6 sm:px-8">
-      <Link href={`/room/${room.id}`} className="py-2 text-[15px] text-pencil">
+      <Link href={`/room/${room.id}`} className="py-2 text-[14px] text-pencil">
         ‹ 책으로 돌아가기
       </Link>
-      <h1 className="mt-4 font-display text-[26px] font-bold text-ink">기념 카드</h1>
-      <p className="mt-1 text-[14px] leading-relaxed text-pencil">
+      <h1 className="mt-4 font-display text-[22px] font-bold text-ink">기념 카드</h1>
+      <p className="mt-1 text-[13px] leading-relaxed text-pencil">
         {room.mode === "together" ? "함께 그은 밑줄과 한마디, 편지를 한 장에 모았어요." : "내가 그은 밑줄과 한마디, 편지를 한 장에 모았어요."}{" "}
         한마디가 있는 밑줄을 먼저, 최대 {MAX_QUOTES}개까지 담아요.
       </p>
@@ -188,11 +188,11 @@ export function MemoryCardPage({ roomId }: { roomId: string }) {
         <div ref={cardRef} style={DAY_VARS} className="w-[360px] max-w-full bg-page text-ink">
           <div className="border-l-2 border-margin py-6 pl-5 pr-5">
             <p className="flex items-baseline justify-between gap-3 text-[12px] text-pencil">
-              <span className="font-display text-[14px] font-bold text-ink">낯선 밑줄</span>
+              <span className="font-display text-[13px] font-bold text-ink">낯선 밑줄</span>
               <span>{dateFormat.format(new Date())} 다 읽음</span>
             </p>
-            <p className="mt-4 font-display text-[28px] font-bold leading-tight">{room.book.title}</p>
-            <p className="mt-1 text-[13px] text-pencil">
+            <p className="mt-4 font-display text-[24px] font-bold leading-tight">{room.book.title}</p>
+            <p className="mt-1 text-[12px] text-pencil">
               {room.book.author}
               {room.book.year ? `, ${room.book.year}년` : ""}
             </p>
@@ -218,7 +218,7 @@ export function MemoryCardPage({ roomId }: { roomId: string }) {
             </dl>
 
             {picked.length === 0 ? (
-              <p className="mt-5 text-[13px] text-pencil">아직 그은 밑줄이 없어요.</p>
+              <p className="mt-5 text-[12px] text-pencil">아직 그은 밑줄이 없어요.</p>
             ) : (
               <ul className="mt-5 space-y-4">
                 {picked.map((h) => {
@@ -226,7 +226,7 @@ export function MemoryCardPage({ roomId }: { roomId: string }) {
                   const quote = (room.book.paragraphs[h.paragraph_index]?.slice(h.start_offset, h.end_offset) ?? "").trim();
                   return (
                     <li key={h.id} className={`border-l-2 pl-3 ${pen.border}`}>
-                      <p className="font-serif text-[14px] leading-[1.7]">“{quote.length > 90 ? `${quote.slice(0, 90)}…` : quote}”</p>
+                      <p className="font-serif text-[13px] leading-[1.7]">“{quote.length > 90 ? `${quote.slice(0, 90)}…` : quote}”</p>
                       {h.memo && <p className={`mt-1 font-hand text-[19px] leading-[1.2] ${pen.className}`}>{h.memo}</p>}
                     </li>
                   );
@@ -257,14 +257,14 @@ export function MemoryCardPage({ roomId }: { roomId: string }) {
       </div>
 
       <div className="mt-6 flex flex-wrap justify-center gap-2">
-        <button type="button" onClick={save} disabled={busy !== null} className="h-11 rounded-full border border-ink px-5 text-[15px] text-ink disabled:opacity-50">
+        <button type="button" onClick={save} disabled={busy !== null} className="h-11 rounded-full border border-ink px-5 text-[14px] text-ink disabled:opacity-50">
           {busy === "save" ? "만드는 중…" : "이미지로 저장"}
         </button>
-        <button type="button" onClick={share} disabled={busy !== null} className="h-11 rounded-full bg-ink px-5 text-[15px] text-page disabled:opacity-50">
+        <button type="button" onClick={share} disabled={busy !== null} className="h-11 rounded-full bg-ink px-5 text-[14px] text-page disabled:opacity-50">
           {busy === "share" ? "만드는 중…" : "공유하기"}
         </button>
       </div>
-      <p aria-live="polite" className="mt-3 min-h-6 text-center text-[14px] text-pencil">
+      <p aria-live="polite" className="mt-3 min-h-6 text-center text-[13px] text-pencil">
         {notice}
       </p>
     </div>

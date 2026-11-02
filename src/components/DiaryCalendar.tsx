@@ -67,18 +67,18 @@ export function DiaryCalendar({
   return (
     <div className="rounded-lg border border-rule bg-page px-3 pb-4 pt-3 sm:px-5">
       <div className="flex items-center justify-between">
-        <button type="button" onClick={() => move(-1)} aria-label="이전 달" className="h-11 w-11 rounded-full text-[20px] text-ink">
+        <button type="button" onClick={() => move(-1)} aria-label="이전 달" className="h-11 w-11 rounded-full text-[18px] text-ink">
           ‹
         </button>
         <p className="text-center">
-          <span className="block font-display text-[20px] text-ink">
+          <span className="block font-display text-[18px] text-ink">
             {view.y}년 {view.m}월
           </span>
-          <span className="block text-[13px] text-pencil">
+          <span className="block text-[12px] text-pencil">
             {countThisMonth > 0 ? `${countThisMonth}일 썼어요` : "이 달엔 아직 쓴 일기가 없어요"}
           </span>
         </p>
-        <button type="button" onClick={() => move(1)} aria-label="다음 달" className="h-11 w-11 rounded-full text-[20px] text-ink">
+        <button type="button" onClick={() => move(1)} aria-label="다음 달" className="h-11 w-11 rounded-full text-[18px] text-ink">
           ›
         </button>
       </div>
@@ -88,7 +88,7 @@ export function DiaryCalendar({
           <span
             key={w}
             role="columnheader"
-            className={`py-1 text-[13px] ${i === 0 ? "text-pen-orange" : i === 6 ? "text-pen-blue" : "text-pencil"}`}
+            className={`py-1 text-[12px] ${i === 0 ? "text-pen-orange" : i === 6 ? "text-pen-blue" : "text-pencil"}`}
           >
             {w}
           </span>
@@ -115,7 +115,7 @@ export function DiaryCalendar({
                 aria-label={label}
                 onClick={() => onPickDay(key, has)}
                 disabled={!has && !isToday}
-                className={`flex h-10 w-10 items-center justify-center rounded-full text-[15px] tabular-nums sm:h-11 sm:w-11 ${
+                className={`flex h-10 w-10 items-center justify-center rounded-full text-[14px] tabular-nums sm:h-11 sm:w-11 ${
                   has ? "font-bold text-page" : isToday ? "text-ink" : "text-pencil"
                 } ${isToday ? "ring-2 ring-ink ring-offset-2 ring-offset-page" : ""}`}
                 style={bg ? { background: bg } : undefined}

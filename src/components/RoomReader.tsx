@@ -207,7 +207,7 @@ export function RoomReader({ roomId }: { roomId: string }) {
   if (state.status === "error") {
     return (
       <Shell>
-        <p role="alert" className="px-5 pt-12 text-[15px] leading-relaxed text-pen-orange sm:px-8">
+        <p role="alert" className="px-5 pt-12 text-[14px] leading-relaxed text-pen-orange sm:px-8">
           방을 불러오지 못했어요. 새로고침해 주세요. ({state.message})
         </p>
       </Shell>
@@ -218,7 +218,7 @@ export function RoomReader({ roomId }: { roomId: string }) {
   const together = room.mode === "together";
   const penOf = (userId: string): PenColor => members.find((m) => m.user_id === userId)?.pen_color ?? "black";
   const myPen = penOf(me!);
-  const fontPx = prefs.textPx;
+  const fontPx = prefs.fontPx;
   const paged = prefs.view === "page";
   const lastParagraph = room.book.paragraphs.length - 1;
   const nextTitle = shelf.find((b) => b.id === next?.book_id)?.title;
@@ -285,7 +285,7 @@ export function RoomReader({ roomId }: { roomId: string }) {
       {next?.next_room_id ? (
         <div className="mt-4 flex flex-wrap items-center justify-between gap-2 rounded-lg border border-ink px-4 py-3">
           <span className="text-[0.83em] text-ink">같은 사람들과 다음 책을 읽기로 했어요</span>
-          <Link href={`/room/${next.next_room_id}`} className="inline-flex h-9 items-center rounded-full bg-ink px-4 text-[14px] text-page">
+          <Link href={`/room/${next.next_room_id}`} className="inline-flex h-9 items-center rounded-full bg-ink px-4 text-[13px] text-page">
             「{nextTitle}」 읽으러 가기
           </Link>
         </div>
@@ -293,7 +293,7 @@ export function RoomReader({ roomId }: { roomId: string }) {
         askedNext && (
           <div className="mt-4 flex flex-wrap items-center justify-between gap-2 rounded-lg border border-ink px-4 py-3">
             <span className="text-[0.83em] text-ink">다음 책 제안이 있어요: 「{nextTitle}」</span>
-            <button type="button" onClick={() => goTo(lastParagraph)} className="h-9 rounded-full bg-ink px-4 text-[14px] text-page">
+            <button type="button" onClick={() => goTo(lastParagraph)} className="h-9 rounded-full bg-ink px-4 text-[13px] text-page">
               책 끝에서 답하기
             </button>
           </div>
@@ -309,7 +309,7 @@ export function RoomReader({ roomId }: { roomId: string }) {
               goTo(target.paragraph_index);
               setSheetIds([target.id]);
             }}
-            className="h-9 rounded-full bg-ink px-4 text-[14px] text-page"
+            className="h-9 rounded-full bg-ink px-4 text-[13px] text-page"
           >
             새 밑줄로 가기
           </button>
@@ -345,7 +345,7 @@ export function RoomReader({ roomId }: { roomId: string }) {
       data-p={i}
       data-ptext={i}
       style={{ fontSize: fontPx, textIndent: "1em" }}
-      className={`scroll-mt-24 font-serif leading-[1.95] text-ink [text-wrap:pretty] ${speaking === i ? "bg-rule/40" : ""}`}
+      className={`scroll-mt-24 font-serif leading-[1.85] text-ink [text-wrap:pretty] ${speaking === i ? "bg-rule/40" : ""}`}
     >
       <HighlightedText
         text={text}
@@ -382,7 +382,7 @@ export function RoomReader({ roomId }: { roomId: string }) {
         />
       )}
       <div className="flex flex-col items-center gap-4 pb-6 pt-2 text-center">
-        <p className="text-[13px] leading-relaxed text-pencil">{room.book.source}</p>
+        <p className="text-[12px] leading-relaxed text-pencil">{room.book.source}</p>
         <LeaveRoomButton roomId={room.id} together={together} prominent />
       </div>
     </>
@@ -410,20 +410,24 @@ export function RoomReader({ roomId }: { roomId: string }) {
     setListening(false);
     setSpeaking(null);
   };
+  const navProps = {
+    pen: myPen,
+    listening,
+    onListen: listening ? stopListening : () => setListening(true),
+    dock: listening && (
+      <ReadAloud
+        paragraphs={room.book.paragraphs}
+        start={position}
+        onParagraph={(p) => {
+          setSpeaking(p);
+          goTo(p);
+        }}
+        onClose={stopListening}
+      />
+    ),
+  };
   const overlays = (
     <>
-      {listening && (
-        <ReadAloud
-          paragraphs={room.book.paragraphs}
-          start={position}
-          bottomOffset={paged ? 84 : 16}
-          onParagraph={(p) => {
-            setSpeaking(p);
-            goTo(p);
-          }}
-          onClose={stopListening}
-        />
-      )}
       <UnderlineBar
         roomId={room.id}
         myPen={myPen}
@@ -457,10 +461,10 @@ export function RoomReader({ roomId }: { roomId: string }) {
   if (paged) {
     return (
       <main className={`mx-auto flex h-dvh w-full max-w-[680px] flex-col ${PAGED_WIDTH[prefs.pages]}`}>
-        <Nav pen={myPen} listening={listening} onListen={listening ? stopListening : () => setListening(true)} />
+        <Nav {...navProps} />
         <BookPager
           pages={prefs.pages}
-          layoutKey={`${prefs.textPx}|${members.length}|${room.invite_code ?? ""}|${newList.length > 0}|${resumedFrom}|${letters.length}|${next?.book_id}|${next?.agreed.length}|${next?.next_room_id}`}
+          layoutKey={`${prefs.fontPx}|${members.length}|${room.invite_code ?? ""}|${newList.length > 0}|${resumedFrom}|${letters.length}|${next?.book_id}|${next?.agreed.length}|${next?.next_room_id}`}
           anchor={position}
           jump={jump}
           onAnchorChange={movePosition}
@@ -475,7 +479,7 @@ export function RoomReader({ roomId }: { roomId: string }) {
   }
 
   return (
-    <Shell pen={myPen} listening={listening} onListen={listening ? stopListening : () => setListening(true)}>
+    <Shell {...navProps}>
       <div className="px-5 pt-10 sm:px-8">{header}</div>
       <ScrollPosition onChange={movePosition} start={resumedFrom} />
       <article className="mx-5 bg-page px-4 py-6 sm:mx-8 sm:px-6">{body}</article>
@@ -514,12 +518,13 @@ function ScrollPosition({ onChange, start }: { onChange: (p: number) => void; st
   return null;
 }
 
-type NavProps = { pen?: PenColor; listening?: boolean; onListen?: () => void };
+type NavProps = { pen?: PenColor; listening?: boolean; onListen?: () => void; dock?: React.ReactNode };
 
-function Nav({ pen, listening, onListen }: NavProps) {
+function Nav({ pen, listening, onListen, dock }: NavProps) {
   return (
-    <nav className="sticky top-0 z-10 flex shrink-0 items-center justify-between gap-2 border-b border-rule bg-paper/95 px-5 py-2 backdrop-blur sm:px-8">
-      <Link href="/read" className="shrink-0 whitespace-nowrap py-2 text-[15px] text-pencil">
+    <div className="sticky top-0 z-10 shrink-0">
+      <nav className="flex items-center justify-between gap-2 border-b border-rule bg-paper/95 px-5 py-2 backdrop-blur sm:px-8">
+      <Link href="/read" className="shrink-0 whitespace-nowrap py-2 text-[14px] text-pencil">
         ‹ 교환독서
       </Link>
       <div className="flex items-center gap-2 sm:gap-3">
@@ -534,14 +539,16 @@ function Nav({ pen, listening, onListen }: NavProps) {
             type="button"
             aria-pressed={listening}
             onClick={onListen}
-            className={`h-10 shrink-0 rounded-full border px-3 text-[14px] ${listening ? "border-ink bg-ink text-page" : "border-rule text-ink"}`}
+            className={`h-10 shrink-0 rounded-full border px-3 text-[13px] ${listening ? "border-ink bg-ink text-page" : "border-rule text-ink"}`}
           >
             듣기
           </button>
         )}
         <ReaderSettingsButton />
       </div>
-    </nav>
+      </nav>
+      {dock}
+    </div>
   );
 }
 

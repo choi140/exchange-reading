@@ -52,7 +52,7 @@ export function CodeJoinForm({ onDone, pill = false }: { onDone?: () => void; pi
             spellCheck={false}
             maxLength={12}
             placeholder="참여 코드 6자리"
-            className="min-w-0 flex-1 bg-transparent text-[16px] uppercase text-ink placeholder:normal-case placeholder:text-pencil focus:outline-none"
+            className="min-w-0 flex-1 bg-transparent text-[15px] uppercase text-ink placeholder:normal-case placeholder:text-pencil focus:outline-none"
           />
           <button
             type="submit"
@@ -66,7 +66,7 @@ export function CodeJoinForm({ onDone, pill = false }: { onDone?: () => void; pi
           </button>
         </div>
         {error && (
-          <p role="alert" className="mt-2 text-[14px] text-pen-orange">
+          <p role="alert" className="mt-2 text-[13px] text-pen-orange">
             {error}
           </p>
         )}
@@ -76,7 +76,7 @@ export function CodeJoinForm({ onDone, pill = false }: { onDone?: () => void; pi
 
   return (
     <form onSubmit={join}>
-      <label htmlFor={fieldId} className="block text-[14px] text-pencil">
+      <label htmlFor={fieldId} className="block text-[13px] text-pencil">
         친구에게 받은 6자리 참여 코드
       </label>
       <div className="mt-2 flex gap-2">
@@ -91,18 +91,18 @@ export function CodeJoinForm({ onDone, pill = false }: { onDone?: () => void; pi
           spellCheck={false}
           maxLength={12}
           placeholder="예: K7M2QX"
-          className="h-12 min-w-0 flex-1 rounded-lg border border-rule bg-page px-4 font-display text-[20px] uppercase tracking-[0.2em] text-ink placeholder:text-[15px] placeholder:tracking-normal placeholder:text-pencil/70 focus:border-ink focus:outline-none"
+          className="h-12 min-w-0 flex-1 rounded-lg border border-rule bg-page px-4 font-display text-[18px] uppercase tracking-[0.2em] text-ink placeholder:text-[14px] placeholder:tracking-normal placeholder:text-pencil/70 focus:border-ink focus:outline-none"
         />
         <button
           type="submit"
           disabled={busy || clean.length !== 6}
-          className="h-12 shrink-0 rounded-full bg-ink px-5 text-[15px] text-page disabled:opacity-40"
+          className="h-12 shrink-0 rounded-full bg-ink px-5 text-[14px] text-page disabled:opacity-40"
         >
           {busy ? "들어가는 중…" : "들어가기"}
         </button>
       </div>
       {error && (
-        <p role="alert" className="mt-2 text-[14px] text-pen-orange">
+        <p role="alert" className="mt-2 text-[13px] text-pen-orange">
           {error}
         </p>
       )}
@@ -117,8 +117,8 @@ export function InviteCode({ code, note }: { code: string; note: string }) {
     <div className="mt-4 rounded-lg border border-dashed border-pencil/60 px-4 py-3">
       <div className="flex items-center justify-between gap-3">
         <p>
-          <span className="block text-[13px] text-pencil">참여 코드</span>
-          <span className="font-display text-[24px] tracking-[0.2em] text-ink">{code}</span>
+          <span className="block text-[12px] text-pencil">참여 코드</span>
+          <span className="font-display text-[21px] tracking-[0.2em] text-ink">{code}</span>
         </p>
         <button
           type="button"
@@ -131,12 +131,12 @@ export function InviteCode({ code, note }: { code: string; note: string }) {
               setCopied(false);
             }
           }}
-          className="h-10 shrink-0 rounded-full border border-ink px-4 text-[14px] text-ink"
+          className="h-10 shrink-0 rounded-full border border-ink px-4 text-[13px] text-ink"
         >
           {copied ? "복사했어요" : "코드 복사"}
         </button>
       </div>
-      <p className="mt-1 text-[13px] leading-relaxed text-pencil">{note}</p>
+      <p className="mt-1 text-[12px] leading-relaxed text-pencil">{note}</p>
     </div>
   );
 }

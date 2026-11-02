@@ -37,12 +37,12 @@ export function Sheet({
       className="m-auto mb-0 w-full max-w-[640px] bg-transparent p-0 backdrop:bg-ink/40 sm:mb-auto"
     >
       <div className="max-h-[90dvh] overflow-y-auto rounded-t-2xl bg-page px-6 pb-8 pt-6 sm:rounded-2xl">
-        <h2 className="font-display text-[24px] text-ink">{title}</h2>
+        <h2 className="font-display text-[21px] text-ink">{title}</h2>
         {children}
         <button
           type="button"
           onClick={onClose}
-          className="mt-4 h-11 w-full rounded-full text-[15px] text-pencil underline underline-offset-4"
+          className="mt-4 h-11 w-full rounded-full text-[14px] text-pencil underline underline-offset-4"
         >
           닫기
         </button>
@@ -69,8 +69,8 @@ export function ChoiceButton({
       disabled={disabled}
       className="w-full rounded-lg border border-rule bg-paper/60 px-4 py-4 text-left hover:border-ink disabled:opacity-60 active:translate-y-px"
     >
-      <span className="block font-display text-[18px] text-ink">{title}</span>
-      <span className="mt-1 block text-[14px] leading-relaxed text-pencil">{desc}</span>
+      <span className="block font-display text-[16px] text-ink">{title}</span>
+      <span className="mt-1 block text-[13px] leading-relaxed text-pencil">{desc}</span>
     </button>
   );
 }

@@ -25,9 +25,9 @@ const SHELF_LIST: Record<ShelfView, string> = {
   four: "grid grid-cols-4 gap-1.5 sm:gap-3",
 };
 const SHELF_TITLE: Record<ShelfView, string> = {
-  list: "text-[22px]",
-  three: "mt-3 text-[15px] font-bold font-sans sm:text-[17px]",
-  four: "mt-3 text-[13px] font-bold font-sans sm:text-[15px]",
+  list: "text-[19px]",
+  three: "mt-3 text-[14px] font-bold font-sans sm:text-[15px]",
+  four: "mt-3 text-[12px] font-bold font-sans sm:text-[14px]",
 };
 
 // 1-7 책 목록 + 1-8 "혼자 읽기"·"함께 읽기" 버튼
@@ -38,7 +38,7 @@ export function BookShelf({ books }: { books: ShelfBook[] }) {
   const session = useAnonymousSession();
   const { shelf: view } = usePrefs();
   const inList = view === "list";
-  const buttonSize = inList ? "h-10 px-4 text-[14px] sm:h-11 sm:text-[15px]" : view === "three" ? "h-10 px-1 text-[14px]" : "h-9 px-0.5 text-[12px] sm:text-[13px]";
+  const buttonSize = inList ? "h-10 px-4 text-[13px] sm:h-11 sm:text-[14px]" : view === "three" ? "h-10 px-1 text-[13px]" : "h-9 px-0.5 text-[12px] sm:text-[12px]";
   const [busy, setBusy] = useState<string | null>(null);
   const [notice, setNotice] = useState<string | null>(null);
   const [together, setTogether] = useState<ShelfBook | null>(null);
@@ -73,7 +73,7 @@ export function BookShelf({ books }: { books: ShelfBook[] }) {
             type="button"
             aria-pressed={o.value === view}
             onClick={() => setPrefs({ shelf: o.value })}
-            className={`h-9 rounded-full border px-4 text-[14px] ${o.value === view ? "border-ink bg-ink text-page" : "border-rule text-ink"}`}
+            className={`h-9 rounded-full border px-4 text-[13px] ${o.value === view ? "border-ink bg-ink text-page" : "border-rule text-ink"}`}
           >
             {o.label}
           </button>
@@ -92,7 +92,7 @@ export function BookShelf({ books }: { books: ShelfBook[] }) {
             )}
             <div className="min-w-0 flex-1">
               <p className={`font-display leading-snug text-ink ${SHELF_TITLE[view]}`}>{book.title}</p>
-              <p className={`mt-1 text-pencil ${inList ? "text-[14px]" : "text-[12px] sm:text-[13px]"}`}>
+              <p className={`mt-1 text-pencil ${inList ? "text-[13px]" : "text-[12px] sm:text-[12px]"}`}>
                 {book.author}
                 {book.year ? `, ${book.year}년` : ""}
               </p>
@@ -122,7 +122,7 @@ export function BookShelf({ books }: { books: ShelfBook[] }) {
           </li>
         ))}
       </ul>
-      <p aria-live="polite" className="min-h-6 pt-3 text-[14px] text-pencil">
+      <p aria-live="polite" className="min-h-6 pt-3 text-[13px] text-pencil">
         {notice}
       </p>
 
@@ -148,7 +148,7 @@ export function BookShelf({ books }: { books: ShelfBook[] }) {
             <div className="rounded-lg border border-rule bg-paper/60 px-4 py-4">
               <CodeJoinForm onDone={() => setTogether(null)} />
             </div>
-            <p aria-live="polite" className="min-h-5 text-[14px] text-pen-orange">
+            <p aria-live="polite" className="min-h-5 text-[13px] text-pen-orange">
               {sheetNotice}
             </p>
           </div>

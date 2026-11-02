@@ -35,7 +35,7 @@ function SideNav({ onNavigate }: { onNavigate?: () => void }) {
                   href={item.href}
                   onClick={onNavigate}
                   aria-current={on ? "page" : undefined}
-                  className={`flex h-11 items-center gap-3 rounded-full px-3 text-[15px] ${on ? "font-bold text-accent" : "font-medium text-pencil hover:text-ink"}`}
+                  className={`flex h-11 items-center gap-3 rounded-full px-3 text-[14px] ${on ? "font-bold text-accent" : "font-medium text-pencil hover:text-ink"}`}
                 >
                   <svg aria-hidden="true" viewBox="0 0 24 24" className="h-5 w-5 shrink-0">
                     <path d={item.icon} fill="none" stroke="currentColor" strokeWidth="1.7" strokeLinecap="round" strokeLinejoin="round" />
@@ -112,7 +112,7 @@ export function AppShell({ children }: { children: React.ReactNode }) {
           <button
             type="button"
             onClick={() => setOpen(false)}
-            className="mb-4 h-10 self-start px-3 text-[14px] text-pencil underline underline-offset-4"
+            className="mb-4 h-10 self-start px-3 text-[13px] text-pencil underline underline-offset-4"
           >
             닫기
           </button>

@@ -5,7 +5,7 @@ export function Logo({ size = "lg" }: { size?: "lg" | "sm" }) {
     <span className="relative inline-block">
       <span
         className={`font-display tracking-tight text-ink ${
-          big ? "text-[44px] leading-none" : "text-[22px] leading-none"
+          big ? "text-[36px] leading-none" : "text-[19px] leading-none"
         }`}
       >
         낯선 밑줄

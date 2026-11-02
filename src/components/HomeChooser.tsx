@@ -39,9 +39,9 @@ function Spine({ href, title, status, className }: { href: string; title: string
     >
       <span className="flex flex-col items-center gap-3">
         <Star className="h-11 w-11 lg:h-14 lg:w-14" />
-        <span className="min-h-5 text-center text-[13px] font-medium leading-tight lg:text-[15px]">{status}</span>
+        <span className="min-h-5 text-center text-[12px] font-medium leading-tight lg:text-[14px]">{status}</span>
       </span>
-      <span className="spine-text font-display text-[38px] leading-none lg:text-[56px]">{title}</span>
+      <span className="spine-text font-display text-[32px] leading-none lg:text-[44px]">{title}</span>
     </Link>
   );
 }

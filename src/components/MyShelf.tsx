@@ -77,7 +77,7 @@ export function MyShelf() {
   }
   if (state.status === "error") {
     return (
-      <p role="alert" className="mt-3 border-y border-rule py-6 text-[15px] text-pen-orange">
+      <p role="alert" className="mt-3 border-y border-rule py-6 text-[14px] text-pen-orange">
         내 책을 불러오지 못했어요. 새로고침해 주세요. ({state.message})
       </p>
     );
@@ -85,7 +85,7 @@ export function MyShelf() {
   const rooms = state.rooms.filter((r) => r.room);
   if (rooms.length === 0) {
     return (
-      <p className="mt-3 border-y border-rule py-6 text-[15px] leading-relaxed text-pencil">
+      <p className="mt-3 border-y border-rule py-6 text-[14px] leading-relaxed text-pencil">
         아직 읽고 있는 책이 없어요. 책장에서 한 권 골라 읽기를 시작해 보세요.
       </p>
     );
@@ -96,15 +96,15 @@ export function MyShelf() {
         <li key={room!.id}>
           <Link href={`/room/${room!.id}`} className="flex items-baseline justify-between gap-4 py-4">
             <span>
-              <span className="block font-display text-[18px] text-ink">{room!.book?.title}</span>
-              <span className="mt-0.5 block text-[14px] text-pencil">
+              <span className="block font-display text-[16px] text-ink">{room!.book?.title}</span>
+              <span className="mt-0.5 block text-[13px] text-pencil">
                 {room!.mode === "solo" ? "혼자 읽기" : "함께 읽기"}
               </span>
             </span>
             <span className="flex shrink-0 items-center gap-3">
-              {state.asked.has(room!.id) && <span className="rounded-full border border-ink px-3 py-1 text-[13px] text-ink">다음 책 제안</span>}
+              {state.asked.has(room!.id) && <span className="rounded-full border border-ink px-3 py-1 text-[12px] text-ink">다음 책 제안</span>}
               {state.fresh[room!.id] > 0 && (
-                <span className="rounded-full bg-ink px-3 py-1 text-[13px] text-page">새 밑줄 {state.fresh[room!.id]}</span>
+                <span className="rounded-full bg-ink px-3 py-1 text-[12px] text-page">새 밑줄 {state.fresh[room!.id]}</span>
               )}
               <span className={`font-hand text-[20px] ${PEN[pen_color].className}`}>{PEN[pen_color].label}</span>
             </span>

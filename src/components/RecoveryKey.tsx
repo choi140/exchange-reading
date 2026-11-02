@@ -50,15 +50,15 @@ export function RecoveryKey() {
   const link = saved && typeof window !== "undefined" ? `${window.location.origin}/key#${saved}` : "";
   const renew = confirmNew ? (
     <div className="mt-3 flex flex-wrap gap-2">
-      <button type="button" onClick={() => setConfirmNew(false)} className="h-11 px-3 text-[14px] text-pencil">
+      <button type="button" onClick={() => setConfirmNew(false)} className="h-11 px-3 text-[13px] text-pencil">
         취소
       </button>
-      <button type="button" onClick={create} disabled={busy} className="h-11 rounded-full bg-ink px-5 text-[15px] text-page disabled:opacity-50">
+      <button type="button" onClick={create} disabled={busy} className="h-11 rounded-full bg-ink px-5 text-[14px] text-page disabled:opacity-50">
         {busy ? "만드는 중…" : "예전 열쇠 버리고 새로 만들기"}
       </button>
     </div>
   ) : (
-    <button type="button" onClick={() => setConfirmNew(true)} className="mt-3 h-11 rounded-full border border-ink px-5 text-[15px] text-ink">
+    <button type="button" onClick={() => setConfirmNew(true)} className="mt-3 h-11 rounded-full border border-ink px-5 text-[14px] text-ink">
       새 열쇠 만들기
     </button>
   );
@@ -67,17 +67,17 @@ export function RecoveryKey() {
     <div>
       {saved ? (
         <div className="rounded-lg border border-ink px-5 py-5">
-          <p className="text-[14px] text-pencil">나만의 열쇠</p>
-          <p className="mt-1 break-all font-display text-[28px] tracking-[0.12em] text-ink">{saved}</p>
-          <p className="mt-3 text-[14px] leading-relaxed text-ink">
+          <p className="text-[13px] text-pencil">나만의 열쇠</p>
+          <p className="mt-1 break-all font-display text-[24px] tracking-[0.12em] text-ink">{saved}</p>
+          <p className="mt-3 text-[13px] leading-relaxed text-ink">
             이 브라우저에서는 언제든 다시 볼 수 있어요. 브라우저를 바꾸거나 방문 기록을 지우면 사라지니, 메모 앱에 적어 두거나 아래 복구 링크를 나에게 보내 두세요.
           </p>
           <div className="mt-4 flex flex-wrap gap-2">
             <CopyButton text={saved} label="열쇠 복사" />
             <CopyButton text={link} label="복구 링크 복사" />
           </div>
-          <p className="mt-3 break-all text-[13px] text-pencil">{link}</p>
-          <p className="mt-3 text-[13px] leading-relaxed text-pen-orange">
+          <p className="mt-3 break-all text-[12px] text-pencil">{link}</p>
+          <p className="mt-3 text-[12px] leading-relaxed text-pen-orange">
             열쇠나 링크를 가진 사람은 내 책과 일기를 가져갈 수 있어요. 다른 사람에게 보여 주지 마세요.
           </p>
           <div className="mt-4 border-t border-rule pt-1">{renew}</div>
@@ -86,25 +86,25 @@ export function RecoveryKey() {
         <div className="h-24 rounded-lg bg-rule/25" aria-label="열쇠 정보를 불러오는 중" />
       ) : made ? (
         <div className="border-y border-rule py-5">
-          <p className="text-[15px] text-ink">{dateFormat.format(new Date(made))}에 만든 열쇠가 있어요.</p>
-          <p className="mt-1 text-[14px] leading-relaxed text-pencil">
+          <p className="text-[14px] text-ink">{dateFormat.format(new Date(made))}에 만든 열쇠가 있어요.</p>
+          <p className="mt-1 text-[13px] leading-relaxed text-pencil">
             이 브라우저에는 기억해 둔 열쇠가 없어요. 열쇠를 잃어버렸다면 새로 만들 수 있어요. 새로 만들면 예전 열쇠와 링크는 더 이상 쓸 수 없어요.
           </p>
           {renew}
         </div>
       ) : (
         <div className="border-y border-rule py-5">
-          <p className="text-[15px] leading-relaxed text-ink">
+          <p className="text-[14px] leading-relaxed text-ink">
             아직 열쇠가 없어요. 로그인이 없어서, 브라우저를 바꾸거나 방문 기록을 지우면 내 책·일기장·짝과의 교환일기에 다시 들어갈 수 없어요.
             열쇠를 하나 만들어 두면 다른 브라우저에서도 그대로 이어 쓸 수 있어요.
           </p>
-          <button type="button" onClick={create} disabled={busy || session.status !== "ready"} className="mt-4 h-11 rounded-full bg-ink px-6 text-[15px] text-page disabled:opacity-50">
+          <button type="button" onClick={create} disabled={busy || session.status !== "ready"} className="mt-4 h-11 rounded-full bg-ink px-6 text-[14px] text-page disabled:opacity-50">
             {busy ? "만드는 중…" : "열쇠 만들기"}
           </button>
         </div>
       )}
       {error && (
-        <p role="alert" className="mt-2 text-[14px] text-pen-orange">
+        <p role="alert" className="mt-2 text-[13px] text-pen-orange">
           {error}
         </p>
       )}
@@ -126,7 +126,7 @@ function CopyButton({ text, label }: { text: string; label: string }) {
           setCopied(false);
         }
       }}
-      className="h-10 rounded-full border border-ink px-4 text-[14px] text-ink"
+      className="h-10 rounded-full border border-ink px-4 text-[13px] text-ink"
     >
       {copied ? "복사했어요" : label}
     </button>
@@ -182,13 +182,13 @@ export function ClaimKey() {
   if (done) {
     return (
       <div className="rounded-lg border border-ink px-5 py-5">
-        <p className="font-display text-[20px] text-ink">되찾았어요</p>
-        <p className="mt-1 text-[15px] leading-relaxed text-pencil">내 책과 일기장을 이 브라우저로 옮겼어요. 이제 이 브라우저에서 이어 쓰면 돼요.</p>
+        <p className="font-display text-[18px] text-ink">되찾았어요</p>
+        <p className="mt-1 text-[14px] leading-relaxed text-pencil">내 책과 일기장을 이 브라우저로 옮겼어요. 이제 이 브라우저에서 이어 쓰면 돼요.</p>
         <div className="mt-4 flex flex-wrap gap-2">
-          <button type="button" onClick={() => router.push("/read")} className="h-11 rounded-full border border-ink px-5 text-[15px] text-ink">
+          <button type="button" onClick={() => router.push("/read")} className="h-11 rounded-full border border-ink px-5 text-[14px] text-ink">
             교환독서로
           </button>
-          <button type="button" onClick={() => router.push("/diary")} className="h-11 rounded-full bg-ink px-5 text-[15px] text-page">
+          <button type="button" onClick={() => router.push("/diary")} className="h-11 rounded-full bg-ink px-5 text-[14px] text-page">
             교환일기로
           </button>
         </div>
@@ -198,8 +198,8 @@ export function ClaimKey() {
 
   return (
     <form onSubmit={claim} className={fromLink ? "rounded-lg border border-ink px-5 py-5" : ""}>
-      {fromLink && <p className="mb-3 text-[15px] text-ink">복구 링크로 들어왔어요. 이 열쇠로 내 책과 일기장을 되찾을까요?</p>}
-      <label htmlFor="recovery-key" className="block text-[14px] text-pencil">
+      {fromLink && <p className="mb-3 text-[14px] text-ink">복구 링크로 들어왔어요. 이 열쇠로 내 책과 일기장을 되찾을까요?</p>}
+      <label htmlFor="recovery-key" className="block text-[13px] text-pencil">
         나만의 열쇠 (12자)
       </label>
       <div className="mt-2 flex gap-2">
@@ -211,14 +211,14 @@ export function ClaimKey() {
           autoComplete="off"
           spellCheck={false}
           placeholder="예: K7M2-QX9P-4RTA"
-          className="h-12 min-w-0 flex-1 rounded-lg border border-rule bg-page px-4 font-display text-[18px] uppercase tracking-[0.12em] text-ink placeholder:text-[15px] placeholder:tracking-normal placeholder:text-pencil/70 focus:border-ink focus:outline-none"
+          className="h-12 min-w-0 flex-1 rounded-lg border border-rule bg-page px-4 font-display text-[16px] uppercase tracking-[0.12em] text-ink placeholder:text-[14px] placeholder:tracking-normal placeholder:text-pencil/70 focus:border-ink focus:outline-none"
         />
-        <button type="submit" disabled={busy || clean.length !== 12} className="h-12 shrink-0 rounded-full bg-ink px-5 text-[15px] text-page disabled:opacity-40">
+        <button type="submit" disabled={busy || clean.length !== 12} className="h-12 shrink-0 rounded-full bg-ink px-5 text-[14px] text-page disabled:opacity-40">
           {busy ? "되찾는 중…" : "되찾기"}
         </button>
       </div>
       {error && (
-        <p role="alert" className="mt-2 text-[14px] text-pen-orange">
+        <p role="alert" className="mt-2 text-[13px] text-pen-orange">
           {error}
         </p>
       )}

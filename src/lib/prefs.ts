@@ -7,7 +7,7 @@ export type PageSpread = "auto" | "one" | "two"; // 14-1 페이지 모드에서 
 export type ShelfView = "list" | "three" | "four"; // 14-3/15-1 책장 배치
 export type Prefs = {
   view: ReaderView;
-  textPx: number;
+  fontPx: number; // 18-1 기본 크기를 16px로 낮추며 새 이름으로 저장 (예전 textPx·size는 읽지 않는다)
   night: boolean;
   pages: PageSpread;
   shelf: ShelfView;
@@ -17,17 +17,16 @@ export type Prefs = {
 
 import { PREFS_KEY as KEY } from "./theme-boot";
 
-// 13-3 글자 크기는 픽셀로. 예전에 고른 작게·보통·크게는 같은 크기로 이어 쓴다
+// 13-3 글자 크기는 픽셀로
 export const TEXT_PX_MIN = 12;
 export const TEXT_PX_MAX = 40;
 export const TEXT_PX_PRESETS = [
-  { px: 16, label: "작게" },
-  { px: 18, label: "보통" },
-  { px: 21, label: "크게" },
+  { px: 14, label: "작게" },
+  { px: 16, label: "보통" },
+  { px: 18, label: "크게" },
 ];
-const OLD_SIZE_PX: Record<string, number> = { s: 16, m: 18, l: 21 };
 
-const DEFAULT: Prefs = { view: "scroll", textPx: 18, night: false, pages: "auto", shelf: "list", ttsRate: 1, ttsVoice: null };
+const DEFAULT: Prefs = { view: "scroll", fontPx: 16, night: false, pages: "auto", shelf: "list", ttsRate: 1, ttsVoice: null };
 const listeners = new Set<() => void>();
 let cache: Prefs | null = null;
 let cacheRaw: string | null = null;
@@ -46,7 +45,6 @@ function read(): Prefs {
     cache = {
       ...DEFAULT,
       ...saved,
-      textPx: saved.textPx ?? OLD_SIZE_PX[saved.size] ?? DEFAULT.textPx,
       // 15-1에서 없앤 배치(2열, 표지 크게)를 골라 뒀다면 목록으로
       shelf: saved.shelf === "three" || saved.shelf === "four" ? saved.shelf : DEFAULT.shelf,
     };

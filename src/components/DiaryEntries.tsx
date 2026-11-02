@@ -53,19 +53,19 @@ export function EntryPreview({
   return (
     <li className={`border-b border-rule ${highlight ? "bg-rule/30" : ""}`}>
       <button type="button" onClick={onOpen} className="block w-full py-5 text-left">
-        <span className="flex flex-wrap items-baseline justify-between gap-2 text-[14px] text-pencil">
+        <span className="flex flex-wrap items-baseline justify-between gap-2 text-[13px] text-pencil">
           <span>{dateFormat.format(new Date(entry.created_at))}</span>
           <Author userId={entry.user_id} me={me} exchange={exchange} penOf={penOf} />
         </span>
         {entry.prompt && <span className="mt-1.5 block font-hand text-[20px] leading-snug text-pencil">{entry.prompt}</span>}
         <span
-          className={`mt-2 line-clamp-3 whitespace-pre-wrap font-serif text-[16px] leading-[1.8] text-ink ${
+          className={`mt-2 line-clamp-3 whitespace-pre-wrap font-serif text-[15px] leading-[1.8] text-ink ${
             exchange ? `border-l-2 pl-3 ${PEN[penOf(entry.user_id)].border}` : ""
           }`}
         >
           {entry.body}
         </span>
-        <span className="mt-2 block text-[13px] text-pencil">
+        <span className="mt-2 block text-[12px] text-pencil">
           {commentCount > 0 ? `댓글 ${commentCount} · ` : ""}이 날 일기 전체 보기
         </span>
       </button>
@@ -117,13 +117,13 @@ export function EntryCard({
 
   return (
     <article className="border-b border-rule py-6">
-      <p className="flex flex-wrap items-baseline justify-between gap-2 text-[14px] text-pencil">
+      <p className="flex flex-wrap items-baseline justify-between gap-2 text-[13px] text-pencil">
         <span>{timeFormat.format(new Date(entry.created_at))}</span>
         <Author userId={entry.user_id} me={me} exchange={exchange} penOf={penOf} />
       </p>
       {entry.prompt && <p className="mt-2 font-hand text-[22px] leading-snug text-pencil">{entry.prompt}</p>}
       <p
-        className={`mt-3 whitespace-pre-wrap font-serif text-[17px] leading-[1.9] text-ink ${
+        className={`mt-3 whitespace-pre-wrap font-serif text-[15px] leading-[1.9] text-ink ${
           exchange ? `border-l-2 pl-3 ${PEN[penOf(entry.user_id)].border}` : ""
         }`}
       >
@@ -131,7 +131,7 @@ export function EntryCard({
       </p>
 
       {mine && (
-        <div className="mt-3 flex flex-wrap items-center justify-end gap-3 text-[13px]">
+        <div className="mt-3 flex flex-wrap items-center justify-end gap-3 text-[12px]">
           {confirming ? (
             <>
               <span className="text-pencil">이 일기{comments.length ? "와 댓글" : ""}을 지울까요?</span>
@@ -155,7 +155,7 @@ export function EntryCard({
         </div>
       )}
       {error && (
-        <p role="alert" className="mt-1 text-right text-[13px] text-pen-orange">
+        <p role="alert" className="mt-1 text-right text-[12px] text-pen-orange">
           {error}
         </p>
       )}
@@ -264,21 +264,21 @@ function Comments({
             onChange={(e) => setBody(e.target.value)}
             rows={1}
             placeholder={entry.user_id === me ? "덧붙이고 싶은 말" : "이 일기에 댓글 남기기"}
-            className="min-h-11 min-w-0 flex-1 resize-y rounded-lg border border-rule bg-page px-3 py-2 text-[15px] text-ink placeholder:text-pencil/70 focus:border-ink focus:outline-none"
+            className="min-h-11 min-w-0 flex-1 resize-y rounded-lg border border-rule bg-page px-3 py-2 text-[14px] text-ink placeholder:text-pencil/70 focus:border-ink focus:outline-none"
           />
           <button
             type="submit"
             disabled={saving || body.trim().length === 0}
-            className="h-11 shrink-0 rounded-full bg-ink px-4 text-[14px] text-page disabled:opacity-40"
+            className="h-11 shrink-0 rounded-full bg-ink px-4 text-[13px] text-page disabled:opacity-40"
           >
             {saving ? "…" : "남기기"}
           </button>
         </form>
       ) : (
-        comments.length === 0 && <p className="text-[13px] text-pencil">댓글이 없어요.</p>
+        comments.length === 0 && <p className="text-[12px] text-pencil">댓글이 없어요.</p>
       )}
       {error && (
-        <p role="alert" className="mt-1 text-[13px] text-pen-orange">
+        <p role="alert" className="mt-1 text-[12px] text-pen-orange">
           {error}
         </p>
       )}
