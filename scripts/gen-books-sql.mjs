@@ -13,7 +13,7 @@ const rows = books.map((b) => {
   return `  (${q(b.id)}, ${q(b.title)}, ${q(b.author)}, ${b.year}, ${q(b.source)}, array[\n${paras}\n  ])`;
 });
 
-const sql = `-- 책을 books에 넣는다 (PRD #7${onlyIds.length ? ", 10-4 책장 넓히기" : ""}): ${books.map((b) => b.title).join(", ")}
+const sql = `-- 책을 books에 넣는다 (PRD #7${onlyIds.length ? ", 책장 넓히기" : ""}): ${books.map((b) => b.title).join(", ")}
 -- 이 파일은 scripts/gen-books-sql.mjs가 src/data/books.json에서 만든다. 직접 고치지 말 것.
 -- 같은 id가 있으면 내용을 덮어쓴다.
 
