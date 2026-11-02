@@ -97,7 +97,7 @@ bombom_p = paragraphs(fix_bombom(lines_of(BOMBOM)[3:]), 0)  # 제목, 빈 줄, �
 memil = [fix_memil(l) for l in lines_of(MEMIL)[2:]]  # 제목, 저자
 memil_p = paragraphs(memil, 0)
 
-SOURCE = "원문 텍스트 (저작권 보호기간 만료: 저자 사후 70년 경과). 복사 과정에서 생긴 줄바꿈·띄어쓰기 끊김만 고침"
+SOURCE = "원문 텍스트 (저작권 보호기간 만료: 저자 사후 70년 경과)"
 books = [
     {"id": "unsu-joeun-nal", "title": "운수 좋은 날", "author": "현진건", "year": 1924,
      "source": SOURCE + " · 현진건(1900–1943)", "paragraphs": unsu_p},

@@ -25,7 +25,7 @@ def paragraphs(path, skip_head_lines, fixes=()):
     return body[skip_head_lines:]
 
 
-SOURCE = "원문 텍스트 (저작권 보호기간 만료: 저자 사후 70년 경과). 복사 과정에서 생긴 끊김·깨진 문자만 고침"
+SOURCE = "원문 텍스트 (저작권 보호기간 만료: 저자 사후 70년 경과)"
 new_books = [
     {
         "id": "nalgae",
