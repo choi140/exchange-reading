@@ -168,7 +168,7 @@ export function DiaryView({ diaryId }: { diaryId: string }) {
 
   return (
     <AppShell>
-      <main className="mx-auto w-full max-w-[640px] pb-24">
+      <main className="mx-auto w-full max-w-[960px] pb-24">
         <div className="flex items-center justify-between gap-3 px-5 pt-6 sm:px-8">
           <Link href="/diary" className="py-2 text-[15px] text-pencil">
             ‹ 교환일기
@@ -225,7 +225,7 @@ export function DiaryView({ diaryId }: { diaryId: string }) {
             </header>
 
             {/* 8-6 / 9-5 탭: 일기 · 오늘의 일기 쓰기 · (고른 날짜) */}
-            <div role="tablist" aria-label="일기장" className="mt-6 flex overflow-x-auto border-b border-rule px-5 sm:px-8">
+            <div role="tablist" aria-label="일기장" className="mt-6 flex overflow-x-auto overflow-y-hidden border-b border-rule px-5 sm:px-8">
               <TabButton on={tab === "list"} onClick={() => setTab("list")}>
                 일기 <span className="text-[13px] text-pencil">{entries.length}편</span>
               </TabButton>
