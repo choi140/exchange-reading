@@ -49,7 +49,7 @@ export function HighlightSheet({
   onReplyDeleted: (id: string) => void;
 }) {
   return (
-    <Sheet open={open} onClose={onClose} title={items.length > 1 ? `이 문장의 밑줄 ${items.length}개` : "밑줄"}>
+    <Sheet open={open} onClose={onClose} title={items.length > 1 ? `이 문장의 표시 ${items.length}개` : items[0]?.mark === "marker" ? "형광펜" : "밑줄"}>
       <ul className="mt-4 space-y-6">
         {items.map((h) => (
           <HighlightItem
@@ -157,7 +157,7 @@ function HighlightItem({
       <p className="font-serif text-[16px] leading-relaxed text-ink">“{quote}”</p>
       <p className="mt-1 text-[12px] text-pencil">
         {pen.label}
-        {mine ? " (나)" : ""}의 밑줄, {timeFormat.format(new Date(h.created_at))}
+        {mine ? " (나)" : ""}의 {h.mark === "marker" ? "형광펜" : "밑줄"}, {timeFormat.format(new Date(h.created_at))}
         {isNew(h.created_at, h.user_id) && <span className="ml-2 rounded-full border border-ink px-1.5 text-[11px] text-ink">새 밑줄</span>}
       </p>
 
@@ -236,7 +236,7 @@ function HighlightItem({
           disabled={busy !== null}
           className="mt-3 h-9 text-[13px] text-pencil underline underline-offset-4 disabled:opacity-50"
         >
-          {busy === "delete" ? "지우는 중…" : "내 밑줄 지우기"}
+          {busy === "delete" ? "지우는 중…" : h.mark === "marker" ? "내 형광펜 지우기" : "내 밑줄 지우기"}
         </button>
       )}
       {error && (

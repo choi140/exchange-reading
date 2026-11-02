@@ -4,8 +4,8 @@ import { useEffect, useId, useState } from "react";
 import { getBrowserSupabase } from "@/lib/supabase/client";
 import { PEN, type PenColor } from "../PenChip";
 
-// 7-6 문장 밑줄 + 9-7 밑줄에 한마디
-// 문단 글자 위치(start~end)로 저장하고, 그 사람의 펜 색으로 밑줄을 긋는다. 밑줄을 누르면 한마디·답글이 열린다.
+// 7-6 문장 밑줄 + 9-7 밑줄에 한마디 + 22-1 형광펜
+// 문단 글자 위치(start~end)로 저장하고, 그 사람의 펜 색으로 밑줄을 긋거나 형광펜을 칠한다. 누르면 한마디·답글이 열린다.
 
 export type Highlight = {
   id: string;
@@ -14,11 +14,27 @@ export type Highlight = {
   start_offset: number;
   end_offset: number;
   memo?: string | null;
+  mark?: "underline" | "marker"; // 15_marker.sql을 실행하기 전의 DB에는 없다
   created_at: string;
 };
-export const HIGHLIGHT_COLUMNS = "id, user_id, paragraph_index, start_offset, end_offset, memo, created_at";
-export const HIGHLIGHT_COLUMNS_OLD = "id, user_id, paragraph_index, start_offset, end_offset, created_at";
+const COLUMNS_NO_MEMO = "id, user_id, paragraph_index, start_offset, end_offset, created_at";
+const COLUMNS_NO_MARK = "id, user_id, paragraph_index, start_offset, end_offset, memo, created_at";
+const COLUMNS_ALL = "id, user_id, paragraph_index, start_offset, end_offset, memo, mark, created_at";
 const MEMO_MAX = 200;
+
+// 옛 SQL만 실행한 DB에서도 깨지지 않게, 없는 칸(42703)을 빼고 다시 읽는다
+export async function loadHighlights(supabase: NonNullable<ReturnType<typeof getBrowserSupabase>>, roomId: string) {
+  for (const columns of [COLUMNS_ALL, COLUMNS_NO_MARK, COLUMNS_NO_MEMO]) {
+    const { data, error } = await supabase.from("highlights").select(columns).eq("room_id", roomId).order("created_at", { ascending: true });
+    if (error?.code === "42703") continue;
+    return {
+      highlights: (error ? [] : (data ?? [])) as unknown as Highlight[],
+      memo: columns !== COLUMNS_NO_MEMO,
+      marker: columns === COLUMNS_ALL,
+    };
+  }
+  return { highlights: [] as Highlight[], memo: false, marker: false };
+}
 
 export const PEN_VAR: Record<PenColor, string> = {
   black: "var(--color-pen-black)",
@@ -59,6 +75,10 @@ export function HighlightedText({
       continue;
     }
     const top = covering[covering.length - 1];
+    const lines = covering.filter((h) => h.mark !== "marker");
+    const markers = covering.filter((h) => h.mark === "marker");
+    const lineColor = lines.length > 0 ? PEN_VAR[penOf(lines[lines.length - 1].user_id)] : undefined;
+    const markerColor = markers.length > 0 ? PEN_VAR[penOf(markers[markers.length - 1].user_id)] : undefined;
     const hasMemo = covering.some((h) => h.memo);
     const isNew = covering.some((h) => newIds?.has(h.id));
     const ids = covering.map((h) => h.id);
@@ -68,7 +88,11 @@ export function HighlightedText({
         data-hl={ids.join(",")}
         role={onOpen ? "button" : undefined}
         tabIndex={onOpen ? 0 : undefined}
-        aria-label={onOpen ? `밑줄 ${covering.length}개${hasMemo ? ", 한마디 있음" : ""}${isNew ? ", 새 밑줄" : ""}` : undefined}
+        aria-label={
+          onOpen
+            ? `${[lines.length > 0 && `밑줄 ${lines.length}개`, markers.length > 0 && `형광펜 ${markers.length}개`].filter(Boolean).join(", ")}${hasMemo ? ", 한마디 있음" : ""}${isNew ? ", 새 표시" : ""}`
+            : undefined
+        }
         onClick={(e) => {
           if (!onOpen || window.getSelection()?.toString()) return;
           e.stopPropagation();
@@ -82,11 +106,15 @@ export function HighlightedText({
         }}
         className={onOpen ? "cursor-pointer rounded-[2px] focus-visible:outline-2" : undefined}
         style={{
-          textDecorationLine: "underline",
-          textDecorationColor: PEN_VAR[penOf(top.user_id)],
-          textDecorationThickness: covering.length > 1 ? "3px" : "2px",
+          textDecorationLine: lineColor ? "underline" : undefined,
+          textDecorationColor: lineColor,
+          textDecorationThickness: lines.length > 1 ? "3px" : "2px",
           textUnderlineOffset: "5px",
-          backgroundColor: isNew ? `color-mix(in srgb, ${PEN_VAR[penOf(top.user_id)]} 14%, transparent)` : undefined,
+          backgroundColor: markerColor
+            ? `color-mix(in srgb, ${markerColor} ${isNew ? 42 : 28}%, transparent)`
+            : isNew
+              ? `color-mix(in srgb, ${PEN_VAR[penOf(top.user_id)]} 14%, transparent)`
+              : undefined,
         }}
       >
         {seg}
@@ -121,12 +149,14 @@ export function UnderlineBar({
   myPen,
   bottomOffset,
   withMemo,
+  withMarker,
   onAdded,
 }: {
   roomId: string;
   myPen: PenColor;
   bottomOffset: number;
   withMemo: boolean;
+  withMarker: boolean;
   onAdded: (h: Highlight) => void;
 }) {
   const memoId = useId();
@@ -134,7 +164,7 @@ export function UnderlineBar({
   // 한마디를 쓰는 동안에는 선택이 풀려도 고른 문장을 붙잡아 둔다
   const [writing, setWriting] = useState(false);
   const [memo, setMemo] = useState("");
-  const [saving, setSaving] = useState(false);
+  const [saving, setSaving] = useState<"underline" | "marker" | null>(null);
   const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
@@ -176,11 +206,11 @@ export function UnderlineBar({
     setMemo("");
   }
 
-  async function save() {
+  async function save(mark: "underline" | "marker") {
     if (!picked) return;
     const supabase = getBrowserSupabase();
     if (!supabase) return;
-    setSaving(true);
+    setSaving(mark);
     const row: Record<string, unknown> = {
       room_id: roomId,
       paragraph_index: picked.paragraph,
@@ -188,13 +218,18 @@ export function UnderlineBar({
       end_offset: picked.end,
     };
     if (memo.trim()) row.memo = memo.trim();
-    const { data, error } = await supabase.from("highlights").insert(row).select(HIGHLIGHT_COLUMNS).single();
-    setSaving(false);
+    if (withMarker) row.mark = mark;
+    const { data, error } = await supabase
+      .from("highlights")
+      .insert(row)
+      .select(withMarker ? COLUMNS_ALL : withMemo ? COLUMNS_NO_MARK : COLUMNS_NO_MEMO)
+      .single();
+    setSaving(null);
     if (error || !data) {
-      setError(`밑줄을 긋지 못했어요. (${error?.message ?? "응답 없음"})`);
+      setError(`${mark === "marker" ? "형광펜을 칠하지" : "밑줄을 긋지"} 못했어요. (${error?.message ?? "응답 없음"})`);
       return;
     }
-    onAdded(data as Highlight);
+    onAdded(data as unknown as Highlight);
     reset();
   }
 
@@ -221,9 +256,9 @@ export function UnderlineBar({
           />
         </>
       )}
-      <div className="mt-2 flex items-center justify-between gap-2">
+      <div className="mt-2 flex flex-wrap items-center justify-between gap-2">
         <span className={`font-serif text-[15px] leading-none ${PEN[myPen].className}`}>{PEN[myPen].label}으로</span>
-        <span className="flex gap-1">
+        <span className="flex flex-wrap justify-end gap-1">
           <button type="button" onMouseDown={(e) => e.preventDefault()} onClick={reset} className="h-10 px-3 text-[14px] text-pencil">
             취소
           </button>
@@ -240,14 +275,26 @@ export function UnderlineBar({
               + 한마디
             </button>
           )}
+          {withMarker && (
+            <button
+              type="button"
+              onMouseDown={(e) => e.preventDefault()}
+              onClick={() => save("marker")}
+              disabled={saving !== null}
+              style={{ backgroundColor: `color-mix(in srgb, ${PEN_VAR[myPen]} 28%, transparent)` }}
+              className="h-10 rounded-full px-4 text-[14px] text-ink disabled:opacity-50"
+            >
+              {saving === "marker" ? "칠하는 중…" : "형광펜"}
+            </button>
+          )}
           <button
             type="button"
             onMouseDown={(e) => e.preventDefault()}
-            onClick={save}
-            disabled={saving}
+            onClick={() => save("underline")}
+            disabled={saving !== null}
             className="h-10 rounded-full bg-ink px-4 text-[14px] text-page disabled:opacity-50"
           >
-            {saving ? "긋는 중…" : "밑줄 긋기"}
+            {saving === "underline" ? "긋는 중…" : "밑줄 긋기"}
           </button>
         </span>
       </div>

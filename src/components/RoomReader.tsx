@@ -12,7 +12,7 @@ import { PEN, PenChip, type PenColor } from "./PenChip";
 import { BookPager } from "./reader/BookPager";
 import { EndOfBook, LeaveRoomButton, LETTER_COLUMNS, type Letter } from "./reader/EndOfBook";
 import { HighlightSheet, REPLY_COLUMNS, type Reply } from "./reader/HighlightSheet";
-import { HIGHLIGHT_COLUMNS, HIGHLIGHT_COLUMNS_OLD, HighlightedText, UnderlineBar, type Highlight } from "./reader/Highlights";
+import { HighlightedText, loadHighlights, UnderlineBar, type Highlight } from "./reader/Highlights";
 import { NEXT_BOOK_COLUMNS, NextBook, type NextBookRow } from "./reader/NextBook";
 import { ReadAloud } from "./reader/ReadAloud";
 import { ReaderSettingsButton } from "./reader/ReaderSettings";
@@ -57,6 +57,7 @@ export function RoomReader({ roomId }: { roomId: string }) {
   const [unlocked, setUnlocked] = useState<Set<number>>(new Set());
   const [letters, setLetters] = useState<Letter[]>([]);
   const [memoReady, setMemoReady] = useState(true); // 10_v6.sql을 실행했는지
+  const [markerReady, setMarkerReady] = useState(false); // 15_marker.sql을 실행했는지
   const [nextReady, setNextReady] = useState(false); // 14_v9.sql을 실행했는지
   const [next, setNext] = useState<NextBookRow | null>(null);
   const [shelf, setShelf] = useState<{ id: string; title: string }[]>([]);
@@ -94,13 +95,7 @@ export function RoomReader({ roomId }: { roomId: string }) {
       supabase.from("room_next").select(NEXT_BOOK_COLUMNS).eq("room_id", roomId),
       supabase.from("books").select("id, title"),
     ]);
-    type Rows = { data: unknown[] | null; error: { code?: string; message: string } | null };
-    let hlRes: Rows = await supabase.from("highlights").select(HIGHLIGHT_COLUMNS).eq("room_id", roomId).order("created_at", { ascending: true });
-    let memo = true;
-    if (hlRes.error?.code === "42703") {
-      memo = false; // memo 칸이 아직 없다
-      hlRes = await supabase.from("highlights").select(HIGHLIGHT_COLUMNS_OLD).eq("room_id", roomId).order("created_at", { ascending: true });
-    }
+    const hl = await loadHighlights(supabase, roomId);
     const err = membersRes.error ?? unlocksRes.error;
     if (err) return { status: "error", message: err.message } as const;
 
@@ -109,10 +104,11 @@ export function RoomReader({ roomId }: { roomId: string }) {
       room: roomRes.data as unknown as Room,
       members: (membersRes.data ?? []) as Member[],
       unlocked: new Set((unlocksRes.data ?? []).map((u) => u.paragraph_index as number)),
-      highlights: (hlRes.error ? [] : (hlRes.data ?? [])) as Highlight[],
+      highlights: hl.highlights,
       replies: (repliesRes.error ? [] : (repliesRes.data ?? [])) as Reply[],
       letters: (lettersRes.error ? [] : (lettersRes.data ?? [])) as Letter[],
-      memo: memo && !repliesRes.error,
+      memo: hl.memo && !repliesRes.error,
+      marker: hl.marker,
       nextReady: !nextRes.error,
       next: ((nextRes.data ?? [])[0] ?? null) as NextBookRow | null,
       shelf: (shelfRes.data ?? []) as { id: string; title: string }[],
@@ -148,6 +144,7 @@ export function RoomReader({ roomId }: { roomId: string }) {
       setUnlocked(res.unlocked);
       setLetters(res.letters);
       setMemoReady(res.memo);
+      setMarkerReady(res.marker);
       setNextReady(res.nextReady);
       setNext(res.next);
       setShelf(res.shelf);
@@ -276,7 +273,7 @@ export function RoomReader({ roomId }: { roomId: string }) {
         />
       )}
       <p className="mt-4 text-[0.78em] leading-relaxed text-pencil">
-        마음에 드는 문장을 길게 눌러 고르면 {PEN[myPen].label}으로 밑줄을 그어요{memoReady ? ". 밑줄에 한마디를 붙일 수도 있어요" : ""}.
+        마음에 드는 문장을 길게 눌러 고르면 {PEN[myPen].label}으로 {markerReady ? "밑줄을 긋거나 형광펜을 칠해요" : "밑줄을 그어요"}{memoReady ? ". 한마디를 붙일 수도 있어요" : ""}.
         {together
           ? " 다른 사람의 밑줄을 누르면 한마디와 답글이 보여요. 그 문단에 내 밑줄을 먼저 그어야 열려요."
           : " 밑줄은 나만 봐요."}
@@ -433,6 +430,7 @@ export function RoomReader({ roomId }: { roomId: string }) {
         myPen={myPen}
         bottomOffset={paged ? 84 : 16}
         withMemo={memoReady}
+        withMarker={markerReady}
         onAdded={(h) => setHighlights((prev) => [...prev, h])}
       />
       <HighlightSheet

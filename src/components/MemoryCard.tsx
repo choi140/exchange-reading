@@ -9,7 +9,7 @@ import { bookColor } from "./BookCover";
 import { NotAllowed } from "./NotAllowed";
 import { PEN, type PenColor } from "./PenChip";
 import { LETTER_COLUMNS, type Letter } from "./reader/EndOfBook";
-import { HIGHLIGHT_COLUMNS, HIGHLIGHT_COLUMNS_OLD, type Highlight } from "./reader/Highlights";
+import { loadHighlights, type Highlight } from "./reader/Highlights";
 
 // 10-3/20-1 다 읽은 뒤 기념 카드: 함께 그은 밑줄·한마디·편지를 독서 영수증 한 장으로 모아 이미지로 저장·공유
 
@@ -90,9 +90,7 @@ export function MemoryCardPage({ roomId }: { roomId: string }) {
         setData({ status: "missing" });
         return;
       }
-      type Rows = { data: unknown[] | null; error: { code?: string; message: string } | null };
-      let hl: Rows = await supabase.from("highlights").select(HIGHLIGHT_COLUMNS).eq("room_id", roomId).order("created_at");
-      if (hl.error?.code === "42703") hl = await supabase.from("highlights").select(HIGHLIGHT_COLUMNS_OLD).eq("room_id", roomId).order("created_at");
+      const hl = await loadHighlights(supabase, roomId);
       const [members, letters, replies] = await Promise.all([
         supabase.from("room_members").select("user_id, pen_color, alias").eq("room_id", roomId).order("joined_at"),
         supabase.from("letters").select(LETTER_COLUMNS).eq("room_id", roomId).order("created_at"),
@@ -103,7 +101,7 @@ export function MemoryCardPage({ roomId }: { roomId: string }) {
         status: "ready",
         room: roomRes.data as unknown as Room,
         members: (members.data ?? []) as Member[],
-        highlights: (hl.error ? [] : (hl.data ?? [])) as Highlight[],
+        highlights: hl.highlights,
         letters: (letters.error ? [] : (letters.data ?? [])) as Letter[],
         replies: replies.error ? 0 : (replies.count ?? 0),
       });
@@ -136,6 +134,7 @@ export function MemoryCardPage({ roomId }: { roomId: string }) {
     .slice(0, MAX_QUOTES)
     .sort((a, b) => a.paragraph_index - b.paragraph_index || a.start_offset - b.start_offset);
   const memoCount = highlights.filter((h) => h.memo).length;
+  const markerCount = highlights.filter((h) => h.mark === "marker").length;
   const cover = bookColor(room.book.id);
   // 한글 파일 이름은 일부 브라우저에서 "download"로 바뀌어 영문(책 id)으로 짓는다
   const fileName = `natseon-miljul-${room.book.id}.png`;
@@ -278,7 +277,8 @@ export function MemoryCardPage({ roomId }: { roomId: string }) {
               <div className={RECEIPT_LINE}>
                 <p className="text-[13px] font-bold">합계</p>
                 <dl className="mt-2 space-y-1 text-[13px] tabular-nums">
-                  <ReceiptTotal label="밑줄">{highlights.length}개</ReceiptTotal>
+                  <ReceiptTotal label="밑줄">{highlights.length - markerCount}개</ReceiptTotal>
+                  {markerCount > 0 && <ReceiptTotal label="형광펜">{markerCount}개</ReceiptTotal>}
                   <ReceiptTotal label="한마디">{memoCount}개</ReceiptTotal>
                   {room.mode === "together" && <ReceiptTotal label="답글">{data.replies}개</ReceiptTotal>}
                   <ReceiptTotal label="편지">{letters.length}장</ReceiptTotal>
