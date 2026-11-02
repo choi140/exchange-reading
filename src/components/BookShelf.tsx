@@ -16,21 +16,18 @@ type RoomRpc = "start_solo_room" | "join_room" | "create_private_room";
 // 14-3 책장 배치: 고른 배치는 이 브라우저에 기억한다
 const SHELF_VIEWS: { value: ShelfView; label: string }[] = [
   { value: "list", label: "목록" },
-  { value: "two", label: "2열" },
   { value: "three", label: "3열" },
-  { value: "cover", label: "표지 크게" },
+  { value: "four", label: "4열" },
 ];
 const SHELF_LIST: Record<ShelfView, string> = {
   list: "border-t border-rule",
-  two: "grid grid-cols-2 gap-x-4 gap-y-8 border-t border-rule pt-6",
   three: "grid grid-cols-3 gap-x-3 gap-y-7 border-t border-rule pt-6",
-  cover: "grid grid-cols-1 gap-y-10 border-t border-rule pt-6 sm:grid-cols-2 sm:gap-x-8",
+  four: "grid grid-cols-4 gap-x-2 gap-y-7 border-t border-rule pt-6 sm:gap-x-3",
 };
 const SHELF_TITLE: Record<ShelfView, string> = {
   list: "text-[22px]",
-  two: "mt-3 text-[18px]",
   three: "mt-2 text-[15px]",
-  cover: "mt-4 text-[22px]",
+  four: "mt-2 text-[14px]",
 };
 
 // 1-7 책 목록 + 1-8 "혼자 읽기"·"함께 읽기" 버튼
@@ -41,7 +38,7 @@ export function BookShelf({ books }: { books: ShelfBook[] }) {
   const session = useAnonymousSession();
   const { shelf: view } = usePrefs();
   const inList = view === "list";
-  const buttonSize = view === "three" ? "h-10 px-1 text-[14px]" : "h-11 px-4 text-[15px]";
+  const buttonSize = inList ? "h-10 px-4 text-[14px] sm:h-11 sm:text-[15px]" : view === "three" ? "h-10 px-1 text-[14px]" : "h-9 px-0.5 text-[12px] sm:text-[13px]";
   const [busy, setBusy] = useState<string | null>(null);
   const [notice, setNotice] = useState<string | null>(null);
   const [together, setTogether] = useState<ShelfBook | null>(null);
@@ -84,19 +81,22 @@ export function BookShelf({ books }: { books: ShelfBook[] }) {
       </div>
       <ul className={SHELF_LIST[view]}>
         {books.map((book) => (
-          <li key={book.id} className={inList ? "border-b border-rule py-5" : "min-w-0"}>
+          <li key={book.id} className={inList ? "flex items-center justify-between gap-4 border-b border-rule py-5" : "min-w-0"}>
             {!inList && <BookCover id={book.id} title={book.title} author={book.author} />}
-            <p className={`font-serif leading-snug text-ink ${SHELF_TITLE[view]}`}>{book.title}</p>
-            <p className={`mt-1 text-pencil ${view === "three" ? "text-[13px]" : "text-[14px]"}`}>
-              {book.author}
-              {book.year ? `, ${book.year}년` : ""}
-            </p>
-            <div className={inList ? "mt-4 flex gap-2" : "mt-3 flex flex-col gap-2"}>
+            <div className="min-w-0">
+              <p className={`font-serif leading-snug text-ink ${SHELF_TITLE[view]}`}>{book.title}</p>
+              <p className={`mt-1 text-pencil ${inList ? "text-[14px]" : "text-[12px] sm:text-[13px]"}`}>
+                {book.author}
+                {book.year ? `, ${book.year}년` : ""}
+              </p>
+            </div>
+            {/* 15-2 목록에서는 버튼을 책 옆에 (휴대폰은 위아래로) */}
+            <div className={inList ? "flex shrink-0 flex-col gap-2 sm:flex-row" : "mt-3 flex flex-col gap-2"}>
               <button
                 type="button"
                 disabled={busy !== null}
                 onClick={() => openRoom(book, "start_solo_room")}
-                className={`rounded-full border border-ink bg-ink text-page disabled:opacity-60 active:translate-y-px ${buttonSize} ${inList ? "flex-1 sm:flex-none" : ""}`}
+                className={`rounded-full border border-ink bg-ink text-page disabled:opacity-60 active:translate-y-px ${buttonSize}`}
               >
                 {busy === `${book.id}:start_solo_room` ? "방을 여는 중…" : "혼자 읽기"}
               </button>
@@ -107,7 +107,7 @@ export function BookShelf({ books }: { books: ShelfBook[] }) {
                   setSheetNotice(null);
                   setTogether(book);
                 }}
-                className={`rounded-full border border-ink text-ink disabled:opacity-60 active:translate-y-px ${buttonSize} ${inList ? "flex-1 sm:flex-none" : ""}`}
+                className={`rounded-full border border-ink text-ink disabled:opacity-60 active:translate-y-px ${buttonSize}`}
               >
                 함께 읽기
               </button>

@@ -4,7 +4,7 @@ import { useSyncExternalStore } from "react";
 // 7-1 / 7-4 읽기 설정: 이 브라우저에 기억한다 (익명 계정도 브라우저 단위라 같은 범위)
 export type ReaderView = "scroll" | "page";
 export type PageSpread = "auto" | "one" | "two"; // 14-1 페이지 모드에서 한 화면에 볼 쪽 수
-export type ShelfView = "list" | "two" | "three" | "cover"; // 14-3 책장 배치
+export type ShelfView = "list" | "three" | "four"; // 14-3/15-1 책장 배치
 export type Prefs = { view: ReaderView; textPx: number; night: boolean; pages: PageSpread; shelf: ShelfView };
 
 import { PREFS_KEY as KEY } from "./theme-boot";
@@ -35,7 +35,13 @@ function read(): Prefs {
   cacheRaw = raw;
   try {
     const saved = raw ? JSON.parse(raw) : {};
-    cache = { ...DEFAULT, ...saved, textPx: saved.textPx ?? OLD_SIZE_PX[saved.size] ?? DEFAULT.textPx };
+    cache = {
+      ...DEFAULT,
+      ...saved,
+      textPx: saved.textPx ?? OLD_SIZE_PX[saved.size] ?? DEFAULT.textPx,
+      // 15-1에서 없앤 배치(2열, 표지 크게)를 골라 뒀다면 목록으로
+      shelf: saved.shelf === "three" || saved.shelf === "four" ? saved.shelf : DEFAULT.shelf,
+    };
   } catch {
     cache = DEFAULT;
   }

@@ -10,8 +10,8 @@ export function BookCover({ id, title, author }: { id: string; title: string; au
         <img src={src} alt="" className="h-full w-full object-cover" />
       ) : (
         <div aria-hidden className="flex h-full flex-col justify-between border-l-[4cqw] border-ink/80 p-[9cqw]">
-          <p className="font-serif text-[clamp(13px,12cqw,34px)] leading-snug text-ink">{title}</p>
-          <p className="text-[clamp(11px,6.5cqw,17px)] text-pencil">{author}</p>
+          <p className="font-serif text-[clamp(11px,12cqw,34px)] leading-snug text-ink">{title}</p>
+          <p className="text-[clamp(9px,6.5cqw,17px)] text-pencil">{author}</p>
         </div>
       )}
     </div>
