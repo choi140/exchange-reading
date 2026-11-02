@@ -13,7 +13,7 @@ export function ReaderSettingsButton() {
       <button
         type="button"
         onClick={() => setOpen(true)}
-        className="h-10 shrink-0 whitespace-nowrap rounded-full border border-rule px-3 text-[13px] text-ink"
+        className="h-10 shrink-0 whitespace-nowrap rounded-full border border-rule px-3 text-[14px] text-ink"
         aria-label="읽기 설정"
       >
         보기 설정
@@ -62,10 +62,10 @@ function TextPxField({ value }: { value: number }) {
   const [draft, setDraft] = useState<string | null>(null); // 입력하는 중의 값 (지우는 중에 칸이 되돌아가지 않게)
   const inRange = (n: number) => n >= TEXT_PX_MIN && n <= TEXT_PX_MAX;
   const clamp = (n: number) => Math.min(TEXT_PX_MAX, Math.max(TEXT_PX_MIN, Math.round(n)));
-  const stepClass = "h-12 w-12 shrink-0 rounded-lg border border-rule bg-paper/60 text-[18px] text-ink disabled:opacity-40";
+  const stepClass = "h-12 w-12 shrink-0 rounded-lg border border-rule bg-paper/60 text-[20px] text-ink disabled:opacity-40";
   return (
     <fieldset>
-      <legend className="text-[13px] text-pencil">
+      <legend className="text-[14px] text-pencil">
         글자 크기 ({TEXT_PX_MIN}~{TEXT_PX_MAX}px)
       </legend>
       <div className="mt-2 flex items-center gap-2">
@@ -90,9 +90,9 @@ function TextPxField({ value }: { value: number }) {
               if (draft && Number.isFinite(n)) setPrefs({ fontPx: clamp(n) });
               setDraft(null);
             }}
-            className="w-14 bg-transparent text-right text-[15px] tabular-nums text-ink focus:outline-none"
+            className="w-14 bg-transparent text-right text-[17px] tabular-nums text-ink focus:outline-none"
           />
-          <span className="text-[14px] text-pencil">px</span>
+          <span className="text-[15px] text-pencil">px</span>
         </label>
         <button type="button" aria-label="글자 1px 크게" onClick={() => setPrefs({ fontPx: clamp(value + 1) })} disabled={value >= TEXT_PX_MAX} className={stepClass}>
           +
@@ -105,7 +105,7 @@ function TextPxField({ value }: { value: number }) {
             type="button"
             aria-pressed={p.px === value}
             onClick={() => setPrefs({ fontPx: p.px })}
-            className={`h-10 flex-1 rounded-lg border text-[13px] ${p.px === value ? "border-ink bg-ink text-page" : "border-rule bg-paper/60 text-ink"}`}
+            className={`h-10 flex-1 rounded-lg border text-[14px] ${p.px === value ? "border-ink bg-ink text-page" : "border-rule bg-paper/60 text-ink"}`}
           >
             {p.label} {p.px}
           </button>
@@ -128,7 +128,7 @@ function Segment<T extends string>({
 }) {
   return (
     <fieldset>
-      <legend className="text-[13px] text-pencil">{label}</legend>
+      <legend className="text-[14px] text-pencil">{label}</legend>
       <div className="mt-2 flex gap-2">
         {options.map((o) => {
           const on = o.value === value;
@@ -142,7 +142,7 @@ function Segment<T extends string>({
                 on ? "border-ink bg-ink text-page" : "border-rule bg-paper/60 text-ink"
               }`}
             >
-              <span className="block text-[14px]">{o.label}</span>
+              <span className="block text-[15px]">{o.label}</span>
               {o.hint && <span className={`block text-[12px] ${on ? "text-page/80" : "text-pencil"}`}>{o.hint}</span>}
             </button>
           );
@@ -160,7 +160,7 @@ export function NightToggle() {
       type="button"
       aria-pressed={prefs.night}
       onClick={() => setPrefs({ night: !prefs.night })}
-      className="h-10 rounded-full border border-rule px-4 text-[14px] text-ink"
+      className="h-10 rounded-full border border-rule px-4 text-[15px] text-ink"
     >
       {prefs.night ? "낮 모드로" : "밤 모드로"}
     </button>

@@ -170,7 +170,7 @@ export function DiaryView({ diaryId }: { diaryId: string }) {
     <AppShell>
       <main className="mx-auto w-full max-w-[640px] pb-24">
         <div className="flex items-center justify-between gap-3 px-5 pt-6 sm:px-8">
-          <Link href="/diary" className="py-2 text-[14px] text-pencil">
+          <Link href="/diary" className="py-2 text-[15px] text-pencil">
             ‹ 교환일기
           </Link>
           {ready && me && (
@@ -192,7 +192,7 @@ export function DiaryView({ diaryId }: { diaryId: string }) {
         )}
 
         {state.status === "error" && (
-          <p role="alert" className="px-5 pt-12 text-[14px] leading-relaxed text-pen-orange sm:px-8">
+          <p role="alert" className="px-5 pt-12 text-[15px] leading-relaxed text-pen-orange sm:px-8">
             일기장을 불러오지 못했어요. 새로고침해 주세요. ({state.message})
           </p>
         )}
@@ -210,7 +210,7 @@ export function DiaryView({ diaryId }: { diaryId: string }) {
               />
               {exchange && (
                 <p className="mt-3 flex flex-wrap items-baseline gap-x-4 gap-y-1">
-                  <span className="text-[13px] text-pencil">함께 쓰는 사람</span>
+                  <span className="text-[14px] text-pencil">함께 쓰는 사람</span>
                   {ready.members.map((m) => (
                     <span key={m.user_id} className={`font-hand text-[22px] leading-none ${PEN[m.pen_color].className}`}>
                       {m.alias}
@@ -227,7 +227,7 @@ export function DiaryView({ diaryId }: { diaryId: string }) {
             {/* 8-6 / 9-5 탭: 일기 · 오늘의 일기 쓰기 · (고른 날짜) */}
             <div role="tablist" aria-label="일기장" className="mt-6 flex overflow-x-auto border-b border-rule px-5 sm:px-8">
               <TabButton on={tab === "list"} onClick={() => setTab("list")}>
-                일기 <span className="text-[12px] text-pencil">{entries.length}편</span>
+                일기 <span className="text-[13px] text-pencil">{entries.length}편</span>
               </TabButton>
               <TabButton on={tab === "write"} onClick={() => setTab("write")}>
                 오늘의 일기 쓰기
@@ -245,7 +245,7 @@ export function DiaryView({ diaryId }: { diaryId: string }) {
                       setDay(null);
                       setTab("list");
                     }}
-                    className="-mb-px border-b-2 border-transparent px-1 text-[16px] text-pencil"
+                    className="-mb-px border-b-2 border-transparent px-1 text-[18px] text-pencil"
                   >
                     ×
                   </button>
@@ -256,13 +256,13 @@ export function DiaryView({ diaryId }: { diaryId: string }) {
             {tab === "list" && (
               <section role="tabpanel" aria-label="일기" className="px-5 pt-6 sm:px-8">
                 <DiaryCalendar entries={entries} penOf={penOf} onPickDay={openDay} todayKey={todayKey} />
-                <p className="mt-2 text-[12px] text-pencil">날짜를 누르면 그날 쓴 일기만 따로 볼 수 있어요.</p>
+                <p className="mt-2 text-[13px] text-pencil">날짜를 누르면 그날 쓴 일기만 따로 볼 수 있어요.</p>
 
                 {entries.length === 0 ? (
                   <div className="mt-6 border-y border-rule py-8 text-center">
-                    <p className="text-[14px] text-pencil">{waiting ? "짝이 생기면 여기에 둘의 일기가 쌓여요." : "아직 쓴 일기가 없어요."}</p>
+                    <p className="text-[15px] text-pencil">{waiting ? "짝이 생기면 여기에 둘의 일기가 쌓여요." : "아직 쓴 일기가 없어요."}</p>
                     {!waiting && !closed && (
-                      <button type="button" onClick={() => setTab("write")} className="mt-4 h-11 rounded-full bg-ink px-6 text-[14px] text-page">
+                      <button type="button" onClick={() => setTab("write")} className="mt-4 h-11 rounded-full bg-ink px-6 text-[15px] text-page">
                         첫 일기 쓰러 가기
                       </button>
                     )}
@@ -288,9 +288,9 @@ export function DiaryView({ diaryId }: { diaryId: string }) {
 
             {tab === "day" && day && (
               <section role="tabpanel" aria-label={dayLongFormat.format(keyToDate(day))} className="px-5 pt-6 sm:px-8">
-                <h2 className="font-display text-[21px] text-ink">{dayLongFormat.format(keyToDate(day))}</h2>
+                <h2 className="font-display text-[24px] text-ink">{dayLongFormat.format(keyToDate(day))}</h2>
                 {dayEntries.length === 0 ? (
-                  <p className="mt-4 border-y border-rule py-6 text-[14px] text-pencil">이 날 쓴 일기가 없어요.</p>
+                  <p className="mt-4 border-y border-rule py-6 text-[15px] text-pencil">이 날 쓴 일기가 없어요.</p>
                 ) : (
                   <div className="mt-2">
                     {dayEntries.map((e) => (
@@ -320,10 +320,10 @@ export function DiaryView({ diaryId }: { diaryId: string }) {
               <section role="tabpanel" aria-label="오늘의 일기 쓰기" className="px-5 pt-6 sm:px-8">
                 {closed ? (
                   <div className="rounded-sm border border-dashed border-pencil/60 px-5 py-6">
-                    <p className="font-display text-[18px] text-ink">
+                    <p className="font-display text-[20px] text-ink">
                       {someoneLeft ? "짝이 교환일기를 떠났어요" : "이 교환일기는 마무리됐어요"}
                     </p>
-                    <p className="mt-2 text-[14px] leading-relaxed text-pencil">
+                    <p className="mt-2 text-[15px] leading-relaxed text-pencil">
                       지난 일기는 그대로 남아 있지만 새 일기는 쓸 수 없어요. 새 짝과 쓰려면 교환일기 화면에서 새 일기장을 만들어 주세요.
                     </p>
                   </div>
@@ -359,7 +359,7 @@ export function DiaryView({ diaryId }: { diaryId: string }) {
                   />
                 ) : (
                   <>
-                    <p className="mb-4 text-[13px] text-pencil">{dayLongFormat.format(new Date())}</p>
+                    <p className="mb-4 text-[14px] text-pencil">{dayLongFormat.format(new Date())}</p>
                     <DiaryWriter
                       diaryId={ready.diary.id}
                       question={question}
@@ -459,24 +459,24 @@ function AwayBox({
 
   return (
     <div className="rounded-sm border border-dashed border-pencil/60 px-5 py-6">
-      <p className="font-display text-[18px] text-ink">짝이 잠시 멀어졌어요</p>
-      <p className="mt-2 text-[14px] leading-relaxed text-pencil">
+      <p className="font-display text-[20px] text-ink">짝이 잠시 멀어졌어요</p>
+      <p className="mt-2 text-[15px] leading-relaxed text-pencil">
         마지막으로 일기를 주고받은 지 {days}일이 지났어요. 바쁜 날이 이어지는 걸지도 몰라요. 조금 더 기다릴까요, 여기서 마무리할까요?
         마무리해도 지금까지의 일기는 두 사람 모두 계속 볼 수 있어요.
       </p>
       <div className="mt-4 grid gap-2 sm:flex sm:flex-wrap">
-        <button type="button" onClick={onWait} disabled={busy !== null} className="h-11 rounded-full border border-ink px-5 text-[14px] text-ink">
+        <button type="button" onClick={onWait} disabled={busy !== null} className="h-11 rounded-full border border-ink px-5 text-[15px] text-ink">
           조금 더 기다리기
         </button>
-        <button type="button" onClick={() => close(false)} disabled={busy !== null} className="h-11 rounded-full border border-ink px-5 text-[14px] text-ink disabled:opacity-50">
+        <button type="button" onClick={() => close(false)} disabled={busy !== null} className="h-11 rounded-full border border-ink px-5 text-[15px] text-ink disabled:opacity-50">
           {busy === "close" ? "마무리하는 중…" : "여기서 마무리하기"}
         </button>
-        <button type="button" onClick={() => close(true)} disabled={busy !== null} className="h-11 rounded-full bg-ink px-5 text-[14px] text-page disabled:opacity-50">
+        <button type="button" onClick={() => close(true)} disabled={busy !== null} className="h-11 rounded-full bg-ink px-5 text-[15px] text-page disabled:opacity-50">
           {busy === "new" ? "새 짝을 찾는 중…" : "마무리하고 새 짝 찾기"}
         </button>
       </div>
       {error && (
-        <p role="alert" className="mt-2 text-[13px] text-pen-orange">
+        <p role="alert" className="mt-2 text-[14px] text-pen-orange">
           {error}
         </p>
       )}
@@ -491,7 +491,7 @@ function TabButton({ on, onClick, children }: { on: boolean; onClick: () => void
       role="tab"
       aria-selected={on}
       onClick={onClick}
-      className={`-mb-px min-h-12 shrink-0 border-b-2 px-3 text-[15px] ${on ? "border-ink font-bold text-ink" : "border-transparent text-pencil"}`}
+      className={`-mb-px min-h-12 shrink-0 border-b-2 px-3 text-[16px] ${on ? "border-ink font-bold text-ink" : "border-transparent text-pencil"}`}
     >
       {children}
     </button>
@@ -535,14 +535,14 @@ function TitleEditor({
   if (!editing) {
     return (
       <div className="flex flex-wrap items-baseline gap-x-3">
-        <h1 className="font-display text-[30px] leading-tight text-ink [overflow-wrap:anywhere]">{title}</h1>
+        <h1 className="font-display text-[36px] leading-tight text-ink [overflow-wrap:anywhere]">{title}</h1>
         <button
           type="button"
           onClick={() => {
             setValue(title === placeholder ? "" : title);
             setEditing(true);
           }}
-          className="h-9 text-[13px] text-pencil underline underline-offset-4"
+          className="h-9 text-[14px] text-pencil underline underline-offset-4"
         >
           이름 바꾸기
         </button>
@@ -551,7 +551,7 @@ function TitleEditor({
   }
   return (
     <form onSubmit={save}>
-      <label htmlFor="diary-title" className="text-[13px] text-pencil">
+      <label htmlFor="diary-title" className="text-[14px] text-pencil">
         일기장 이름 (30자까지, 비우면 기본 이름)
       </label>
       <div className="mt-1 flex gap-2">
@@ -562,17 +562,17 @@ function TitleEditor({
           maxLength={30}
           placeholder={placeholder}
           onChange={(e) => setValue(e.target.value)}
-          className="h-12 min-w-0 flex-1 rounded-lg border border-rule bg-page px-3 font-display text-[18px] text-ink focus:border-ink focus:outline-none"
+          className="h-12 min-w-0 flex-1 rounded-lg border border-rule bg-page px-3 font-display text-[20px] text-ink focus:border-ink focus:outline-none"
         />
-        <button type="button" onClick={() => setEditing(false)} className="h-12 shrink-0 px-2 text-[13px] text-pencil">
+        <button type="button" onClick={() => setEditing(false)} className="h-12 shrink-0 px-2 text-[14px] text-pencil">
           취소
         </button>
-        <button type="submit" disabled={busy} className="h-12 shrink-0 rounded-full bg-ink px-4 text-[13px] text-page disabled:opacity-50">
+        <button type="submit" disabled={busy} className="h-12 shrink-0 rounded-full bg-ink px-4 text-[14px] text-page disabled:opacity-50">
           {busy ? "…" : "저장"}
         </button>
       </div>
       {error && (
-        <p role="alert" className="mt-1 text-[12px] text-pen-orange">
+        <p role="alert" className="mt-1 text-[13px] text-pen-orange">
           {error}
         </p>
       )}
@@ -626,22 +626,22 @@ function LeaveDiaryButton({
       <button
         type="button"
         onClick={() => setOpen(true)}
-        className="h-9 text-[13px] text-pencil underline underline-offset-4"
+        className="h-9 text-[14px] text-pencil underline underline-offset-4"
       >
         {label}
       </button>
       <Sheet open={open} onClose={() => setOpen(false)} title={`${label}?`}>
-        <p className="mt-3 text-[14px] leading-relaxed text-pencil">{explain}</p>
+        <p className="mt-3 text-[15px] leading-relaxed text-pencil">{explain}</p>
         <button
           type="button"
           onClick={leave}
           disabled={busy}
-          className="mt-5 h-12 w-full rounded-full border border-pen-orange text-[14px] text-pen-orange disabled:opacity-50"
+          className="mt-5 h-12 w-full rounded-full border border-pen-orange text-[15px] text-pen-orange disabled:opacity-50"
         >
           {busy ? "처리하는 중…" : deletes ? "지우기" : "나가기"}
         </button>
         {error && (
-          <p role="alert" className="mt-2 text-[13px] text-pen-orange">
+          <p role="alert" className="mt-2 text-[14px] text-pen-orange">
             {error}
           </p>
         )}
@@ -663,13 +663,13 @@ function WaitBox({
 }) {
   return (
     <div className="rounded-sm border border-dashed border-pencil/60 px-5 py-6">
-      <p className="font-display text-[18px] text-ink">{title}</p>
-      <p className="mt-2 text-[14px] leading-relaxed text-pencil">{desc}</p>
+      <p className="font-display text-[20px] text-ink">{title}</p>
+      <p className="mt-2 text-[15px] leading-relaxed text-pencil">{desc}</p>
       <button
         type="button"
         onClick={onRefresh}
         disabled={refreshing}
-        className="mt-4 h-10 rounded-full border border-ink px-4 text-[13px] text-ink disabled:opacity-60"
+        className="mt-4 h-10 rounded-full border border-ink px-4 text-[14px] text-ink disabled:opacity-60"
       >
         {refreshing ? "확인하는 중…" : "다시 확인하기"}
       </button>

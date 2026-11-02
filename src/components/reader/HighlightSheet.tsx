@@ -154,7 +154,7 @@ function HighlightItem({
 
   return (
     <li className={`border-l-2 pl-3 ${pen.border}`}>
-      <p className="font-serif text-[15px] leading-relaxed text-ink">“{quote}”</p>
+      <p className="font-serif text-[16px] leading-relaxed text-ink">“{quote}”</p>
       <p className="mt-1 text-[12px] text-pencil">
         {pen.label}
         {mine ? " (나)" : ""}의 밑줄, {timeFormat.format(new Date(h.created_at))}
@@ -163,7 +163,7 @@ function HighlightItem({
 
       {blind ? (
         <div className="mt-3 rounded-lg border border-dashed border-pencil/60 px-3 py-3">
-          <p className="text-[13px] leading-relaxed text-pencil">
+          <p className="text-[14px] leading-relaxed text-pencil">
             {h.memo || replies.length ? "숨겨진 한마디가 있어요. " : ""}이 문단에 내 밑줄을 먼저 그으면 다른 사람의 한마디가 열려요.
           </p>
           <button
@@ -175,7 +175,7 @@ function HighlightItem({
               setBusy(null);
               if (err) setError(err);
             }}
-            className="mt-2 h-9 rounded-full border border-ink px-4 text-[13px] text-ink disabled:opacity-60"
+            className="mt-2 h-9 rounded-full border border-ink px-4 text-[14px] text-ink disabled:opacity-60"
           >
             {busy === "unlock" ? "여는 중…" : "그냥 보기"}
           </button>
@@ -219,7 +219,7 @@ function HighlightItem({
                 <button
                   type="submit"
                   disabled={busy !== null || body.trim().length === 0}
-                  className="h-10 shrink-0 rounded-full bg-ink px-4 text-[12px] text-page disabled:opacity-40"
+                  className="h-10 shrink-0 rounded-full bg-ink px-4 text-[13px] text-page disabled:opacity-40"
                 >
                   남기기
                 </button>
@@ -234,13 +234,13 @@ function HighlightItem({
           type="button"
           onClick={remove}
           disabled={busy !== null}
-          className="mt-3 h-9 text-[12px] text-pencil underline underline-offset-4 disabled:opacity-50"
+          className="mt-3 h-9 text-[13px] text-pencil underline underline-offset-4 disabled:opacity-50"
         >
           {busy === "delete" ? "지우는 중…" : "내 밑줄 지우기"}
         </button>
       )}
       {error && (
-        <p role="alert" className="mt-1 text-[12px] text-pen-orange">
+        <p role="alert" className="mt-1 text-[13px] text-pen-orange">
           {error}
         </p>
       )}

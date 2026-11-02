@@ -58,7 +58,7 @@ export function DiaryStarter() {
         <CodeJoinForm />
       </div>
       {notice && (
-        <p role="alert" className="text-[13px] text-pen-orange sm:col-span-2">
+        <p role="alert" className="text-[14px] text-pen-orange sm:col-span-2">
           {notice}
         </p>
       )}

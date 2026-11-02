@@ -22,12 +22,12 @@ export function NotAllowed({ title, desc }: { title: string; desc: string }) {
 
   return (
     <div className="px-5 pt-12 sm:px-8">
-      <h1 className="font-display text-[21px] text-ink">{title}</h1>
-      <p className="mt-3 text-[14px] leading-relaxed text-pencil">{desc}</p>
-      <p aria-live="polite" className="mt-3 text-[13px] text-pencil">
+      <h1 className="font-display text-[24px] text-ink">{title}</h1>
+      <p className="mt-3 text-[15px] leading-relaxed text-pencil">{desc}</p>
+      <p aria-live="polite" className="mt-3 text-[14px] text-pencil">
         {Math.max(left, 0)}초 뒤 홈으로 이동해요.
       </p>
-      <Link href="/" replace className="mt-6 inline-flex h-11 items-center rounded-full bg-ink px-6 text-[14px] text-page">
+      <Link href="/" replace className="mt-6 inline-flex h-11 items-center rounded-full bg-ink px-6 text-[15px] text-page">
         지금 홈으로 가기
       </Link>
     </div>

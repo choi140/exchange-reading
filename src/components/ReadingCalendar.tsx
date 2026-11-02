@@ -60,7 +60,7 @@ export function ReadingCalendar() {
   if (state.status === "loading") return <div aria-label="달력을 불러오는 중" className="h-80 rounded-lg bg-rule/25" />;
   if (state.status === "error") {
     return (
-      <p role="alert" className="border-y border-rule py-6 text-[14px] text-pen-orange">
+      <p role="alert" className="border-y border-rule py-6 text-[15px] text-pen-orange">
         달력을 불러오지 못했어요. 새로고침해 주세요. ({state.message})
       </p>
     );
@@ -111,23 +111,23 @@ function Month({ days, today }: { days: Days; today: string }) {
     <div>
       <div className="rounded-lg border border-rule bg-page px-3 pb-4 pt-3 sm:px-5">
         <div className="flex items-center justify-between">
-          <button type="button" onClick={() => move(-1)} aria-label="이전 달" className="h-11 w-11 rounded-full text-[18px] text-ink">
+          <button type="button" onClick={() => move(-1)} aria-label="이전 달" className="h-11 w-11 rounded-full text-[20px] text-ink">
             ‹
           </button>
           <p className="text-center">
-            <span className="block font-display text-[18px] text-ink">
+            <span className="block font-display text-[20px] text-ink">
               {view.y}년 {view.m}월
             </span>
-            <span className="block text-[12px] text-pencil">{month.count > 0 ? `${month.count}일 펼쳤어요` : "이 달의 기록은 아직 없어요"}</span>
+            <span className="block text-[13px] text-pencil">{month.count > 0 ? `${month.count}일 펼쳤어요` : "이 달의 기록은 아직 없어요"}</span>
           </p>
-          <button type="button" onClick={() => move(1)} aria-label="다음 달" className="h-11 w-11 rounded-full text-[18px] text-ink">
+          <button type="button" onClick={() => move(1)} aria-label="다음 달" className="h-11 w-11 rounded-full text-[20px] text-ink">
             ›
           </button>
         </div>
 
         <div role="grid" aria-label={`${view.y}년 ${view.m}월 독서 달력`} className="mt-2 grid grid-cols-7 gap-y-1 text-center">
           {WEEK.map((w) => (
-            <span key={w} role="columnheader" className="py-1 text-[12px] text-pencil">
+            <span key={w} role="columnheader" className="py-1 text-[13px] text-pencil">
               {w}
             </span>
           ))}
@@ -144,7 +144,7 @@ function Month({ days, today }: { days: Days; today: string }) {
                   aria-pressed={key === picked}
                   onClick={() => setPicked(key)}
                   disabled={!has}
-                  className={`flex h-11 w-11 flex-col items-center justify-center rounded-full text-[14px] tabular-nums ${
+                  className={`flex h-11 w-11 flex-col items-center justify-center rounded-full text-[15px] tabular-nums ${
                     has ? "text-ink" : "text-pencil"
                   } ${key === picked ? "bg-rule/50" : ""} ${isToday ? "ring-1 ring-ink" : ""}`}
                 >
@@ -159,10 +159,10 @@ function Month({ days, today }: { days: Days; today: string }) {
 
       {day ? (
         <div className="mt-5 border-y border-rule py-4">
-          <p className="font-display text-[16px] text-ink">
+          <p className="font-display text-[18px] text-ink">
             {pm}월 {pd}일
           </p>
-          <ul className="mt-2 space-y-1 text-[14px] leading-relaxed text-ink">
+          <ul className="mt-2 space-y-1 text-[15px] leading-relaxed text-ink">
             {day.reads.map((r) => (
               <li key={r.title}>
                 「{r.title}」 {r.paragraphs}문단 읽었어요
@@ -174,13 +174,13 @@ function Month({ days, today }: { days: Days; today: string }) {
       ) : (
         month.count > 0 && (
           <div className="mt-5 border-y border-rule py-4">
-            <p className="text-[14px] text-ink">{month.paragraphs > 0 ? `이 달에 ${month.paragraphs}문단 읽었어요` : "이 달의 기록"}</p>
+            <p className="text-[15px] text-ink">{month.paragraphs > 0 ? `이 달에 ${month.paragraphs}문단 읽었어요` : "이 달의 기록"}</p>
             <Counts day={month.sum} />
           </div>
         )
       )}
       {Object.keys(days).length === 0 && (
-        <p className="mt-5 text-[14px] leading-relaxed text-pencil">아직 기록이 없어요. 책을 읽거나 일기를 쓰면 여기에 조용히 쌓여요.</p>
+        <p className="mt-5 text-[15px] leading-relaxed text-pencil">아직 기록이 없어요. 책을 읽거나 일기를 쓰면 여기에 조용히 쌓여요.</p>
       )}
     </div>
   );
@@ -194,5 +194,5 @@ function Counts({ day }: { day: Day }) {
     day.entries > 0 && `일기 ${day.entries}편`,
   ].filter(Boolean);
   if (parts.length === 0) return null;
-  return <p className="mt-1 text-[13px] text-pencil">{parts.join(" · ")}</p>;
+  return <p className="mt-1 text-[14px] text-pencil">{parts.join(" · ")}</p>;
 }

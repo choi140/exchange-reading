@@ -207,7 +207,7 @@ export function RoomReader({ roomId }: { roomId: string }) {
   if (state.status === "error") {
     return (
       <Shell>
-        <p role="alert" className="px-5 pt-12 text-[14px] leading-relaxed text-pen-orange sm:px-8">
+        <p role="alert" className="px-5 pt-12 text-[15px] leading-relaxed text-pen-orange sm:px-8">
           방을 불러오지 못했어요. 새로고침해 주세요. ({state.message})
         </p>
       </Shell>
@@ -285,7 +285,7 @@ export function RoomReader({ roomId }: { roomId: string }) {
       {next?.next_room_id ? (
         <div className="mt-4 flex flex-wrap items-center justify-between gap-2 rounded-lg border border-ink px-4 py-3">
           <span className="text-[0.83em] text-ink">같은 사람들과 다음 책을 읽기로 했어요</span>
-          <Link href={`/room/${next.next_room_id}`} className="inline-flex h-9 items-center rounded-full bg-ink px-4 text-[13px] text-page">
+          <Link href={`/room/${next.next_room_id}`} className="inline-flex h-9 items-center rounded-full bg-ink px-4 text-[14px] text-page">
             「{nextTitle}」 읽으러 가기
           </Link>
         </div>
@@ -293,7 +293,7 @@ export function RoomReader({ roomId }: { roomId: string }) {
         askedNext && (
           <div className="mt-4 flex flex-wrap items-center justify-between gap-2 rounded-lg border border-ink px-4 py-3">
             <span className="text-[0.83em] text-ink">다음 책 제안이 있어요: 「{nextTitle}」</span>
-            <button type="button" onClick={() => goTo(lastParagraph)} className="h-9 rounded-full bg-ink px-4 text-[13px] text-page">
+            <button type="button" onClick={() => goTo(lastParagraph)} className="h-9 rounded-full bg-ink px-4 text-[14px] text-page">
               책 끝에서 답하기
             </button>
           </div>
@@ -309,7 +309,7 @@ export function RoomReader({ roomId }: { roomId: string }) {
               goTo(target.paragraph_index);
               setSheetIds([target.id]);
             }}
-            className="h-9 rounded-full bg-ink px-4 text-[13px] text-page"
+            className="h-9 rounded-full bg-ink px-4 text-[14px] text-page"
           >
             새 밑줄로 가기
           </button>
@@ -382,7 +382,7 @@ export function RoomReader({ roomId }: { roomId: string }) {
         />
       )}
       <div className="flex flex-col items-center gap-4 pb-6 pt-2 text-center">
-        <p className="text-[12px] leading-relaxed text-pencil">{room.book.source}</p>
+        <p className="text-[13px] leading-relaxed text-pencil">{room.book.source}</p>
         <LeaveRoomButton roomId={room.id} together={together} prominent />
       </div>
     </>
@@ -524,7 +524,7 @@ function Nav({ pen, listening, onListen, dock }: NavProps) {
   return (
     <div className="sticky top-0 z-10 shrink-0">
       <nav className="flex items-center justify-between gap-2 border-b border-rule bg-paper/95 px-5 py-2 backdrop-blur sm:px-8">
-      <Link href="/read" className="shrink-0 whitespace-nowrap py-2 text-[14px] text-pencil">
+      <Link href="/read" className="shrink-0 whitespace-nowrap py-2 text-[15px] text-pencil">
         ‹ 교환독서
       </Link>
       <div className="flex items-center gap-2 sm:gap-3">
@@ -539,7 +539,7 @@ function Nav({ pen, listening, onListen, dock }: NavProps) {
             type="button"
             aria-pressed={listening}
             onClick={onListen}
-            className={`h-10 shrink-0 rounded-full border px-3 text-[13px] ${listening ? "border-ink bg-ink text-page" : "border-rule text-ink"}`}
+            className={`h-10 shrink-0 rounded-full border px-3 text-[14px] ${listening ? "border-ink bg-ink text-page" : "border-rule text-ink"}`}
           >
             듣기
           </button>

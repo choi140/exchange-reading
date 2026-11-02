@@ -67,15 +67,15 @@ export function EndOfBook({
       <div className="mt-4 text-center">
         <Link
           href={`/room/${roomId}/card`}
-          className="inline-flex h-11 items-center rounded-full border border-ink px-5 text-[14px] text-ink"
+          className="inline-flex h-11 items-center rounded-full border border-ink px-5 text-[15px] text-ink"
         >
           {together ? "함께 읽은 기념 카드 만들기" : "기념 카드 만들기"}
         </Link>
       </div>
-      <h2 id={`${fieldId}-title`} className="mt-6 font-display text-[21px] text-ink">
+      <h2 id={`${fieldId}-title`} className="mt-6 font-display text-[24px] text-ink">
         {together ? "다 읽었다면, 이 방 사람들에게 편지 한 장" : "다 읽은 나에게 편지 한 장"}
       </h2>
-      <p className="mt-1 text-[13px] leading-relaxed text-pencil">
+      <p className="mt-1 text-[14px] leading-relaxed text-pencil">
         {together
           ? "같이 읽은 사람들에게 남기는 마지막 쪽지예요. 한 사람당 한 장, 500자까지."
           : "이 책을 읽은 오늘의 나에게 남겨 두세요. 나만 봐요."}
@@ -115,19 +115,19 @@ export function EndOfBook({
             className={`notebook-lines block w-full resize-y rounded-sm border border-rule px-3 font-hand text-[22px] placeholder:font-sans placeholder:text-[15px] placeholder:text-pencil/70 focus:border-ink focus:outline-none ${PEN[myPen].className}`}
           />
           <div className="mt-2 flex items-center justify-between gap-3">
-            <span className="text-[12px] tabular-nums text-pencil">
+            <span className="text-[13px] tabular-nums text-pencil">
               {body.length} / {LETTER_MAX}자
             </span>
             <button
               type="submit"
               disabled={saving || body.trim().length === 0}
-              className="h-10 rounded-full bg-ink px-5 text-[13px] text-page disabled:opacity-40"
+              className="h-10 rounded-full bg-ink px-5 text-[14px] text-page disabled:opacity-40"
             >
               {saving ? "남기는 중…" : "편지 남기기"}
             </button>
           </div>
           {error && (
-            <p role="alert" className="mt-2 text-[13px] text-pen-orange">
+            <p role="alert" className="mt-2 text-[14px] text-pen-orange">
               {error}
             </p>
           )}
@@ -165,14 +165,14 @@ export function LeaveRoomButton({ roomId, together, prominent = false }: { roomI
         onClick={() => setOpen(true)}
         className={
           prominent
-            ? "h-11 rounded-full border border-pen-orange px-6 text-[14px] text-pen-orange"
+            ? "h-11 rounded-full border border-pen-orange px-6 text-[15px] text-pen-orange"
             : "min-h-9 text-[0.78em] text-pencil underline underline-offset-4"
         }
       >
         이 방 나가기
       </button>
       <Sheet open={open} onClose={() => setOpen(false)} title="이 방에서 나갈까요?">
-        <p className="mt-3 text-[14px] leading-relaxed text-pencil">
+        <p className="mt-3 text-[15px] leading-relaxed text-pencil">
           {together
             ? "이 방에 남긴 내 메모(그 아래 달린 답글 포함), 밑줄, 편지가 모두 지워지고, 내 자리는 다른 사람에게 돌아가요. 되돌릴 수 없어요."
             : "이 책에 남긴 내 메모, 밑줄, 편지가 모두 지워져요. 되돌릴 수 없어요."}
@@ -181,12 +181,12 @@ export function LeaveRoomButton({ roomId, together, prominent = false }: { roomI
           type="button"
           onClick={leave}
           disabled={busy}
-          className="mt-5 h-12 w-full rounded-full border border-pen-orange text-[14px] text-pen-orange disabled:opacity-50"
+          className="mt-5 h-12 w-full rounded-full border border-pen-orange text-[15px] text-pen-orange disabled:opacity-50"
         >
           {busy ? "나가는 중…" : "지우고 나가기"}
         </button>
         {error && (
-          <p role="alert" className="mt-2 text-[13px] text-pen-orange">
+          <p role="alert" className="mt-2 text-[14px] text-pen-orange">
             {error}
           </p>
         )}

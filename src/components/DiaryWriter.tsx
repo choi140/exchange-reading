@@ -51,7 +51,7 @@ export function DiaryWriter({
   return (
     <form onSubmit={save}>
       <div className="border-l-2 border-pen-blue pl-4">
-        <p className="text-[13px] text-pencil">{questionLabel}</p>
+        <p className="text-[14px] text-pencil">{questionLabel}</p>
         <p className="mt-1 font-hand text-[26px] leading-snug text-pen-blue">
           {question || " "}
         </p>
@@ -70,22 +70,22 @@ export function DiaryWriter({
         }}
         rows={8}
         placeholder="질문에 답해도 좋고, 오늘 있었던 일을 적어도 좋아요."
-        className="notebook-lines mt-5 block w-full resize-y rounded-sm border border-rule px-4 pt-0 pb-0 font-serif text-[15px] text-ink placeholder:text-pencil/70 focus:border-ink focus:outline-none"
+        className="notebook-lines mt-5 block w-full resize-y rounded-sm border border-rule px-4 pt-0 pb-0 font-serif text-[17px] text-ink placeholder:text-pencil/70 focus:border-ink focus:outline-none"
       />
 
       <div className="mt-3 flex items-center justify-between gap-4">
-        <span className="text-[12px] tabular-nums text-pencil">
+        <span className="text-[13px] tabular-nums text-pencil">
           {body.length.toLocaleString()} / {MAX.toLocaleString()}자
         </span>
         <button
           type="submit"
           disabled={saving || body.trim().length === 0}
-          className="h-11 rounded-full bg-ink px-6 text-[14px] text-page disabled:opacity-40 active:translate-y-px"
+          className="h-11 rounded-full bg-ink px-6 text-[15px] text-page disabled:opacity-40 active:translate-y-px"
         >
           {saving ? "남기는 중…" : "일기 남기기"}
         </button>
       </div>
-      <p aria-live="polite" className={`mt-2 min-h-6 text-[13px] ${error ? "text-pen-orange" : "text-pencil"}`}>
+      <p aria-live="polite" className={`mt-2 min-h-6 text-[14px] ${error ? "text-pen-orange" : "text-pencil"}`}>
         {error ?? (saved ? "일기를 남겼어요. 다음 질문으로 넘어갔어요." : "")}
       </p>
     </form>

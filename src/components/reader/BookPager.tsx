@@ -196,17 +196,17 @@ export function BookPager({
       <div className="shrink-0 border-t border-rule bg-paper">
         <div className="h-0.5 bg-ink/70 transition-[width] duration-200" style={{ width: `${((page + 1) / total) * 100}%` }} />
         <div className="flex items-center justify-between gap-3 px-3 py-2">
-          <button type="button" onClick={() => go(-1)} disabled={page === 0} className="h-11 min-w-20 rounded-full px-4 text-[14px] text-ink disabled:text-rule">
+          <button type="button" onClick={() => go(-1)} disabled={page === 0} className="h-11 min-w-20 rounded-full px-4 text-[15px] text-ink disabled:text-rule">
             ‹ 이전
           </button>
-          <span className="text-[13px] tabular-nums text-pencil">
+          <span className="text-[14px] tabular-nums text-pencil">
             {perView === 2 && page * 2 + 2 <= columns ? `${page * 2 + 1}–${page * 2 + 2}` : page * perView + 1} / {columns}쪽
           </span>
           <button
             type="button"
             onClick={() => go(1)}
             disabled={page >= total - 1}
-            className="h-11 min-w-20 rounded-full px-4 text-[14px] text-ink disabled:text-rule"
+            className="h-11 min-w-20 rounded-full px-4 text-[15px] text-ink disabled:text-rule"
           >
             다음 ›
           </button>

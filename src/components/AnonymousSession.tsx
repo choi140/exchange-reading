@@ -70,7 +70,7 @@ export function AnonymousSession({ children }: { children: React.ReactNode }) {
       {state.status === "error" && (
         <p
           role="alert"
-          className="fixed inset-x-0 bottom-0 z-50 border-t border-pen-orange/40 bg-page px-5 py-3 text-center text-[13px] text-pen-orange"
+          className="fixed inset-x-0 bottom-0 z-50 border-t border-pen-orange/40 bg-page px-5 py-3 text-center text-[14px] text-pen-orange"
         >
           {state.error} 새로고침해도 계속되면 잠시 뒤 다시 와 주세요.
         </p>
