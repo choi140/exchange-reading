@@ -1,7 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import { setPrefs, TEXT_PX_MAX, TEXT_PX_MIN, TEXT_PX_PRESETS, usePrefs, type ReaderView } from "@/lib/prefs";
+import { setPrefs, TEXT_PX_MAX, TEXT_PX_MIN, TEXT_PX_PRESETS, usePrefs, type PageSpread, type ReaderView } from "@/lib/prefs";
 import { Sheet } from "../Sheet";
 
 // 7-1 읽기 방식 · 7-4/13-3 글자 크기 · 밤 모드
@@ -29,6 +29,18 @@ export function ReaderSettingsButton() {
               { value: "page", label: "페이지", hint: "좌우로 밀어 한 쪽씩 넘기기" },
             ]}
           />
+          {prefs.view === "page" && (
+            <Segment<PageSpread>
+              label="한 화면에 볼 쪽 수"
+              value={prefs.pages}
+              onChange={(pages) => setPrefs({ pages })}
+              options={[
+                { value: "auto", label: "자동", hint: "넓은 화면은 두 쪽" },
+                { value: "one", label: "한 쪽" },
+                { value: "two", label: "두 쪽", hint: "휴대폰은 한 쪽" },
+              ]}
+            />
+          )}
           <TextPxField value={prefs.textPx} />
           <Segment<"day" | "night">
             label="화면"

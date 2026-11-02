@@ -1,25 +1,29 @@
 "use client";
 
 import { useCallback, useEffect, useLayoutEffect, useRef, useState } from "react";
+import type { PageSpread } from "@/lib/prefs";
 
 // 9-6 책처럼 넘기는 페이지 (7-1을 다시 만듦)
 // - 글을 CSS 다단(column)으로 흘려 화면 한 장 크기의 쪽으로 나눈다. 문단이 쪽을 넘어가면 다음 쪽으로 이어진다(빈자리 없음).
 // - 넘기기: 좌우로 밀기, 화면 왼쪽·오른쪽 가장자리 누르기, 아래 ‹ › 버튼, 키보드 ← →
 // - 글자 크기·화면 크기가 바뀌면 다시 나누고, 보던 문단이 있는 쪽으로 돌아간다.
 // 13-4 넓은 화면(태블릿 가로, PC)에서는 펼친 책처럼 두 쪽을 함께 보여 준다. page는 화면 한 장(펼침면) 번호다.
+// 14-1 보기 설정에서 자동·한 쪽·두 쪽을 고른다. 두 쪽을 골라도 휴대폰처럼 좁으면 한 쪽으로 본다.
 
 const PAD_Y = 28;
-const SPREAD_MIN_WIDTH = 900;
+const SPREAD_MIN_WIDTH: Record<PageSpread, number> = { auto: 900, two: 700, one: Infinity };
 
 export function BookPager({
   children,
   layoutKey,
+  pages,
   anchor,
   jump,
   onAnchorChange,
 }: {
   children: React.ReactNode;
   layoutKey: string;
+  pages: PageSpread;
   // 지금 보는 문단 (-1 = 책 머리)
   anchor: number;
   // 바깥에서 특정 문단으로 보낼 때 n을 바꾼다 (새 밑줄로 가기, 처음부터 읽기)
@@ -52,7 +56,7 @@ export function BookPager({
   }, []);
 
   const padX = size.w < 640 ? 20 : 32;
-  const perView = size.w >= SPREAD_MIN_WIDTH ? 2 : 1;
+  const perView = size.w >= SPREAD_MIN_WIDTH[pages] ? 2 : 1;
   const total = Math.ceil(columns / perView); // 넘길 수 있는 화면 수
 
   const pageOfEl = useCallback(

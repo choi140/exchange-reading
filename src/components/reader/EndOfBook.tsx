@@ -166,7 +166,7 @@ export function LeaveRoomButton({ roomId, together, prominent = false }: { roomI
         className={
           prominent
             ? "h-11 rounded-full border border-pen-orange px-6 text-[15px] text-pen-orange"
-            : "h-9 text-[14px] text-pencil underline underline-offset-4"
+            : "min-h-9 text-[0.78em] text-pencil underline underline-offset-4"
         }
       >
         이 방 나가기

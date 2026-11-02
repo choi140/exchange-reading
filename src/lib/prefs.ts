@@ -3,7 +3,9 @@
 import { useSyncExternalStore } from "react";
 // 7-1 / 7-4 읽기 설정: 이 브라우저에 기억한다 (익명 계정도 브라우저 단위라 같은 범위)
 export type ReaderView = "scroll" | "page";
-export type Prefs = { view: ReaderView; textPx: number; night: boolean };
+export type PageSpread = "auto" | "one" | "two"; // 14-1 페이지 모드에서 한 화면에 볼 쪽 수
+export type ShelfView = "list" | "two" | "three" | "cover"; // 14-3 책장 배치
+export type Prefs = { view: ReaderView; textPx: number; night: boolean; pages: PageSpread; shelf: ShelfView };
 
 import { PREFS_KEY as KEY } from "./theme-boot";
 
@@ -17,7 +19,7 @@ export const TEXT_PX_PRESETS = [
 ];
 const OLD_SIZE_PX: Record<string, number> = { s: 16, m: 18, l: 21 };
 
-const DEFAULT: Prefs = { view: "scroll", textPx: 18, night: false };
+const DEFAULT: Prefs = { view: "scroll", textPx: 18, night: false, pages: "auto", shelf: "list" };
 const listeners = new Set<() => void>();
 let cache: Prefs | null = null;
 let cacheRaw: string | null = null;

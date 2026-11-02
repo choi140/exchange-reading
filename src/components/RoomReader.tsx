@@ -3,7 +3,7 @@
 import Link from "next/link";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { getBrowserSupabase } from "@/lib/supabase/client";
-import { getLastSeen, getReadingPosition, setLastSeen, setReadingPosition, usePrefs } from "@/lib/prefs";
+import { getLastSeen, getReadingPosition, setLastSeen, setReadingPosition, usePrefs, type PageSpread } from "@/lib/prefs";
 import { useReadingLog } from "@/lib/reading-log";
 import { useAnonymousSession } from "./AnonymousSession";
 import { InviteCode } from "./CodeJoinForm";
@@ -23,6 +23,12 @@ import { ReaderSettingsButton } from "./reader/ReaderSettings";
 // 방·멤버·밑줄은 RLS 때문에 이 브라우저의 익명 세션으로만 읽을 수 있어 클라이언트에서 불러온다.
 
 const ROOM_SIZE = 3;
+// 14-1 두 쪽을 볼 수 있는 화면에서만 리더를 넓힌다 (BookPager의 기준과 같은 너비)
+const PAGED_WIDTH: Record<PageSpread, string> = {
+  auto: "min-[900px]:max-w-[1240px]",
+  two: "min-[700px]:max-w-[1240px]",
+  one: "",
+};
 
 type Mode = "solo" | "together";
 type Room = {
@@ -236,25 +242,26 @@ export function RoomReader({ roomId }: { roomId: string }) {
   }
 
   const header = (
-    <header data-flow-block className="pb-6" style={paged ? { breakAfter: "column" } : undefined}>
-      <h1 className="font-serif text-[30px] font-bold leading-tight text-ink">{room.book.title}</h1>
-      <p className="mt-2 text-[15px] text-pencil">
+    // 14-2 책 머리 글자도 고른 글자 크기를 따라간다 (안쪽 크기는 모두 em)
+    <header data-flow-block className="pb-6" style={{ fontSize: fontPx, ...(paged ? { breakAfter: "column" } : {}) }}>
+      <h1 className="font-serif text-[1.67em] font-bold leading-tight text-ink">{room.book.title}</h1>
+      <p className="mt-2 text-[0.83em] text-pencil">
         {room.book.author}
         {room.book.year ? `, ${room.book.year}년` : ""}
       </p>
 
       {together && (
         <p className="mt-6 flex flex-wrap items-baseline gap-x-4 gap-y-1">
-          <span className="text-[14px] text-pencil">이 방에서 함께 읽는 사람</span>
+          <span className="text-[0.78em] text-pencil">이 방에서 함께 읽는 사람</span>
           {members.map((m) => (
-            <span key={m.user_id} className={`font-hand text-[22px] leading-none ${PEN[m.pen_color].className}`}>
+            <span key={m.user_id} className={`font-hand text-[1.22em] leading-none ${PEN[m.pen_color].className}`}>
               {m.alias}
               {m.user_id === me ? " (나)" : ""}
             </span>
           ))}
           {/* 12-1 다음 책 방은 코드가 없어 새 사람이 들어올 수 없다 */}
           {members.length < ROOM_SIZE && (!room.is_private || room.invite_code) && (
-            <span className="text-[14px] text-pencil">빈자리 {ROOM_SIZE - members.length}</span>
+            <span className="text-[0.78em] text-pencil">빈자리 {ROOM_SIZE - members.length}</span>
           )}
         </p>
       )}
@@ -264,7 +271,7 @@ export function RoomReader({ roomId }: { roomId: string }) {
           note={members.length < ROOM_SIZE ? "친구에게 이 코드를 보내면 같은 방에서 읽을 수 있어요 (최대 3명)." : "방이 다 찼어요."}
         />
       )}
-      <p className="mt-4 text-[14px] leading-relaxed text-pencil">
+      <p className="mt-4 text-[0.78em] leading-relaxed text-pencil">
         마음에 드는 문장을 길게 눌러 고르면 {PEN[myPen].label}으로 밑줄을 그어요{memoReady ? ". 밑줄에 한마디를 붙일 수도 있어요" : ""}.
         {together
           ? " 다른 사람의 밑줄을 누르면 한마디와 답글이 보여요. 그 문단에 내 밑줄을 먼저 그어야 열려요."
@@ -273,7 +280,7 @@ export function RoomReader({ roomId }: { roomId: string }) {
 
       {next?.next_room_id ? (
         <div className="mt-4 flex flex-wrap items-center justify-between gap-2 rounded-lg border border-ink px-4 py-3">
-          <span className="text-[15px] text-ink">같은 사람들과 다음 책을 읽기로 했어요</span>
+          <span className="text-[0.83em] text-ink">같은 사람들과 다음 책을 읽기로 했어요</span>
           <Link href={`/room/${next.next_room_id}`} className="inline-flex h-9 items-center rounded-full bg-ink px-4 text-[14px] text-page">
             「{nextTitle}」 읽으러 가기
           </Link>
@@ -281,7 +288,7 @@ export function RoomReader({ roomId }: { roomId: string }) {
       ) : (
         askedNext && (
           <div className="mt-4 flex flex-wrap items-center justify-between gap-2 rounded-lg border border-ink px-4 py-3">
-            <span className="text-[15px] text-ink">다음 책 제안이 있어요: 「{nextTitle}」</span>
+            <span className="text-[0.83em] text-ink">다음 책 제안이 있어요: 「{nextTitle}」</span>
             <button type="button" onClick={() => goTo(lastParagraph)} className="h-9 rounded-full bg-ink px-4 text-[14px] text-page">
               책 끝에서 답하기
             </button>
@@ -290,7 +297,7 @@ export function RoomReader({ roomId }: { roomId: string }) {
       )}
       {newList.length > 0 && (
         <div className="mt-4 flex flex-wrap items-center justify-between gap-2 rounded-lg border border-ink px-4 py-3">
-          <span className="text-[15px] text-ink">마지막으로 본 뒤 새 밑줄·답글 {newList.length}곳</span>
+          <span className="text-[0.83em] text-ink">마지막으로 본 뒤 새 밑줄·답글 {newList.length}곳</span>
           <button
             type="button"
             onClick={() => {
@@ -305,7 +312,7 @@ export function RoomReader({ roomId }: { roomId: string }) {
         </div>
       )}
       {resumedFrom !== null && (
-        <div className="mt-4 flex flex-wrap items-center justify-between gap-2 text-[14px] text-pencil">
+        <div className="mt-4 flex flex-wrap items-center justify-between gap-2 text-[0.78em] text-pencil">
           <span>지난번 읽던 곳({resumedFrom + 1}번째 문단)부터 보여 드려요.</span>
           <button
             type="button"
@@ -313,7 +320,7 @@ export function RoomReader({ roomId }: { roomId: string }) {
               setResumedFrom(null);
               goTo(-1);
             }}
-            className="h-9 text-ink underline underline-offset-4"
+            className="min-h-9 text-ink underline underline-offset-4"
           >
             처음부터 읽기
           </button>
@@ -429,9 +436,10 @@ export function RoomReader({ roomId }: { roomId: string }) {
 
   if (paged) {
     return (
-      <main className="mx-auto flex h-dvh w-full max-w-[680px] flex-col min-[900px]:max-w-[1240px]">
+      <main className={`mx-auto flex h-dvh w-full max-w-[680px] flex-col ${PAGED_WIDTH[prefs.pages]}`}>
         <Nav pen={myPen} />
         <BookPager
+          pages={prefs.pages}
           layoutKey={`${prefs.textPx}|${members.length}|${room.invite_code ?? ""}|${newList.length > 0}|${resumedFrom}|${letters.length}|${next?.book_id}|${next?.agreed.length}|${next?.next_room_id}`}
           anchor={position}
           jump={jump}
