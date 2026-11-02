@@ -210,7 +210,7 @@ export function MemoryCardPage({ roomId }: { roomId: string }) {
         <div className="w-[360px] max-w-full shadow-[0_8px_24px_rgba(0,0,0,0.14)]">
           <div ref={cardRef} style={DAY_VARS} className="bg-page text-ink">
             <div className={`grain flex h-44 flex-col items-center justify-center px-6 text-center ${cover.bg} ${cover.text}`}>
-              <p className="font-hand text-[20px] leading-none">낯선 밑줄</p>
+              <p className="font-serif text-[15px] leading-none">낯선 밑줄</p>
               <p className="mt-3 font-display text-[28px] leading-tight">[ 독서 영수증 ]</p>
               <p className="mt-2 text-[13px] font-medium">- {room.mode === "together" ? "함께 읽음" : "혼자 읽음"} -</p>
             </div>
@@ -227,7 +227,7 @@ export function MemoryCardPage({ roomId }: { roomId: string }) {
                 <ReceiptRow label="독자">
                   <span className="flex flex-wrap gap-x-3">
                     {members.map((m) => (
-                      <span key={m.user_id} className={`font-hand text-[18px] leading-none ${PEN[m.pen_color].className}`}>
+                      <span key={m.user_id} className={`font-serif text-[14px] leading-none ${PEN[m.pen_color].className}`}>
                         {m.alias}
                         {m.user_id === me ? "(나)" : ""}
                       </span>
@@ -248,7 +248,7 @@ export function MemoryCardPage({ roomId }: { roomId: string }) {
                       return (
                         <li key={h.id} className={`border-l-2 pl-3 ${pen.border}`}>
                           <p className="font-serif text-[14px] leading-[1.7]">“{quote.length > 90 ? `${quote.slice(0, 90)}…` : quote}”</p>
-                          {h.memo && <p className={`mt-1 font-hand text-[19px] leading-[1.2] ${pen.className}`}>{h.memo}</p>}
+                          {h.memo && <p className={`mt-1 font-serif text-[15px] leading-[1.7] ${pen.className}`}>{h.memo}</p>}
                         </li>
                       );
                     })}
@@ -264,7 +264,7 @@ export function MemoryCardPage({ roomId }: { roomId: string }) {
                       const pen = PEN[penOf(l.user_id)];
                       return (
                         <li key={l.id}>
-                          <p className={`whitespace-pre-wrap font-hand text-[19px] leading-[1.25] ${pen.className}`}>
+                          <p className={`whitespace-pre-wrap font-serif text-[15px] leading-[1.7] ${pen.className}`}>
                             {l.body.length > 120 ? `${l.body.slice(0, 120)}…` : l.body}
                           </p>
                           <p className="text-[11px] text-pencil">{pen.label}</p>
@@ -285,7 +285,7 @@ export function MemoryCardPage({ roomId }: { roomId: string }) {
                 </dl>
               </div>
 
-              <p className={`${RECEIPT_LINE} text-center font-hand text-[20px] leading-none text-pencil`}>읽어 주셔서 고맙습니다</p>
+              <p className={`${RECEIPT_LINE} text-center font-serif text-[15px] leading-none text-pencil`}>읽어 주셔서 고맙습니다</p>
             </div>
           </div>
         </div>

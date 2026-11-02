@@ -21,7 +21,7 @@ export function PenChip({ color }: { color: PenColor }) {
           strokeLinecap="round"
         />
       </svg>
-      <span className="font-hand text-[22px] leading-none">
+      <span className="font-serif text-[16px] leading-none">
         나는 {pen.label}
       </span>
     </span>

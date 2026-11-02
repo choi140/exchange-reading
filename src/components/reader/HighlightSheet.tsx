@@ -182,14 +182,14 @@ function HighlightItem({
         </div>
       ) : (
         <>
-          {h.memo && <p className={`mt-2 whitespace-pre-wrap font-hand text-[23px] leading-[1.25] ${pen.className}`}>{h.memo}</p>}
+          {h.memo && <p className={`mt-2 whitespace-pre-wrap font-serif text-[16px] leading-[1.7] ${pen.className}`}>{h.memo}</p>}
           {together && (
             <div className="ml-2 mt-3 border-l border-rule pl-3">
               {replies.map((r) => {
                 const rp = PEN[penOf(r.user_id)];
                 return (
                   <div key={r.id} className="mb-2">
-                    <p className={`whitespace-pre-wrap font-hand text-[21px] leading-[1.25] ${rp.className}`}>{r.body}</p>
+                    <p className={`whitespace-pre-wrap font-serif text-[16px] leading-[1.7] ${rp.className}`}>{r.body}</p>
                     <p className="text-[12px] text-pencil">
                       {rp.label}
                       {r.user_id === me ? " (나)" : ""}, {timeFormat.format(new Date(r.created_at))}
@@ -214,7 +214,7 @@ function HighlightItem({
                   onChange={(e) => setBody(e.target.value)}
                   rows={1}
                   placeholder="답글 달기"
-                  className={`min-h-10 min-w-0 flex-1 resize-y rounded-lg border border-rule bg-page px-3 py-1.5 font-hand text-[20px] leading-[1.25] placeholder:font-sans placeholder:text-[14px] placeholder:text-pencil/70 focus:border-ink focus:outline-none ${PEN[penOf(me)].className}`}
+                  className={`min-h-10 min-w-0 flex-1 resize-y rounded-lg border border-rule bg-page px-3 py-1.5 font-serif text-[15px] leading-[1.7] placeholder:text-[14px] placeholder:text-pencil/70 focus:border-ink focus:outline-none ${PEN[penOf(me)].className}`}
                 />
                 <button
                   type="submit"

@@ -63,7 +63,7 @@ export function EndOfBook({
 
   return (
     <section aria-labelledby={`${fieldId}-title`} data-letters className={`px-5 pb-6 pt-10 sm:px-8 ${centered ? "text-center" : ""}`}>
-      <p className="text-center font-hand text-[26px] text-pencil">— 끝 —</p>
+      <p className="text-center font-serif text-[18px] text-pencil">— 끝 —</p>
       <div className="mt-4 text-center">
         <Link
           href={`/room/${roomId}/card`}
@@ -85,7 +85,7 @@ export function EndOfBook({
         <ul className="mt-5 space-y-4 text-left">
           {others.map((l) => (
             <li key={l.id} className={`border-l-2 pl-3 ${PEN[penOf(l.user_id)].border}`}>
-              <p className={`whitespace-pre-wrap font-hand text-[23px] leading-[1.3] ${PEN[penOf(l.user_id)].className}`}>
+              <p className={`whitespace-pre-wrap font-serif text-[16px] leading-[1.7] ${PEN[penOf(l.user_id)].className}`}>
                 {l.body}
               </p>
               <p className="mt-1 text-[12px] text-pencil">{PEN[penOf(l.user_id)].label}의 편지</p>
@@ -96,7 +96,7 @@ export function EndOfBook({
 
       {mine ? (
         <div className={`mt-5 border-l-2 pl-3 text-left ${PEN[myPen].border}`}>
-          <p className={`whitespace-pre-wrap font-hand text-[23px] leading-[1.3] ${PEN[myPen].className}`}>{mine.body}</p>
+          <p className={`whitespace-pre-wrap font-serif text-[16px] leading-[1.7] ${PEN[myPen].className}`}>{mine.body}</p>
           <p className="mt-1 text-[12px] text-pencil">내가 남긴 편지</p>
         </div>
       ) : (
@@ -112,7 +112,7 @@ export function EndOfBook({
             onChange={(e) => setBody(e.target.value)}
             rows={4}
             placeholder={together ? "함께 읽어서 좋았던 점, 기억에 남는 메모…" : "이 책을 읽고 남은 생각…"}
-            className={`notebook-lines block w-full resize-y rounded-sm border border-rule px-3 font-hand text-[22px] placeholder:font-sans placeholder:text-[15px] placeholder:text-pencil/70 focus:border-ink focus:outline-none ${PEN[myPen].className}`}
+            className={`notebook-lines block w-full resize-y rounded-sm border border-rule px-3 font-serif text-[16px] placeholder:text-[15px] placeholder:text-pencil/70 focus:border-ink focus:outline-none ${PEN[myPen].className}`}
           />
           <div className="mt-2 flex items-center justify-between gap-3">
             <span className="text-[13px] tabular-nums text-pencil">

@@ -91,7 +91,7 @@ export function HighlightedText({
       >
         {seg}
         {hasMemo && b === Math.max(...covering.filter((h) => h.memo).map((h) => h.end_offset)) && (
-          <sup aria-hidden="true" className="ml-px font-hand text-[0.8em]" style={{ color: PEN_VAR[penOf(top.user_id)] }}>
+          <sup aria-hidden="true" className="ml-px font-serif text-[0.7em]" style={{ color: PEN_VAR[penOf(top.user_id)] }}>
             ✎
           </sup>
         )}
@@ -217,12 +217,12 @@ export function UnderlineBar({
             onChange={(e) => setMemo(e.target.value)}
             rows={2}
             placeholder="이 문장에 한마디 (안 써도 돼요)"
-            className={`mt-2 block w-full resize-none rounded-lg border border-rule bg-page px-3 py-2 font-hand text-[21px] leading-[1.25] placeholder:font-sans placeholder:text-[14px] placeholder:text-pencil/70 focus:border-ink focus:outline-none ${PEN[myPen].className}`}
+            className={`mt-2 block w-full resize-none rounded-lg border border-rule bg-page px-3 py-2 font-serif text-[16px] leading-[1.7] placeholder:text-[14px] placeholder:text-pencil/70 focus:border-ink focus:outline-none ${PEN[myPen].className}`}
           />
         </>
       )}
       <div className="mt-2 flex items-center justify-between gap-2">
-        <span className={`font-hand text-[20px] leading-none ${PEN[myPen].className}`}>{PEN[myPen].label}으로</span>
+        <span className={`font-serif text-[15px] leading-none ${PEN[myPen].className}`}>{PEN[myPen].label}으로</span>
         <span className="flex gap-1">
           <button type="button" onMouseDown={(e) => e.preventDefault()} onClick={reset} className="h-10 px-3 text-[14px] text-pencil">
             취소

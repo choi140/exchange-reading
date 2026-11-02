@@ -4,7 +4,6 @@
 @import "@fontsource/gothic-a1/400.css";
 @import "@fontsource/gothic-a1/500.css";
 @import "@fontsource/gothic-a1/700.css";
-@import "@fontsource/nanum-pen-script/400.css";
 @import "tailwindcss";
 
 /* 디자인 방향: docs/DESIGN.md */
@@ -30,7 +29,6 @@
   --font-display: "Black Han Sans", "Apple SD Gothic Neo", "Malgun Gothic", sans-serif;
   --font-serif: "Gowun Batang", "Noto Serif KR", serif;
   --font-sans: "Gothic A1", "Apple SD Gothic Neo", "Malgun Gothic", sans-serif;
-  --font-hand: "Nanum Pen Script", cursive;
 }
 
 /* 7-4 밤 모드: 같은 이름의 색을 어두운 값으로 바꾼다. 펜 색은 어두운 바탕에서 읽히도록 밝게 */

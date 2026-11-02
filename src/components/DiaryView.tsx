@@ -174,7 +174,7 @@ export function DiaryView({ diaryId }: { diaryId: string }) {
             ‹ 교환일기
           </Link>
           {ready && me && (
-            <span className={`font-hand text-[22px] leading-none ${exchange ? PEN[penOf(me)].className : "text-pencil"}`}>
+            <span className={`font-serif text-[16px] leading-none ${exchange ? PEN[penOf(me)].className : "text-pencil"}`}>
               {exchange ? `나는 ${PEN[penOf(me)].label}` : "나만 보는 일기장"}
             </span>
           )}
@@ -212,7 +212,7 @@ export function DiaryView({ diaryId }: { diaryId: string }) {
                 <p className="mt-3 flex flex-wrap items-baseline gap-x-4 gap-y-1">
                   <span className="text-[14px] text-pencil">함께 쓰는 사람</span>
                   {ready.members.map((m) => (
-                    <span key={m.user_id} className={`font-hand text-[22px] leading-none ${PEN[m.pen_color].className}`}>
+                    <span key={m.user_id} className={`font-serif text-[16px] leading-none ${PEN[m.pen_color].className}`}>
                       {m.alias}
                       {m.user_id === me ? " (나)" : m.left_at ? " (떠남)" : ""}
                     </span>

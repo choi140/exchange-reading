@@ -258,7 +258,7 @@ export function RoomReader({ roomId }: { roomId: string }) {
         <p className="mt-6 flex flex-wrap items-baseline gap-x-4 gap-y-1">
           <span className="text-[0.78em] text-pencil">이 방에서 함께 읽는 사람</span>
           {members.map((m) => (
-            <span key={m.user_id} className={`font-hand text-[1.22em] leading-none ${PEN[m.pen_color].className}`}>
+            <span key={m.user_id} className={`font-serif text-[0.85em] leading-none ${PEN[m.pen_color].className}`}>
               {m.alias}
               {m.user_id === me ? " (나)" : ""}
             </span>

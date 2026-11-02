@@ -106,7 +106,7 @@ export function MyShelf() {
               {state.fresh[room!.id] > 0 && (
                 <span className="rounded-full bg-ink px-3 py-1 text-[13px] text-page">새 밑줄 {state.fresh[room!.id]}</span>
               )}
-              <span className={`font-hand text-[20px] ${PEN[pen_color].className}`}>{PEN[pen_color].label}</span>
+              <span className={`font-serif text-[15px] ${PEN[pen_color].className}`}>{PEN[pen_color].label}</span>
             </span>
           </Link>
         </li>

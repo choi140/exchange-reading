@@ -72,7 +72,7 @@ export function NextBook({
       ) : next && !next.agreed.includes(myPen) ? (
         <>
           <p className="mt-1 text-[15px] leading-relaxed text-ink">
-            <span className={`font-hand text-[21px] ${PEN[next.proposed_pen].className}`}>{PEN[next.proposed_pen].label}</span>이 다음 책을 함께
+            <span className={`font-serif text-[16px] ${PEN[next.proposed_pen].className}`}>{PEN[next.proposed_pen].label}</span>이 다음 책을 함께
             읽자고 해요: 「{title}」
           </p>
           <p className="mt-1 text-[14px] leading-relaxed text-pencil">서로 누구인지는 앞으로도 몰라요. 안 읽겠다고 해도 상대에게 따로 알리지 않아요.</p>
