@@ -172,6 +172,7 @@
      13. `supabase/13_more_books.sql` — 책 3편 더 (「B사감과 러브레터」, 「감자」, 「벙어리 삼룡이」)
      14. `supabase/14_v9.sql` — 같은 사람들과 다음 책, 나의 독서 달력
      15. `supabase/15_marker.sql` — 형광펜
+     16. `supabase/16_book_source.sql` — 책 출처 문구 정리
 2. **환경변수** — `.env.example`을 `.env.local`로 복사하고, Project Settings → API의 값으로 채운다.
    ```
    NEXT_PUBLIC_SUPABASE_URL=https://YOUR-PROJECT.supabase.co
