@@ -13,7 +13,7 @@ export function ReaderSettingsButton() {
       <button
         type="button"
         onClick={() => setOpen(true)}
-        className="h-10 rounded-full border border-rule px-3 text-[14px] text-ink"
+        className="h-10 shrink-0 whitespace-nowrap rounded-full border border-rule px-3 text-[14px] text-ink"
         aria-label="읽기 설정"
       >
         보기 설정

@@ -5,7 +5,15 @@ import { useSyncExternalStore } from "react";
 export type ReaderView = "scroll" | "page";
 export type PageSpread = "auto" | "one" | "two"; // 14-1 페이지 모드에서 한 화면에 볼 쪽 수
 export type ShelfView = "list" | "three" | "four"; // 14-3/15-1 책장 배치
-export type Prefs = { view: ReaderView; textPx: number; night: boolean; pages: PageSpread; shelf: ShelfView };
+export type Prefs = {
+  view: ReaderView;
+  textPx: number;
+  night: boolean;
+  pages: PageSpread;
+  shelf: ShelfView;
+  ttsRate: number; // 16-1 듣기 속도
+  ttsVoice: string | null; // 16-1 고른 목소리 (없으면 기기의 첫 한국어 목소리)
+};
 
 import { PREFS_KEY as KEY } from "./theme-boot";
 
@@ -19,7 +27,7 @@ export const TEXT_PX_PRESETS = [
 ];
 const OLD_SIZE_PX: Record<string, number> = { s: 16, m: 18, l: 21 };
 
-const DEFAULT: Prefs = { view: "scroll", textPx: 18, night: false, pages: "auto", shelf: "list" };
+const DEFAULT: Prefs = { view: "scroll", textPx: 18, night: false, pages: "auto", shelf: "list", ttsRate: 1, ttsVoice: null };
 const listeners = new Set<() => void>();
 let cache: Prefs | null = null;
 let cacheRaw: string | null = null;

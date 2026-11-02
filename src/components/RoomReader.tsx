@@ -14,6 +14,7 @@ import { EndOfBook, LeaveRoomButton, LETTER_COLUMNS, type Letter } from "./reade
 import { HighlightSheet, REPLY_COLUMNS, type Reply } from "./reader/HighlightSheet";
 import { HIGHLIGHT_COLUMNS, HIGHLIGHT_COLUMNS_OLD, HighlightedText, UnderlineBar, type Highlight } from "./reader/Highlights";
 import { NEXT_BOOK_COLUMNS, NextBook, type NextBookRow } from "./reader/NextBook";
+import { ReadAloud } from "./reader/ReadAloud";
 import { ReaderSettingsButton } from "./reader/ReaderSettings";
 
 // 책 리더 (혼자·함께 공통) (PRD #4.1)
@@ -66,6 +67,9 @@ export function RoomReader({ roomId }: { roomId: string }) {
   const [position, setPosition] = useState(-1);
   const [resumedFrom, setResumedFrom] = useState<number | null>(null);
   const [jump, setJump] = useState({ p: -1, n: 0 });
+  // 16-1 듣기: 소리 내어 읽는 중인 문단
+  const [listening, setListening] = useState(false);
+  const [speaking, setSpeaking] = useState<number | null>(null);
 
   const load = useCallback(async () => {
     const supabase = getBrowserSupabase();
@@ -341,7 +345,7 @@ export function RoomReader({ roomId }: { roomId: string }) {
       data-p={i}
       data-ptext={i}
       style={{ fontSize: fontPx, textIndent: "1em" }}
-      className="scroll-mt-24 font-serif leading-[1.95] text-ink [text-wrap:pretty]"
+      className={`scroll-mt-24 font-serif leading-[1.95] text-ink [text-wrap:pretty] ${speaking === i ? "bg-rule/40" : ""}`}
     >
       <HighlightedText
         text={text}
@@ -402,8 +406,24 @@ export function RoomReader({ roomId }: { roomId: string }) {
   );
 
   const sheetItems = sheetIds ? highlights.filter((h) => sheetIds.includes(h.id)) : [];
+  const stopListening = () => {
+    setListening(false);
+    setSpeaking(null);
+  };
   const overlays = (
     <>
+      {listening && (
+        <ReadAloud
+          paragraphs={room.book.paragraphs}
+          start={position}
+          bottomOffset={paged ? 84 : 16}
+          onParagraph={(p) => {
+            setSpeaking(p);
+            goTo(p);
+          }}
+          onClose={stopListening}
+        />
+      )}
       <UnderlineBar
         roomId={room.id}
         myPen={myPen}
@@ -437,7 +457,7 @@ export function RoomReader({ roomId }: { roomId: string }) {
   if (paged) {
     return (
       <main className={`mx-auto flex h-dvh w-full max-w-[680px] flex-col ${PAGED_WIDTH[prefs.pages]}`}>
-        <Nav pen={myPen} />
+        <Nav pen={myPen} listening={listening} onListen={listening ? stopListening : () => setListening(true)} />
         <BookPager
           pages={prefs.pages}
           layoutKey={`${prefs.textPx}|${members.length}|${room.invite_code ?? ""}|${newList.length > 0}|${resumedFrom}|${letters.length}|${next?.book_id}|${next?.agreed.length}|${next?.next_room_id}`}
@@ -455,7 +475,7 @@ export function RoomReader({ roomId }: { roomId: string }) {
   }
 
   return (
-    <Shell pen={myPen}>
+    <Shell pen={myPen} listening={listening} onListen={listening ? stopListening : () => setListening(true)}>
       <div className="px-5 pt-10 sm:px-8">{header}</div>
       <ScrollPosition onChange={movePosition} start={resumedFrom} />
       <article className="mx-5 bg-page px-4 py-6 sm:mx-8 sm:px-6">{body}</article>
@@ -494,24 +514,41 @@ function ScrollPosition({ onChange, start }: { onChange: (p: number) => void; st
   return null;
 }
 
-function Nav({ pen }: { pen?: PenColor }) {
+type NavProps = { pen?: PenColor; listening?: boolean; onListen?: () => void };
+
+function Nav({ pen, listening, onListen }: NavProps) {
   return (
     <nav className="sticky top-0 z-10 flex shrink-0 items-center justify-between gap-2 border-b border-rule bg-paper/95 px-5 py-2 backdrop-blur sm:px-8">
-      <Link href="/read" className="py-2 text-[15px] text-pencil">
+      <Link href="/read" className="shrink-0 whitespace-nowrap py-2 text-[15px] text-pencil">
         ‹ 교환독서
       </Link>
-      <div className="flex items-center gap-3">
-        {pen && <PenChip color={pen} />}
+      <div className="flex items-center gap-2 sm:gap-3">
+        {/* 16-1 듣기 버튼이 생겨 좁은 휴대폰에서는 펜 표시를 뺀다 (책 머리에 내 펜이 보인다) */}
+        {pen && (
+          <span className="hidden min-[430px]:inline-flex">
+            <PenChip color={pen} />
+          </span>
+        )}
+        {onListen && (
+          <button
+            type="button"
+            aria-pressed={listening}
+            onClick={onListen}
+            className={`h-10 shrink-0 rounded-full border px-3 text-[14px] ${listening ? "border-ink bg-ink text-page" : "border-rule text-ink"}`}
+          >
+            듣기
+          </button>
+        )}
         <ReaderSettingsButton />
       </div>
     </nav>
   );
 }
 
-function Shell({ children, pen }: { children: React.ReactNode; pen?: PenColor }) {
+function Shell({ children, ...nav }: NavProps & { children: React.ReactNode }) {
   return (
     <main className="mx-auto w-full max-w-[680px] pb-24">
-      <Nav pen={pen} />
+      <Nav {...nav} />
       {children}
     </main>
   );
