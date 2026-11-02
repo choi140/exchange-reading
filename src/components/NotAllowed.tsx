@@ -22,7 +22,7 @@ export function NotAllowed({ title, desc }: { title: string; desc: string }) {
 
   return (
     <div className="px-5 pt-12 sm:px-8">
-      <h1 className="font-serif text-[24px] text-ink">{title}</h1>
+      <h1 className="font-display text-[24px] text-ink">{title}</h1>
       <p className="mt-3 text-[15px] leading-relaxed text-pencil">{desc}</p>
       <p aria-live="polite" className="mt-3 text-[14px] text-pencil">
         {Math.max(left, 0)}초 뒤 홈으로 이동해요.

@@ -55,7 +55,7 @@ export function NextBook({
       aria-labelledby={`${fieldId}-title`}
       className={`break-inside-avoid px-5 py-6 sm:px-8 ${centered ? "text-center [&_.answers]:justify-center" : "border-t border-rule"}`}
     >
-      <h2 id={`${fieldId}-title`} className="font-serif text-[20px] text-ink">
+      <h2 id={`${fieldId}-title`} className="font-display text-[20px] text-ink">
         같은 사람들과 다음 책
       </h2>
 
@@ -112,7 +112,7 @@ export function NextBook({
               id={fieldId}
               value={bookId}
               onChange={(e) => setPicked(e.target.value)}
-              className="h-11 min-w-0 rounded-lg border border-rule bg-page px-3 font-serif text-[16px] text-ink focus:border-ink focus:outline-none"
+              className="h-11 min-w-0 rounded-lg border border-rule bg-page px-3 font-display text-[16px] text-ink focus:border-ink focus:outline-none"
             >
               {books.map((b) => (
                 <option key={b.id} value={b.id}>

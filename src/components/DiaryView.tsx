@@ -288,7 +288,7 @@ export function DiaryView({ diaryId }: { diaryId: string }) {
 
             {tab === "day" && day && (
               <section role="tabpanel" aria-label={dayLongFormat.format(keyToDate(day))} className="px-5 pt-6 sm:px-8">
-                <h2 className="font-serif text-[22px] text-ink">{dayLongFormat.format(keyToDate(day))}</h2>
+                <h2 className="font-display text-[24px] text-ink">{dayLongFormat.format(keyToDate(day))}</h2>
                 {dayEntries.length === 0 ? (
                   <p className="mt-4 border-y border-rule py-6 text-[15px] text-pencil">이 날 쓴 일기가 없어요.</p>
                 ) : (
@@ -320,7 +320,7 @@ export function DiaryView({ diaryId }: { diaryId: string }) {
               <section role="tabpanel" aria-label="오늘의 일기 쓰기" className="px-5 pt-6 sm:px-8">
                 {closed ? (
                   <div className="rounded-sm border border-dashed border-pencil/60 px-5 py-6">
-                    <p className="font-serif text-[20px] text-ink">
+                    <p className="font-display text-[20px] text-ink">
                       {someoneLeft ? "짝이 교환일기를 떠났어요" : "이 교환일기는 마무리됐어요"}
                     </p>
                     <p className="mt-2 text-[15px] leading-relaxed text-pencil">
@@ -459,7 +459,7 @@ function AwayBox({
 
   return (
     <div className="rounded-sm border border-dashed border-pencil/60 px-5 py-6">
-      <p className="font-serif text-[20px] text-ink">짝이 잠시 멀어졌어요</p>
+      <p className="font-display text-[20px] text-ink">짝이 잠시 멀어졌어요</p>
       <p className="mt-2 text-[15px] leading-relaxed text-pencil">
         마지막으로 일기를 주고받은 지 {days}일이 지났어요. 바쁜 날이 이어지는 걸지도 몰라요. 조금 더 기다릴까요, 여기서 마무리할까요?
         마무리해도 지금까지의 일기는 두 사람 모두 계속 볼 수 있어요.
@@ -535,7 +535,7 @@ function TitleEditor({
   if (!editing) {
     return (
       <div className="flex flex-wrap items-baseline gap-x-3">
-        <h1 className="font-serif text-[30px] font-bold leading-tight text-ink [overflow-wrap:anywhere]">{title}</h1>
+        <h1 className="font-display text-[36px] leading-tight text-ink [overflow-wrap:anywhere]">{title}</h1>
         <button
           type="button"
           onClick={() => {
@@ -562,7 +562,7 @@ function TitleEditor({
           maxLength={30}
           placeholder={placeholder}
           onChange={(e) => setValue(e.target.value)}
-          className="h-12 min-w-0 flex-1 rounded-lg border border-rule bg-page px-3 font-serif text-[20px] text-ink focus:border-ink focus:outline-none"
+          className="h-12 min-w-0 flex-1 rounded-lg border border-rule bg-page px-3 font-display text-[20px] text-ink focus:border-ink focus:outline-none"
         />
         <button type="button" onClick={() => setEditing(false)} className="h-12 shrink-0 px-2 text-[14px] text-pencil">
           취소
@@ -663,7 +663,7 @@ function WaitBox({
 }) {
   return (
     <div className="rounded-sm border border-dashed border-pencil/60 px-5 py-6">
-      <p className="font-serif text-[20px] text-ink">{title}</p>
+      <p className="font-display text-[20px] text-ink">{title}</p>
       <p className="mt-2 text-[15px] leading-relaxed text-pencil">{desc}</p>
       <button
         type="button"

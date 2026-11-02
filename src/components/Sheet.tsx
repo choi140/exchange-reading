@@ -37,7 +37,7 @@ export function Sheet({
       className="m-auto mb-0 w-full max-w-[640px] bg-transparent p-0 backdrop:bg-ink/40 sm:mb-auto"
     >
       <div className="max-h-[90dvh] overflow-y-auto rounded-t-2xl bg-page px-6 pb-8 pt-6 sm:rounded-2xl">
-        <h2 className="font-serif text-[22px] text-ink">{title}</h2>
+        <h2 className="font-display text-[24px] text-ink">{title}</h2>
         {children}
         <button
           type="button"
@@ -69,7 +69,7 @@ export function ChoiceButton({
       disabled={disabled}
       className="w-full rounded-lg border border-rule bg-paper/60 px-4 py-4 text-left hover:border-ink disabled:opacity-60 active:translate-y-px"
     >
-      <span className="block font-serif text-[18px] text-ink">{title}</span>
+      <span className="block font-display text-[18px] text-ink">{title}</span>
       <span className="mt-1 block text-[14px] leading-relaxed text-pencil">{desc}</span>
     </button>
   );

@@ -4,7 +4,7 @@ import Link from "next/link";
 export default function NotFound() {
   return (
     <main className="mx-auto w-full max-w-[640px] px-5 pt-16 sm:px-8">
-      <h1 className="font-serif text-[24px] text-ink">없는 페이지예요</h1>
+      <h1 className="font-display text-[24px] text-ink">없는 페이지예요</h1>
       <p className="mt-3 text-[15px] leading-relaxed text-pencil">
         주소가 바뀌었거나 잘못 입력됐어요. 홈에서 다시 시작해 주세요.
       </p>

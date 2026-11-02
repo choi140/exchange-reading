@@ -68,7 +68,7 @@ export function RecoveryKey() {
       {saved ? (
         <div className="rounded-lg border border-ink px-5 py-5">
           <p className="text-[14px] text-pencil">나만의 열쇠</p>
-          <p className="mt-1 break-all font-serif text-[28px] tracking-[0.12em] text-ink">{saved}</p>
+          <p className="mt-1 break-all font-display text-[28px] tracking-[0.12em] text-ink">{saved}</p>
           <p className="mt-3 text-[14px] leading-relaxed text-ink">
             이 브라우저에서는 언제든 다시 볼 수 있어요. 브라우저를 바꾸거나 방문 기록을 지우면 사라지니, 메모 앱에 적어 두거나 아래 복구 링크를 나에게 보내 두세요.
           </p>
@@ -182,7 +182,7 @@ export function ClaimKey() {
   if (done) {
     return (
       <div className="rounded-lg border border-ink px-5 py-5">
-        <p className="font-serif text-[20px] text-ink">되찾았어요</p>
+        <p className="font-display text-[20px] text-ink">되찾았어요</p>
         <p className="mt-1 text-[15px] leading-relaxed text-pencil">내 책과 일기장을 이 브라우저로 옮겼어요. 이제 이 브라우저에서 이어 쓰면 돼요.</p>
         <div className="mt-4 flex flex-wrap gap-2">
           <button type="button" onClick={() => router.push("/read")} className="h-11 rounded-full border border-ink px-5 text-[15px] text-ink">
@@ -211,7 +211,7 @@ export function ClaimKey() {
           autoComplete="off"
           spellCheck={false}
           placeholder="예: K7M2-QX9P-4RTA"
-          className="h-12 min-w-0 flex-1 rounded-lg border border-rule bg-page px-4 font-serif text-[18px] uppercase tracking-[0.12em] text-ink placeholder:text-[15px] placeholder:tracking-normal placeholder:text-pencil/70 focus:border-ink focus:outline-none"
+          className="h-12 min-w-0 flex-1 rounded-lg border border-rule bg-page px-4 font-display text-[18px] uppercase tracking-[0.12em] text-ink placeholder:text-[15px] placeholder:tracking-normal placeholder:text-pencil/70 focus:border-ink focus:outline-none"
         />
         <button type="submit" disabled={busy || clean.length !== 12} className="h-12 shrink-0 rounded-full bg-ink px-5 text-[15px] text-page disabled:opacity-40">
           {busy ? "되찾는 중…" : "되찾기"}

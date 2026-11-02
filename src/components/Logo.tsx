@@ -4,7 +4,7 @@ export function Logo({ size = "lg" }: { size?: "lg" | "sm" }) {
   return (
     <span className="relative inline-block">
       <span
-        className={`font-serif font-bold tracking-tight text-ink ${
+        className={`font-display tracking-tight text-ink ${
           big ? "text-[44px] leading-none" : "text-[22px] leading-none"
         }`}
       >

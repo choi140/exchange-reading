@@ -115,7 +115,7 @@ function Month({ days, today }: { days: Days; today: string }) {
             ‹
           </button>
           <p className="text-center">
-            <span className="block font-serif text-[20px] text-ink">
+            <span className="block font-display text-[20px] text-ink">
               {view.y}년 {view.m}월
             </span>
             <span className="block text-[13px] text-pencil">{month.count > 0 ? `${month.count}일 펼쳤어요` : "이 달의 기록은 아직 없어요"}</span>
@@ -159,7 +159,7 @@ function Month({ days, today }: { days: Days; today: string }) {
 
       {day ? (
         <div className="mt-5 border-y border-rule py-4">
-          <p className="font-serif text-[18px] text-ink">
+          <p className="font-display text-[18px] text-ink">
             {pm}월 {pd}일
           </p>
           <ul className="mt-2 space-y-1 text-[15px] leading-relaxed text-ink">

@@ -25,13 +25,13 @@ const dateFormat = new Intl.DateTimeFormat("ko-KR", { year: "numeric", month: "n
 
 // 카드는 밤 모드와 상관없이 늘 낮 색으로 (저장한 이미지가 같은 모양이 되게)
 const DAY_VARS = {
-  "--color-paper": "#eef0ea",
-  "--color-page": "#fafbf7",
-  "--color-ink": "#232838",
-  "--color-pencil": "#6b7064",
-  "--color-rule": "#d3d6cc",
-  "--color-margin": "#d9a3a0",
-  "--color-pen-black": "#232838",
+  "--color-paper": "#f7f5ef",
+  "--color-page": "#ffffff",
+  "--color-ink": "#191919",
+  "--color-pencil": "#66635c",
+  "--color-rule": "#e3dfd5",
+  "--color-margin": "#e3dfd5",
+  "--color-pen-black": "#191919",
   "--color-pen-blue": "#2b55c8",
   "--color-pen-green": "#1d7a50",
   "--color-pen-orange": "#d2691e",
@@ -120,7 +120,7 @@ export function MemoryCardPage({ roomId }: { roomId: string }) {
 
   async function render() {
     if (!cardRef.current) return null;
-    return toPng(cardRef.current, { pixelRatio: 3, cacheBust: true, backgroundColor: "#fafbf7" });
+    return toPng(cardRef.current, { pixelRatio: 3, cacheBust: true, backgroundColor: "#ffffff" });
   }
 
   // 파일 이름이 유지되도록 data: 주소 대신 blob 주소로 내려받는다
@@ -177,7 +177,7 @@ export function MemoryCardPage({ roomId }: { roomId: string }) {
       <Link href={`/room/${room.id}`} className="py-2 text-[15px] text-pencil">
         ‹ 책으로 돌아가기
       </Link>
-      <h1 className="mt-4 font-serif text-[26px] font-bold text-ink">기념 카드</h1>
+      <h1 className="mt-4 font-display text-[26px] font-bold text-ink">기념 카드</h1>
       <p className="mt-1 text-[14px] leading-relaxed text-pencil">
         {room.mode === "together" ? "함께 그은 밑줄과 한마디, 편지를 한 장에 모았어요." : "내가 그은 밑줄과 한마디, 편지를 한 장에 모았어요."}{" "}
         한마디가 있는 밑줄을 먼저, 최대 {MAX_QUOTES}개까지 담아요.
@@ -188,10 +188,10 @@ export function MemoryCardPage({ roomId }: { roomId: string }) {
         <div ref={cardRef} style={DAY_VARS} className="w-[360px] max-w-full bg-page text-ink">
           <div className="border-l-2 border-margin py-6 pl-5 pr-5">
             <p className="flex items-baseline justify-between gap-3 text-[12px] text-pencil">
-              <span className="font-serif text-[14px] font-bold text-ink">낯선 밑줄</span>
+              <span className="font-display text-[14px] font-bold text-ink">낯선 밑줄</span>
               <span>{dateFormat.format(new Date())} 다 읽음</span>
             </p>
-            <p className="mt-4 font-serif text-[28px] font-bold leading-tight">{room.book.title}</p>
+            <p className="mt-4 font-display text-[28px] font-bold leading-tight">{room.book.title}</p>
             <p className="mt-1 text-[13px] text-pencil">
               {room.book.author}
               {room.book.year ? `, ${room.book.year}년` : ""}

@@ -248,7 +248,7 @@ export function RoomReader({ roomId }: { roomId: string }) {
   const header = (
     // 14-2 책 머리 글자도 고른 글자 크기를 따라간다 (안쪽 크기는 모두 em)
     <header data-flow-block className="pb-6" style={{ fontSize: fontPx, ...(paged ? { breakAfter: "column" } : {}) }}>
-      <h1 className="font-serif text-[1.67em] font-bold leading-tight text-ink">{room.book.title}</h1>
+      <h1 className="font-display text-[1.67em] leading-tight text-ink">{room.book.title}</h1>
       <p className="mt-2 text-[0.83em] text-pencil">
         {room.book.author}
         {room.book.year ? `, ${room.book.year}년` : ""}

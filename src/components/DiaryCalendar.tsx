@@ -71,7 +71,7 @@ export function DiaryCalendar({
           ‹
         </button>
         <p className="text-center">
-          <span className="block font-serif text-[20px] text-ink">
+          <span className="block font-display text-[20px] text-ink">
             {view.y}년 {view.m}월
           </span>
           <span className="block text-[13px] text-pencil">

@@ -72,7 +72,7 @@ export function EndOfBook({
           {together ? "함께 읽은 기념 카드 만들기" : "기념 카드 만들기"}
         </Link>
       </div>
-      <h2 id={`${fieldId}-title`} className="mt-6 font-serif text-[22px] text-ink">
+      <h2 id={`${fieldId}-title`} className="mt-6 font-display text-[24px] text-ink">
         {together ? "다 읽었다면, 이 방 사람들에게 편지 한 장" : "다 읽은 나에게 편지 한 장"}
       </h2>
       <p className="mt-1 text-[14px] leading-relaxed text-pencil">
