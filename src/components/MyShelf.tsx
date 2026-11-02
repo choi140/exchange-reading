@@ -21,7 +21,7 @@ type MyRoom = {
 type State =
   | { status: "loading" }
   | { status: "error"; message: string }
-  | { status: "ready"; rooms: MyRoom[]; fresh: Record<string, number> };
+  | { status: "ready"; rooms: MyRoom[]; fresh: Record<string, number>; asked: Set<string> };
 
 export function MyShelf() {
   const session = useAnonymousSession();
@@ -47,18 +47,24 @@ export function MyShelf() {
       // 7-5 함께 읽기 방마다 내가 마지막으로 본 뒤 남이 쓴 메모·답글 수
       const togetherIds = rooms.filter((r) => r.room?.mode === "together").map((r) => r.room!.id);
       const fresh: Record<string, number> = {};
+      const asked = new Set<string>(); // 12-1 내 답을 기다리는 다음 책 제안
       if (togetherIds.length) {
         // 9-7 새 밑줄·답글 수 (문단 메모는 더 이상 쓰지 않는다)
-        const [hl, rp] = await Promise.all([
+        const [hl, rp, nx] = await Promise.all([
           supabase.from("highlights").select("room_id, created_at").in("room_id", togetherIds).neq("user_id", session.userId),
           supabase.from("highlight_replies").select("room_id, created_at").in("room_id", togetherIds).neq("user_id", session.userId),
+          supabase.from("room_next").select("room_id, agreed").in("room_id", togetherIds).is("next_room_id", null),
         ]);
+        for (const n of nx.error ? [] : (nx.data ?? [])) {
+          const pen = rooms.find((r) => r.room?.id === n.room_id)?.pen_color;
+          if (pen && !(n.agreed as string[]).includes(pen)) asked.add(n.room_id as string);
+        }
         for (const n of [...(hl.error ? [] : (hl.data ?? [])), ...(rp.error ? [] : (rp.data ?? []))]) {
           const seen = getLastSeen(n.room_id as string);
           if (seen && (n.created_at as string) > seen) fresh[n.room_id as string] = (fresh[n.room_id as string] ?? 0) + 1;
         }
       }
-      if (!cancelled) setState({ status: "ready", rooms, fresh });
+      if (!cancelled) setState({ status: "ready", rooms, fresh, asked });
     })();
     return () => {
       cancelled = true;
@@ -96,6 +102,7 @@ export function MyShelf() {
               </span>
             </span>
             <span className="flex shrink-0 items-center gap-3">
+              {state.asked.has(room!.id) && <span className="rounded-full border border-ink px-3 py-1 text-[13px] text-ink">다음 책 제안</span>}
               {state.fresh[room!.id] > 0 && (
                 <span className="rounded-full bg-ink px-3 py-1 text-[13px] text-page">새 밑줄 {state.fresh[room!.id]}</span>
               )}

@@ -4,6 +4,7 @@ import Link from "next/link";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { getBrowserSupabase } from "@/lib/supabase/client";
 import { getLastSeen, getReadingPosition, setLastSeen, setReadingPosition, TEXT_SIZE_PX, usePrefs } from "@/lib/prefs";
+import { useReadingLog } from "@/lib/reading-log";
 import { useAnonymousSession } from "./AnonymousSession";
 import { InviteCode } from "./CodeJoinForm";
 import { NotAllowed } from "./NotAllowed";
@@ -12,6 +13,7 @@ import { BookPager } from "./reader/BookPager";
 import { EndOfBook, LeaveRoomButton, LETTER_COLUMNS, type Letter } from "./reader/EndOfBook";
 import { HighlightSheet, REPLY_COLUMNS, type Reply } from "./reader/HighlightSheet";
 import { HIGHLIGHT_COLUMNS, HIGHLIGHT_COLUMNS_OLD, HighlightedText, UnderlineBar, type Highlight } from "./reader/Highlights";
+import { NEXT_BOOK_COLUMNS, NextBook, type NextBookRow } from "./reader/NextBook";
 import { ReaderSettingsButton } from "./reader/ReaderSettings";
 
 // 책 리더 (혼자·함께 공통) (PRD #4.1)
@@ -28,6 +30,7 @@ type Room = {
   mode: Mode;
   is_private: boolean;
   invite_code: string | null;
+  book_id: string;
   book: { title: string; author: string; year: number | null; source: string; paragraphs: string[] };
 };
 type Member = { user_id: string; pen_color: PenColor; alias: string };
@@ -47,6 +50,10 @@ export function RoomReader({ roomId }: { roomId: string }) {
   const [unlocked, setUnlocked] = useState<Set<number>>(new Set());
   const [letters, setLetters] = useState<Letter[]>([]);
   const [memoReady, setMemoReady] = useState(true); // 10_v6.sql을 실행했는지
+  const [nextReady, setNextReady] = useState(false); // 14_v9.sql을 실행했는지
+  const [next, setNext] = useState<NextBookRow | null>(null);
+  const [shelf, setShelf] = useState<{ id: string; title: string }[]>([]);
+  const { start: startReading, move: moveReading } = useReadingLog(roomId);
   const [sheetIds, setSheetIds] = useState<string[] | null>(null);
   const [seenBefore, setSeenBefore] = useState<string | null>(null);
   // 지금 보는 문단 (-1 = 책 머리)
@@ -60,7 +67,7 @@ export function RoomReader({ roomId }: { roomId: string }) {
 
     const roomRes = await supabase
       .from("rooms")
-      .select("id, mode, is_private, invite_code, book:books(title, author, year, source, paragraphs)")
+      .select("id, mode, is_private, invite_code, book_id, book:books(title, author, year, source, paragraphs)")
       .eq("id", roomId)
       .maybeSingle();
     if (roomRes.error) {
@@ -69,11 +76,13 @@ export function RoomReader({ roomId }: { roomId: string }) {
     }
     if (!roomRes.data) return { status: "missing" } as const;
 
-    const [membersRes, unlocksRes, lettersRes, repliesRes] = await Promise.all([
+    const [membersRes, unlocksRes, lettersRes, repliesRes, nextRes, shelfRes] = await Promise.all([
       supabase.from("room_members").select("user_id, pen_color, alias").eq("room_id", roomId).order("joined_at"),
       supabase.from("unlocks").select("paragraph_index").eq("room_id", roomId),
       supabase.from("letters").select(LETTER_COLUMNS).eq("room_id", roomId).order("created_at", { ascending: true }),
       supabase.from("highlight_replies").select(REPLY_COLUMNS).eq("room_id", roomId).order("created_at", { ascending: true }),
+      supabase.from("room_next").select(NEXT_BOOK_COLUMNS).eq("room_id", roomId),
+      supabase.from("books").select("id, title"),
     ]);
     type Rows = { data: unknown[] | null; error: { code?: string; message: string } | null };
     let hlRes: Rows = await supabase.from("highlights").select(HIGHLIGHT_COLUMNS).eq("room_id", roomId).order("created_at", { ascending: true });
@@ -94,7 +103,17 @@ export function RoomReader({ roomId }: { roomId: string }) {
       replies: (repliesRes.error ? [] : (repliesRes.data ?? [])) as Reply[],
       letters: (lettersRes.error ? [] : (lettersRes.data ?? [])) as Letter[],
       memo: memo && !repliesRes.error,
+      nextReady: !nextRes.error,
+      next: ((nextRes.data ?? [])[0] ?? null) as NextBookRow | null,
+      shelf: (shelfRes.data ?? []) as { id: string; title: string }[],
     } as const;
+  }, [roomId]);
+
+  const refreshNext = useCallback(async () => {
+    const supabase = getBrowserSupabase();
+    if (!supabase) return;
+    const { data, error } = await supabase.from("room_next").select(NEXT_BOOK_COLUMNS).eq("room_id", roomId);
+    if (!error) setNext(((data ?? [])[0] ?? null) as NextBookRow | null);
   }, [roomId]);
 
   useEffect(() => {
@@ -112,26 +131,31 @@ export function RoomReader({ roomId }: { roomId: string }) {
       setSeenBefore(getLastSeen(roomId));
       setLastSeen(roomId, new Date().toISOString());
       setPosition(start);
+      startReading(start);
       setResumedFrom(start > 0 ? start : null);
       setHighlights(res.highlights);
       setReplies(res.replies);
       setUnlocked(res.unlocked);
       setLetters(res.letters);
       setMemoReady(res.memo);
+      setNextReady(res.nextReady);
+      setNext(res.next);
+      setShelf(res.shelf);
       setState({ status: "ready", room: res.room, members: res.members });
     });
     return () => {
       cancelled = true;
     };
-  }, [session.status, load, roomId]);
+  }, [session.status, load, roomId, startReading]);
 
   const me = session.userId;
   const movePosition = useCallback(
     (p: number) => {
       setPosition(p);
       setReadingPosition(roomId, Math.max(0, p));
+      moveReading(p);
     },
-    [roomId],
+    [roomId, moveReading],
   );
 
   const isNew = useCallback(
@@ -186,6 +210,9 @@ export function RoomReader({ roomId }: { roomId: string }) {
   const myPen = penOf(me!);
   const fontPx = TEXT_SIZE_PX[prefs.size];
   const paged = prefs.view === "page";
+  const lastParagraph = room.book.paragraphs.length - 1;
+  const nextTitle = shelf.find((b) => b.id === next?.book_id)?.title;
+  const askedNext = next !== null && !next.next_room_id && !next.agreed.includes(myPen);
   const myParagraphs = new Set(highlights.filter((h) => h.user_id === me).map((h) => h.paragraph_index));
   const isBlind = (h: Highlight) =>
     together && h.user_id !== me && !myParagraphs.has(h.paragraph_index) && !unlocked.has(h.paragraph_index);
@@ -225,7 +252,10 @@ export function RoomReader({ roomId }: { roomId: string }) {
               {m.user_id === me ? " (나)" : ""}
             </span>
           ))}
-          {members.length < ROOM_SIZE && <span className="text-[14px] text-pencil">빈자리 {ROOM_SIZE - members.length}</span>}
+          {/* 12-1 다음 책 방은 코드가 없어 새 사람이 들어올 수 없다 */}
+          {members.length < ROOM_SIZE && (!room.is_private || room.invite_code) && (
+            <span className="text-[14px] text-pencil">빈자리 {ROOM_SIZE - members.length}</span>
+          )}
         </p>
       )}
       {together && room.is_private && room.invite_code && (
@@ -241,6 +271,23 @@ export function RoomReader({ roomId }: { roomId: string }) {
           : " 밑줄은 나만 봐요."}
       </p>
 
+      {next?.next_room_id ? (
+        <div className="mt-4 flex flex-wrap items-center justify-between gap-2 rounded-lg border border-ink px-4 py-3">
+          <span className="text-[15px] text-ink">같은 사람들과 다음 책을 읽기로 했어요</span>
+          <Link href={`/room/${next.next_room_id}`} className="inline-flex h-9 items-center rounded-full bg-ink px-4 text-[14px] text-page">
+            「{nextTitle}」 읽으러 가기
+          </Link>
+        </div>
+      ) : (
+        askedNext && (
+          <div className="mt-4 flex flex-wrap items-center justify-between gap-2 rounded-lg border border-ink px-4 py-3">
+            <span className="text-[15px] text-ink">다음 책 제안이 있어요: 「{nextTitle}」</span>
+            <button type="button" onClick={() => goTo(lastParagraph)} className="h-9 rounded-full bg-ink px-4 text-[14px] text-page">
+              책 끝에서 답하기
+            </button>
+          </div>
+        )
+      )}
       {newList.length > 0 && (
         <div className="mt-4 flex flex-wrap items-center justify-between gap-2 rounded-lg border border-ink px-4 py-3">
           <span className="text-[15px] text-ink">마지막으로 본 뒤 새 밑줄·답글 {newList.length}곳</span>
@@ -310,6 +357,15 @@ export function RoomReader({ roomId }: { roomId: string }) {
         letters={letters}
         onSent={(l) => setLetters((prev) => [...prev, l])}
       />
+      {together && nextReady && (members.length > 1 || next) && (
+        <NextBook
+          roomId={room.id}
+          myPen={myPen}
+          books={shelf.filter((b) => b.id !== room.book_id)}
+          next={next}
+          onRefresh={refreshNext}
+        />
+      )}
       <div className="flex flex-wrap items-center justify-between gap-3 pb-6">
         <p className="text-[13px] leading-relaxed text-pencil">{room.book.source}</p>
         <LeaveRoomButton roomId={room.id} together={together} />
@@ -355,7 +411,7 @@ export function RoomReader({ roomId }: { roomId: string }) {
       <main className="mx-auto flex h-dvh w-full max-w-[680px] flex-col">
         <Nav pen={myPen} />
         <BookPager
-          layoutKey={`${prefs.size}|${members.length}|${room.invite_code ?? ""}|${newList.length > 0}|${resumedFrom}|${letters.length}`}
+          layoutKey={`${prefs.size}|${members.length}|${room.invite_code ?? ""}|${newList.length > 0}|${resumedFrom}|${letters.length}|${next?.book_id}|${next?.agreed.length}|${next?.next_room_id}`}
           anchor={position}
           jump={jump}
           onAnchorChange={movePosition}
