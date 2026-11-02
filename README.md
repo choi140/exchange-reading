@@ -19,7 +19,7 @@
 |---|---|---|---|
 | ![홈](docs/screenshots/home.png) | ![함께 읽기](docs/screenshots/together-reader.png) | ![블라인드](docs/screenshots/blind.png) | ![교환일기](docs/screenshots/exchange-diary.png) |
 
-> 스크린샷은 README용 예시 데이터로 찍은 휴대폰(390px) 화면입니다.
+> 스크린샷은 배포 주소(exchange-reading.vercel.app)에서 README용 예시 데이터로 찍은 휴대폰(375px) 화면입니다. 처음 화면(PC)만 PC 크기로 찍었습니다. (11/2, 23단계 기준)
 
 **로그인 없이 시작** — 처음 접속하면 화면 뒤에서 익명 계정이 만들어지고 그 브라우저에 기억됩니다(Supabase 익명 로그인).
 
@@ -73,7 +73,7 @@
 
 ### 오래 쓰기 위한 기능 (10단계)
 
-<img src="docs/screenshots/memory-card.png" alt="다 읽은 뒤 기념 카드" width="300" align="right" />
+<img src="docs/screenshots/memory-card.png" alt="다 읽은 뒤 기념 카드(독서 영수증)" width="300" align="right" />
 
 - **나만의 열쇠** — 로그인이 없어서 브라우저를 바꾸면 기록에 다시 들어갈 수 없다. "나만의 열쇠"(12자)와 복구 링크를 만들어 두면, 다른 브라우저에서 열쇠를 넣어 내 책·일기장·짝과의 교환일기를 그대로 옮겨 온다. 열쇠는 DB에 해시로만 저장하고, 원문은 그 브라우저에만 기억해 `/key`에서 언제든 다시 볼 수 있다.
 - **짝이 멀어졌을 때** — 교환일기에서 짝의 차례로 7일 넘게 멈추면 "짝이 잠시 멀어졌어요. 기다릴까요, 마무리할까요?"를 묻고, 조금 더 기다리기·마무리하기·마무리하고 새 짝 찾기를 고른다. 마무리해도 지난 일기는 두 사람 모두 볼 수 있다.
