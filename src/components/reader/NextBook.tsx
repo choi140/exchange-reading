@@ -16,7 +16,9 @@ export function NextBook({
   books,
   next,
   onRefresh,
+  centered = false,
 }: {
+  centered?: boolean; // 13-1 페이지 모드에서는 책 끝 쪽을 가운데로
   roomId: string;
   myPen: PenColor;
   books: { id: string; title: string }[]; // 지금 책을 뺀 책장
@@ -49,7 +51,10 @@ export function NextBook({
 
   return (
     // 페이지 모드에서 설명과 버튼이 두 쪽으로 갈리지 않게 한 덩어리로 둔다
-    <section aria-labelledby={`${fieldId}-title`} className="break-inside-avoid border-t border-rule px-5 py-6 sm:px-8">
+    <section
+      aria-labelledby={`${fieldId}-title`}
+      className={`break-inside-avoid px-5 py-6 sm:px-8 ${centered ? "text-center [&_.answers]:justify-center" : "border-t border-rule"}`}
+    >
       <h2 id={`${fieldId}-title`} className="font-serif text-[20px] text-ink">
         같은 사람들과 다음 책
       </h2>
@@ -71,7 +76,7 @@ export function NextBook({
             읽자고 해요: 「{title}」
           </p>
           <p className="mt-1 text-[14px] leading-relaxed text-pencil">서로 누구인지는 앞으로도 몰라요. 안 읽겠다고 해도 상대에게 따로 알리지 않아요.</p>
-          <div className="mt-4 flex flex-wrap gap-2">
+          <div className="answers mt-4 flex flex-wrap gap-2">
             <button type="button" onClick={() => respond(true)} disabled={busy} className="h-11 rounded-full bg-ink px-5 text-[15px] text-page disabled:opacity-50">
               같이 읽을래요
             </button>
@@ -83,7 +88,7 @@ export function NextBook({
       ) : next ? (
         <>
           <p className="mt-1 text-[15px] leading-relaxed text-ink">다음 책으로 고른 「{title}」, 다른 사람의 답을 기다리는 중이에요.</p>
-          <div className="mt-3 flex flex-wrap gap-2">
+          <div className="answers mt-3 flex flex-wrap gap-2">
             <button type="button" onClick={recheck} disabled={busy} className="h-10 rounded-full border border-ink px-4 text-[14px] text-ink disabled:opacity-50">
               다시 확인하기
             </button>

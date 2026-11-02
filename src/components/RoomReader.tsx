@@ -3,7 +3,7 @@
 import Link from "next/link";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { getBrowserSupabase } from "@/lib/supabase/client";
-import { getLastSeen, getReadingPosition, setLastSeen, setReadingPosition, TEXT_SIZE_PX, usePrefs } from "@/lib/prefs";
+import { getLastSeen, getReadingPosition, setLastSeen, setReadingPosition, usePrefs } from "@/lib/prefs";
 import { useReadingLog } from "@/lib/reading-log";
 import { useAnonymousSession } from "./AnonymousSession";
 import { InviteCode } from "./CodeJoinForm";
@@ -208,7 +208,7 @@ export function RoomReader({ roomId }: { roomId: string }) {
   const together = room.mode === "together";
   const penOf = (userId: string): PenColor => members.find((m) => m.user_id === userId)?.pen_color ?? "black";
   const myPen = penOf(me!);
-  const fontPx = TEXT_SIZE_PX[prefs.size];
+  const fontPx = prefs.textPx;
   const paged = prefs.view === "page";
   const lastParagraph = room.book.paragraphs.length - 1;
   const nextTitle = shelf.find((b) => b.id === next?.book_id)?.title;
@@ -346,17 +346,20 @@ export function RoomReader({ roomId }: { roomId: string }) {
     </p>
   ));
 
-  const endOfBook = (
-    <div data-flow-block style={paged ? { breakBefore: "column" } : undefined}>
-      <EndOfBook
-        roomId={room.id}
-        together={together}
-        me={me!}
-        myPen={myPen}
-        penOf={penOf}
-        letters={letters}
-        onSent={(l) => setLetters((prev) => [...prev, l])}
-      />
+  const lettersPart = (
+    <EndOfBook
+      roomId={room.id}
+      together={together}
+      me={me!}
+      myPen={myPen}
+      penOf={penOf}
+      letters={letters}
+      onSent={(l) => setLetters((prev) => [...prev, l])}
+      centered={paged}
+    />
+  );
+  const closingPart = (
+    <>
       {together && nextReady && (members.length > 1 || next) && (
         <NextBook
           roomId={room.id}
@@ -364,12 +367,30 @@ export function RoomReader({ roomId }: { roomId: string }) {
           books={shelf.filter((b) => b.id !== room.book_id)}
           next={next}
           onRefresh={refreshNext}
+          centered={paged}
         />
       )}
-      <div className="flex flex-wrap items-center justify-between gap-3 pb-6">
+      <div className="flex flex-col items-center gap-4 pb-6 pt-2 text-center">
         <p className="text-[13px] leading-relaxed text-pencil">{room.book.source}</p>
-        <LeaveRoomButton roomId={room.id} together={together} />
+        <LeaveRoomButton roomId={room.id} together={together} prominent />
       </div>
+    </>
+  );
+  // 13-1 페이지 모드의 책 끝은 쪽마다 위아래·좌우 가운데에 놓는다
+  const endPage = "flex flex-col justify-center";
+  const endOfBook = paged ? (
+    <>
+      <div data-flow-block className={endPage} style={{ breakBefore: "column", minHeight: "100%" }}>
+        {lettersPart}
+      </div>
+      <div data-flow-block className={endPage} style={{ breakBefore: "column", minHeight: "100%" }}>
+        {closingPart}
+      </div>
+    </>
+  ) : (
+    <div data-flow-block>
+      {lettersPart}
+      {closingPart}
     </div>
   );
 
@@ -408,10 +429,10 @@ export function RoomReader({ roomId }: { roomId: string }) {
 
   if (paged) {
     return (
-      <main className="mx-auto flex h-dvh w-full max-w-[680px] flex-col">
+      <main className="mx-auto flex h-dvh w-full max-w-[680px] flex-col min-[900px]:max-w-[1240px]">
         <Nav pen={myPen} />
         <BookPager
-          layoutKey={`${prefs.size}|${members.length}|${room.invite_code ?? ""}|${newList.length > 0}|${resumedFrom}|${letters.length}|${next?.book_id}|${next?.agreed.length}|${next?.next_room_id}`}
+          layoutKey={`${prefs.textPx}|${members.length}|${room.invite_code ?? ""}|${newList.length > 0}|${resumedFrom}|${letters.length}|${next?.book_id}|${next?.agreed.length}|${next?.next_room_id}`}
           anchor={position}
           jump={jump}
           onAnchorChange={movePosition}
@@ -429,7 +450,7 @@ export function RoomReader({ roomId }: { roomId: string }) {
     <Shell pen={myPen}>
       <div className="px-5 pt-10 sm:px-8">{header}</div>
       <ScrollPosition onChange={movePosition} start={resumedFrom} />
-      <article className="mx-5 border-l-2 border-margin bg-page py-6 pl-4 pr-3 sm:mx-8 sm:pl-6">{body}</article>
+      <article className="mx-5 bg-page px-4 py-6 sm:mx-8 sm:px-6">{body}</article>
       <div className="px-5 pt-8 sm:px-8">{endOfBook}</div>
       {overlays}
     </Shell>

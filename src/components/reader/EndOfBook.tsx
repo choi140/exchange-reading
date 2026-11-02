@@ -21,7 +21,9 @@ export function EndOfBook({
   penOf,
   letters,
   onSent,
+  centered = false,
 }: {
+  centered?: boolean; // 13-1 페이지 모드에서는 책 끝 쪽을 가운데로
   roomId: string;
   together: boolean;
   me: string;
@@ -60,7 +62,7 @@ export function EndOfBook({
   }
 
   return (
-    <section aria-labelledby={`${fieldId}-title`} data-letters className="px-5 pb-6 pt-10 sm:px-8">
+    <section aria-labelledby={`${fieldId}-title`} data-letters className={`px-5 pb-6 pt-10 sm:px-8 ${centered ? "text-center" : ""}`}>
       <p className="text-center font-hand text-[26px] text-pencil">— 끝 —</p>
       <div className="mt-4 text-center">
         <Link
@@ -80,7 +82,7 @@ export function EndOfBook({
       </p>
 
       {others.length > 0 && (
-        <ul className="mt-5 space-y-4">
+        <ul className="mt-5 space-y-4 text-left">
           {others.map((l) => (
             <li key={l.id} className={`border-l-2 pl-3 ${PEN[penOf(l.user_id)].border}`}>
               <p className={`whitespace-pre-wrap font-hand text-[23px] leading-[1.3] ${PEN[penOf(l.user_id)].className}`}>
@@ -93,12 +95,12 @@ export function EndOfBook({
       )}
 
       {mine ? (
-        <div className={`mt-5 border-l-2 pl-3 ${PEN[myPen].border}`}>
+        <div className={`mt-5 border-l-2 pl-3 text-left ${PEN[myPen].border}`}>
           <p className={`whitespace-pre-wrap font-hand text-[23px] leading-[1.3] ${PEN[myPen].className}`}>{mine.body}</p>
           <p className="mt-1 text-[12px] text-pencil">내가 남긴 편지</p>
         </div>
       ) : (
-        <form onSubmit={send} className="mt-5">
+        <form onSubmit={send} className="mt-5 text-left">
           <label htmlFor={fieldId} className="sr-only">
             편지
           </label>
@@ -135,7 +137,7 @@ export function EndOfBook({
   );
 }
 
-export function LeaveRoomButton({ roomId, together }: { roomId: string; together: boolean }) {
+export function LeaveRoomButton({ roomId, together, prominent = false }: { roomId: string; together: boolean; prominent?: boolean }) {
   const router = useRouter();
   const [open, setOpen] = useState(false);
   const [busy, setBusy] = useState(false);
@@ -161,7 +163,11 @@ export function LeaveRoomButton({ roomId, together }: { roomId: string; together
       <button
         type="button"
         onClick={() => setOpen(true)}
-        className="h-9 text-[14px] text-pencil underline underline-offset-4"
+        className={
+          prominent
+            ? "h-11 rounded-full border border-pen-orange px-6 text-[15px] text-pen-orange"
+            : "h-9 text-[14px] text-pencil underline underline-offset-4"
+        }
       >
         이 방 나가기
       </button>

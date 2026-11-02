@@ -3,12 +3,21 @@
 import { useSyncExternalStore } from "react";
 // 7-1 / 7-4 읽기 설정: 이 브라우저에 기억한다 (익명 계정도 브라우저 단위라 같은 범위)
 export type ReaderView = "scroll" | "page";
-export type TextSize = "s" | "m" | "l";
-export type Prefs = { view: ReaderView; size: TextSize; night: boolean };
+export type Prefs = { view: ReaderView; textPx: number; night: boolean };
 
 import { PREFS_KEY as KEY } from "./theme-boot";
 
-const DEFAULT: Prefs = { view: "scroll", size: "m", night: false };
+// 13-3 글자 크기는 픽셀로. 예전에 고른 작게·보통·크게는 같은 크기로 이어 쓴다
+export const TEXT_PX_MIN = 12;
+export const TEXT_PX_MAX = 40;
+export const TEXT_PX_PRESETS = [
+  { px: 16, label: "작게" },
+  { px: 18, label: "보통" },
+  { px: 21, label: "크게" },
+];
+const OLD_SIZE_PX: Record<string, number> = { s: 16, m: 18, l: 21 };
+
+const DEFAULT: Prefs = { view: "scroll", textPx: 18, night: false };
 const listeners = new Set<() => void>();
 let cache: Prefs | null = null;
 let cacheRaw: string | null = null;
@@ -23,7 +32,8 @@ function read(): Prefs {
   if (cache && raw === cacheRaw) return cache;
   cacheRaw = raw;
   try {
-    cache = { ...DEFAULT, ...(raw ? JSON.parse(raw) : {}) };
+    const saved = raw ? JSON.parse(raw) : {};
+    cache = { ...DEFAULT, ...saved, textPx: saved.textPx ?? OLD_SIZE_PX[saved.size] ?? DEFAULT.textPx };
   } catch {
     cache = DEFAULT;
   }
@@ -62,8 +72,6 @@ export function usePrefs(): Prefs {
 export function applyTheme(night: boolean) {
   document.documentElement.dataset.theme = night ? "night" : "day";
 }
-
-export const TEXT_SIZE_PX: Record<TextSize, number> = { s: 16, m: 18, l: 21 };
 
 // 7-4 이어 읽기: 방마다 마지막으로 읽던 문단 번호
 export function getReadingPosition(roomId: string): number | null {
