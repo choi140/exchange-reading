@@ -34,13 +34,11 @@ function readVoices() {
 export function ReadAloud({
   paragraphs,
   start,
-  bottomOffset,
   onParagraph,
   onClose,
 }: {
   paragraphs: string[];
   start: number;
-  bottomOffset: number;
   onParagraph: (p: number) => void;
   onClose: () => void;
 }) {
@@ -126,76 +124,68 @@ export function ReadAloud({
   }
 
   const nextRate = RATES[(RATES.indexOf(rate) + 1) % RATES.length];
-  const stepClass = "h-11 w-11 shrink-0 rounded-full border border-rule text-[20px] text-ink disabled:opacity-40";
+  const stepClass = "h-9 w-9 shrink-0 rounded-full border border-rule text-[16px] text-ink disabled:opacity-40";
 
+  // 18-2 본문을 가리지 않게 위쪽 메뉴 바로 아래에 붙는 한 줄 막대
   return (
-    <div
-      role="region"
-      aria-label="듣기"
-      className="fixed inset-x-0 z-20 mx-auto w-[min(600px,calc(100%-1.5rem))] rounded-2xl border border-rule bg-page px-3 py-2 shadow-[0_6px_24px_rgba(0,0,0,0.18)]"
-      style={{ bottom: bottomOffset }}
-    >
+    <div role="region" aria-label="듣기" className="border-b border-rule bg-paper px-5 py-1.5 sm:px-8">
       {unavailable ? (
         <div className="flex items-center justify-between gap-3">
-          <p className="text-[14px] leading-relaxed text-ink">
+          <p className="text-[13px] leading-relaxed text-ink">
             {voices.supported ? "이 기기에는 한국어 음성이 없어 들을 수 없어요." : "이 브라우저에서는 들을 수 없어요."}
           </p>
-          <button type="button" onClick={onClose} className="h-11 shrink-0 px-2 text-[14px] text-pencil">
+          <button type="button" onClick={onClose} className="h-9 shrink-0 px-2 text-[13px] text-pencil">
             닫기
           </button>
         </div>
       ) : (
-        <>
-          <div className="flex items-center justify-between gap-2 px-1">
-            <p aria-live="polite" className="text-[13px] tabular-nums text-pencil">
-              {error ?? (finished ? "끝까지 읽었어요" : `${para + 1} / ${paragraphs.length}문단`)}
-            </p>
-            {voices.korean.length > 1 && (
-              <select
-                aria-label="목소리"
-                value={voice?.voiceURI ?? ""}
-                onChange={(e) => setPrefs({ ttsVoice: e.target.value })}
-                className="h-8 min-w-0 max-w-[60%] rounded-lg border border-rule bg-page px-2 text-[13px] text-ink"
-              >
-                {voices.korean.map((v) => (
-                  <option key={v.voiceURI} value={v.voiceURI}>
-                    {v.name}
-                  </option>
-                ))}
-              </select>
-            )}
-          </div>
-          <div className="mt-1 flex items-center gap-2">
-            <button type="button" aria-label="앞 문단" onClick={() => move(-1)} disabled={para === 0} className={stepClass}>
-              ‹
-            </button>
-            <button
-              type="button"
-              onClick={() => {
-                setError(null);
-                setFinished(false);
-                setPlaying((v) => !v);
-              }}
-              className="h-11 min-w-0 flex-1 rounded-full bg-ink px-3 text-[15px] text-page"
+        <div className="flex flex-wrap items-center gap-x-2 gap-y-1">
+          <button type="button" aria-label="앞 문단" onClick={() => move(-1)} disabled={para === 0} className={stepClass}>
+            ‹
+          </button>
+          <button
+            type="button"
+            onClick={() => {
+              setError(null);
+              setFinished(false);
+              setPlaying((v) => !v);
+            }}
+            className="h-9 w-20 shrink-0 rounded-full bg-ink text-[13px] text-page"
+          >
+            {playing ? "멈추기" : "이어 듣기"}
+          </button>
+          <button type="button" aria-label="다음 문단" onClick={() => move(1)} disabled={para >= paragraphs.length - 1} className={stepClass}>
+            ›
+          </button>
+          <p aria-live="polite" className="min-w-0 flex-1 truncate text-[12px] tabular-nums text-pencil">
+            {error ?? (finished ? "끝까지 읽었어요" : `${para + 1} / ${paragraphs.length}`)}
+          </p>
+          {voices.korean.length > 1 && (
+            <select
+              aria-label="목소리"
+              value={voice?.voiceURI ?? ""}
+              onChange={(e) => setPrefs({ ttsVoice: e.target.value })}
+              className="order-last h-8 w-full min-w-0 rounded-lg border border-rule bg-page px-2 text-[12px] text-ink sm:order-none sm:w-52"
             >
-              {playing ? "멈추기" : "이어 듣기"}
-            </button>
-            <button type="button" aria-label="다음 문단" onClick={() => move(1)} disabled={para >= paragraphs.length - 1} className={stepClass}>
-              ›
-            </button>
-            <button
-              type="button"
-              aria-label={`읽는 속도 ${rate}배, 누르면 ${nextRate}배로`}
-              onClick={() => setPrefs({ ttsRate: nextRate })}
-              className="h-11 shrink-0 rounded-full border border-rule px-3 text-[14px] tabular-nums text-ink"
-            >
-              {rate}배
-            </button>
-            <button type="button" onClick={onClose} className="h-11 shrink-0 px-1 text-[14px] text-pencil">
-              닫기
-            </button>
-          </div>
-        </>
+              {voices.korean.map((v) => (
+                <option key={v.voiceURI} value={v.voiceURI}>
+                  {v.name}
+                </option>
+              ))}
+            </select>
+          )}
+          <button
+            type="button"
+            aria-label={`읽는 속도 ${rate}배, 누르면 ${nextRate}배로`}
+            onClick={() => setPrefs({ ttsRate: nextRate })}
+            className="h-9 shrink-0 rounded-full border border-rule px-2.5 text-[12px] tabular-nums text-ink"
+          >
+            {rate}배
+          </button>
+          <button type="button" onClick={onClose} className="h-9 shrink-0 px-1 text-[13px] text-pencil">
+            닫기
+          </button>
+        </div>
       )}
     </div>
   );
